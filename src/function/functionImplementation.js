@@ -1,28 +1,28 @@
 import luckysheetConfigsetting from '../controllers/luckysheetConfigsetting';
 import { luckysheet_getcelldata, luckysheet_parseData, luckysheet_getValue, luckysheet_calcADPMM } from './func';
 import { inverse } from './matrix_methods';
-import { getSheetIndex, getluckysheetfile,getRangetxt } from '../methods/get';
+import { getSheetIndex, getluckysheetfile, getRangetxt } from '../methods/get';
 import menuButton from '../controllers/menuButton';
 import luckysheetSparkline from '../controllers/sparkline';
 import formula from '../global/formula';
 import func_methods from '../global/func_methods';
 import editor from '../global/editor';
 import { isdatetime, diff, isdatatype } from '../global/datecontroll';
-import { isRealNum, isRealNull, valueIsError,error } from '../global/validate';
-import { jfrefreshgrid,jfrefreshgridall } from '../global/refresh';
+import { isRealNum, isRealNull, valueIsError, error } from '../global/validate';
+import { jfrefreshgrid, jfrefreshgridall } from '../global/refresh';
 import { genarate, update } from '../global/format';
 import { orderbydata } from '../global/sort';
-import { getcellvalue,datagridgrowth } from '../global/getdata';
+import { getcellvalue, datagridgrowth } from '../global/getdata';
 import { getObjType, ABCatNum, chatatABC, numFormat } from '../utils/util';
 import Store from '../store';
 import dayjs from 'dayjs';
 import numeral from 'numeral';
-import {getAirTable,companyTargetData,companyTargetData10,companyTargetData11,companyTargetData12,excelToLuckyArray,excelToArray,askAIData} from '../demoData/getTargetData'
+import { getAirTable, companyTargetData, companyTargetData10, companyTargetData11, companyTargetData12, excelToLuckyArray, excelToArray, askAIData } from '../demoData/getTargetData'
 import { setcellvalue } from "../global/setdata";
 
 //公式函数计算
 const functionImplementation = {
-    "SUM": function() {
+    "SUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -43,31 +43,31 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
-                        if(getObjType(data) == "boolean"){
-                            if(data.toString().toLowerCase() == "true"){
+                else {
+                    if (!isRealNum(data)) {
+                        if (getObjType(data) == "boolean") {
+                            if (data.toString().toLowerCase() == "true") {
                                 dataArr.push(1);
                             }
-                            else if(data.toString().toLowerCase() == "false"){
+                            else if (data.toString().toLowerCase() == "false") {
                                 dataArr.push(0);
                             }
                         }
-                        else{
+                        else {
                             return formula.error.v;
                         }
                     }
-                    else{
+                    else {
                         dataArr.push(data);
                     }
                 }
@@ -75,13 +75,13 @@ const functionImplementation = {
 
             var sum = 0;
 
-            if(dataArr.length > 0){
-                for(var i = 0; i < dataArr.length; i++){
-                    if(valueIsError(dataArr[i])){
+            if (dataArr.length > 0) {
+                for (var i = 0; i < dataArr.length; i++) {
+                    if (valueIsError(dataArr[i])) {
                         return dataArr[i];
                     }
 
-                    if(!isRealNum(dataArr[i])){
+                    if (!isRealNum(dataArr[i])) {
                         continue;
                     }
 
@@ -97,7 +97,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AVERAGE": function() {
+    "AVERAGE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -118,33 +118,33 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                     }
-                    else{
+                    else {
                         dataArr = dataArr.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var sum = 0, count = 0;
 
-            for(var i = 0; i < dataArr.length; i++){
-                if(valueIsError(dataArr[i])){
+            for (var i = 0; i < dataArr.length; i++) {
+                if (valueIsError(dataArr[i])) {
                     return dataArr[i];
                 }
-                else if(!isRealNum(dataArr[i])){
+                else if (!isRealNum(dataArr[i])) {
                     return formula.error.v;
                 }
 
@@ -152,7 +152,7 @@ const functionImplementation = {
                 count++;
             }
 
-            if(count == 0){
+            if (count == 0) {
                 return formula.error.d;
             }
 
@@ -164,7 +164,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNT": function() {
+    "COUNT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -185,31 +185,31 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                     }
-                    else{
+                    else {
                         dataArr = dataArr.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
-                    if(getObjType(data) == "boolean"){
-                        if(data.toString().toLowerCase() == "true"){
+                else {
+                    if (getObjType(data) == "boolean") {
+                        if (data.toString().toLowerCase() == "true") {
                             dataArr.push(1);
                         }
-                        else if(data.toString().toLowerCase() == "false"){
+                        else if (data.toString().toLowerCase() == "false") {
                             dataArr.push(0);
                         }
                     }
-                    else{
+                    else {
                         dataArr.push(data);
                     }
                 }
@@ -217,8 +217,8 @@ const functionImplementation = {
 
             var count = 0;
 
-            for(var i = 0; i < dataArr.length; i++){
-                if(isRealNum(dataArr[i])){
+            for (var i = 0; i < dataArr.length; i++) {
+                if (isRealNum(dataArr[i])) {
                     count++;
                 }
             }
@@ -232,7 +232,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNTA": function() {
+    "COUNTA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -253,22 +253,22 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         dataArr = dataArr.concat(func_methods.getDataArr(data));
                     }
-                    else{
+                    else {
                         dataArr = dataArr.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -281,7 +281,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MAX": function() {
+    "MAX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -302,38 +302,38 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                     }
-                    else{
+                    else {
                         dataArr = dataArr.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var max = null;
 
-            for(var i = 0; i < dataArr.length; i++){
-                if(valueIsError(dataArr[i])){
+            for (var i = 0; i < dataArr.length; i++) {
+                if (valueIsError(dataArr[i])) {
                     return dataArr[i];
                 }
 
-                if(!isRealNum(dataArr[i])){
+                if (!isRealNum(dataArr[i])) {
                     continue;
                 }
 
-                if(max == null || parseFloat(dataArr[i]) > max){
+                if (max == null || parseFloat(dataArr[i]) > max) {
                     max = parseFloat(dataArr[i]);
                 }
             }
@@ -347,7 +347,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MIN": function() {
+    "MIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -368,38 +368,38 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                     }
-                    else{
+                    else {
                         dataArr = dataArr.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var min = null;
 
-            for(var i = 0; i < dataArr.length; i++){
-                if(valueIsError(dataArr[i])){
+            for (var i = 0; i < dataArr.length; i++) {
+                if (valueIsError(dataArr[i])) {
                     return dataArr[i];
                 }
 
-                if(!isRealNum(dataArr[i])){
+                if (!isRealNum(dataArr[i])) {
                     continue;
                 }
 
-                if(min == null || parseFloat(dataArr[i]) < min){
+                if (min == null || parseFloat(dataArr[i]) < min) {
                     min = parseFloat(dataArr[i]);
                 }
             }
@@ -413,7 +413,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AGE_BY_IDCARD": function() {
+    "AGE_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -431,7 +431,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -440,16 +440,16 @@ const functionImplementation = {
             }
 
             var birthday = window.luckysheet_function.BIRTHDAY_BY_IDCARD.f(UUserCard);
-            if(valueIsError(birthday)){
+            if (valueIsError(birthday)) {
                 return birthday;
             }
 
             birthday = dayjs(birthday);
 
             var cuurentdate = dayjs();
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 cuurentdate = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(cuurentdate)){
+                if (valueIsError(cuurentdate)) {
                     return cuurentdate;
                 }
 
@@ -458,7 +458,7 @@ const functionImplementation = {
 
             var age = cuurentdate.diff(birthday, "years");
 
-            if(age < 0 || age.toString() == "NaN"){
+            if (age < 0 || age.toString() == "NaN") {
                 return formula.error.v;
             }
 
@@ -471,7 +471,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SEX_BY_IDCARD": function() {
+    "SEX_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -489,7 +489,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]).toString();
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -511,7 +511,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BIRTHDAY_BY_IDCARD": function() {
+    "BIRTHDAY_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -529,7 +529,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]).toString();
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -551,28 +551,28 @@ const functionImplementation = {
             var datetype = 0;
             if (arguments[1] != null) {
                 datetype = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(datetype)){
+                if (valueIsError(datetype)) {
                     return datetype;
                 }
             }
 
-            if(!isRealNum(datetype)){
+            if (!isRealNum(datetype)) {
                 return formula.error.v;
             }
 
             datetype = parseInt(datetype);
 
-            if(datetype < 0 || datetype > 2){
+            if (datetype < 0 || datetype > 2) {
                 return formula.error.v;
             }
 
-            if(parseInt(datetype) == 0){
+            if (parseInt(datetype) == 0) {
                 return birthday;
             }
-            else if(parseInt(datetype) == 1){
+            else if (parseInt(datetype) == 1) {
                 return dayjs(birthday).format("YYYY-MM-DD");
             }
-            else if(parseInt(datetype) == 2){
+            else if (parseInt(datetype) == 2) {
                 return dayjs(birthday).format("YYYY年M月D日");
             }
         }
@@ -583,7 +583,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PROVINCE_BY_IDCARD": function() {
+    "PROVINCE_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -601,7 +601,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]).toString();
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -625,7 +625,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CITY_BY_IDCARD": function() {
+    "CITY_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -643,7 +643,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]).toString();
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -670,7 +670,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STAR_BY_IDCARD": function() {
+    "STAR_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -688,7 +688,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -697,7 +697,7 @@ const functionImplementation = {
             }
 
             var birthday = window.luckysheet_function.BIRTHDAY_BY_IDCARD.f(UUserCard);
-            if(valueIsError(birthday)){
+            if (valueIsError(birthday)) {
                 return birthday;
             }
 
@@ -737,7 +737,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ANIMAL_BY_IDCARD": function() {
+    "ANIMAL_BY_IDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -755,7 +755,7 @@ const functionImplementation = {
         try {
             //身份证号
             var UUserCard = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(UUserCard)){
+            if (valueIsError(UUserCard)) {
                 return UUserCard;
             }
 
@@ -764,7 +764,7 @@ const functionImplementation = {
             }
 
             var birthday = window.luckysheet_function.BIRTHDAY_BY_IDCARD.f(UUserCard);
-            if(valueIsError(birthday)){
+            if (valueIsError(birthday)) {
                 return birthday;
             }
 
@@ -787,7 +787,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISIDCARD": function() {
+    "ISIDCARD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -804,16 +804,16 @@ const functionImplementation = {
 
         try {
             var idcard = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(idcard)){
+            if (valueIsError(idcard)) {
                 return idcard;
             }
 
             var reg = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
 
-            if(reg.test(idcard)){
+            if (reg.test(idcard)) {
                 return true
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -824,7 +824,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DM_TEXT_CUTWORD": function() {
+    "DM_TEXT_CUTWORD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -846,7 +846,7 @@ const functionImplementation = {
 
             //任意需要分词的文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -854,32 +854,32 @@ const functionImplementation = {
             var datetype = 0;
             if (arguments[1] != null) {
                 datetype = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(datetype)){
+                if (valueIsError(datetype)) {
                     return datetype;
                 }
             }
 
-            if(!isRealNum(datetype)){
+            if (!isRealNum(datetype)) {
                 return formula.error.v;
             }
 
             datetype = parseInt(datetype);
 
-            if(datetype != 0 &&　datetype != 1 && datetype != 2){
+            if (datetype != 0 && datetype != 1 && datetype != 2) {
                 return formula.error.v;
             }
 
             $.post("/dataqk/tu/api/cutword", {
                 "text": text,
                 "type": datetype
-            }, function(data) {
+            }, function (data) {
                 var d = [].concat(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -890,7 +890,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DM_TEXT_TFIDF": function() {
+    "DM_TEXT_TFIDF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -912,7 +912,7 @@ const functionImplementation = {
 
             //任意需要分词的文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -920,12 +920,12 @@ const functionImplementation = {
             var count = 20;
             if (arguments[1] != null) {
                 count = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(count)){
+                if (valueIsError(count)) {
                     return count;
                 }
             }
 
-            if(!isRealNum(count)){
+            if (!isRealNum(count)) {
                 return formula.error.v;
             }
 
@@ -935,22 +935,22 @@ const functionImplementation = {
             var set = 0;
             if (arguments[2] != null) {
                 set = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(set)){
+                if (valueIsError(set)) {
                     return set;
                 }
             }
 
-            if(!isRealNum(set)){
+            if (!isRealNum(set)) {
                 return formula.error.v;
             }
 
             set = parseInt(set);
 
-            if(count < 0){
+            if (count < 0) {
                 return formula.error.v;
             }
 
-            if(set != 0 && set != 1 && set != 2){
+            if (set != 0 && set != 1 && set != 2) {
                 return formula.error.v;
             }
 
@@ -958,14 +958,14 @@ const functionImplementation = {
                 "text": text,
                 "count": count,
                 "set": set
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -976,7 +976,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DM_TEXT_TEXTRANK": function() {
+    "DM_TEXT_TEXTRANK": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -998,7 +998,7 @@ const functionImplementation = {
 
             //任意需要分词的文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -1006,12 +1006,12 @@ const functionImplementation = {
             var count = 20;
             if (arguments[1] != null) {
                 count = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(count)){
+                if (valueIsError(count)) {
                     return count;
                 }
             }
 
-            if(!isRealNum(count)){
+            if (!isRealNum(count)) {
                 return formula.error.v;
             }
 
@@ -1021,22 +1021,22 @@ const functionImplementation = {
             var set = 0;
             if (arguments[2] != null) {
                 set = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(set)){
+                if (valueIsError(set)) {
                     return set;
                 }
             }
 
-            if(!isRealNum(set)){
+            if (!isRealNum(set)) {
                 return formula.error.v;
             }
 
             set = parseInt(set);
 
-            if(count < 0){
+            if (count < 0) {
                 return formula.error.v;
             }
 
-            if(set != 0 && set != 1 && set != 2){
+            if (set != 0 && set != 1 && set != 2) {
                 return formula.error.v;
             }
 
@@ -1044,14 +1044,14 @@ const functionImplementation = {
                 "text": text,
                 "count": count,
                 "set": set
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1062,7 +1062,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_CLOSE": function() {
+    "DATA_CN_STOCK_CLOSE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1084,32 +1084,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1120,18 +1120,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1140,7 +1140,7 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "0"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 var v = numFormat(data);
                 if (v == null) {
@@ -1151,7 +1151,7 @@ const functionImplementation = {
                     "v": v,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1162,7 +1162,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_OPEN": function() {
+    "DATA_CN_STOCK_OPEN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1184,32 +1184,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1220,18 +1220,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1240,14 +1240,14 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "1"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1258,7 +1258,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_MAX": function() {
+    "DATA_CN_STOCK_MAX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1280,32 +1280,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1316,18 +1316,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1336,14 +1336,14 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "2"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1354,7 +1354,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_MIN": function() {
+    "DATA_CN_STOCK_MIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1376,32 +1376,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1412,18 +1412,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1432,14 +1432,14 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "3"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1450,7 +1450,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_VOLUMN": function() {
+    "DATA_CN_STOCK_VOLUMN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1472,32 +1472,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1508,18 +1508,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1528,14 +1528,14 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "4"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1546,7 +1546,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATA_CN_STOCK_AMOUNT": function() {
+    "DATA_CN_STOCK_AMOUNT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1568,32 +1568,32 @@ const functionImplementation = {
 
             //股票代码
             var stockcode = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(stockcode)){
+            if (valueIsError(stockcode)) {
                 return stockcode;
             }
 
             //日期
             var date = null;
 
-            if(arguments[1] != null){
+            if (arguments[1] != null) {
                 var data_date = arguments[1];
 
-                if(getObjType(data_date) == "array"){
+                if (getObjType(data_date) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(data_date) == "object" && data_date.startCell != null){
-                    if(data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d"){
+                else if (getObjType(data_date) == "object" && data_date.startCell != null) {
+                    if (data_date.data != null && getObjType(data_date.data) != "array" && data_date.data.ct != null && data_date.data.ct.t == "d") {
                         date = update("yyyy-mm-dd", data_date.data.v);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
-                else{
+                else {
                     date = data_date;
                 }
 
-                if(!isdatetime(date)){
+                if (!isdatetime(date)) {
                     return [formula.error.v, "日期错误"];
                 }
 
@@ -1604,18 +1604,18 @@ const functionImplementation = {
             var price = 0;
             if (arguments[2] != null) {
                 price = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(price)){
+                if (valueIsError(price)) {
                     return price;
                 }
             }
 
-            if(!isRealNum(price)){
+            if (!isRealNum(price)) {
                 return formula.error.v;
             }
 
             price = parseInt(price);
 
-            if(price != 0 && price != 1 && price != 2){
+            if (price != 0 && price != 1 && price != 2) {
                 return formula.error.v;
             }
 
@@ -1624,14 +1624,14 @@ const functionImplementation = {
                 "date": date,
                 "price": price,
                 type: "5"
-            }, function(data) {
+            }, function (data) {
                 var d = editor.deepCopyFlowData(Store.flowdata);
                 formula.execFunctionGroup(cell_r, cell_c, data);
                 d[cell_r][cell_c] = {
                     "v": data,
                     "f": cell_fp
                 };
-                jfrefreshgrid(d, [{"row": [cell_r, cell_r], "column": [cell_c, cell_c]}]);
+                jfrefreshgrid(d, [{ "row": [cell_r, cell_r], "column": [cell_c, cell_c] }]);
             });
 
             return "loading...";
@@ -1642,7 +1642,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISDATE": function() {
+    "ISDATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1660,7 +1660,7 @@ const functionImplementation = {
         try {
             //日期
             var date = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(date)){
+            if (valueIsError(date)) {
                 return date;
             }
 
@@ -1673,7 +1673,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMIF": function() {
+    "SUMIF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1704,7 +1704,7 @@ const functionImplementation = {
             rangeData = formula.getRangeArray(rangeData)[0];
 
             //如果有第三个参数
-            if(arguments[2]){
+            if (arguments[2]) {
                 var sumRangeData = [];
                 //根据选择的目标的区域确定实际目标区域
                 //初始位置
@@ -1713,16 +1713,16 @@ const functionImplementation = {
                 var sumRangeCol = arguments[2].coll;
                 var sumRangeSheet = arguments[2].sheetName;
 
-                if(rangeRow == sumRangeRow && rangeCol == sumRangeCol){
+                if (rangeRow == sumRangeRow && rangeCol == sumRangeCol) {
                     sumRangeData = arguments[2].data;
                 }
-                else{
-                    var row=[],col=[];
+                else {
+                    var row = [], col = [];
                     var sumRangeEnd = "";
                     var realSumRange = "";
                     //console.log("开始位置！！！",sumRangeStart,typeof(sumRangeStart));
-                    row[0] = parseInt(sumRangeStart.replace(/[^0-9]/g,"")) - 1;
-                    col[0] = ABCatNum(sumRangeStart.replace(/[^A-Za-z]/g,""));
+                    row[0] = parseInt(sumRangeStart.replace(/[^0-9]/g, "")) - 1;
+                    col[0] = ABCatNum(sumRangeStart.replace(/[^A-Za-z]/g, ""));
 
                     //根据第一个范围的长宽确定目标范围的末尾位置
                     row[1] = row[0] + rangeRow - 1;
@@ -1735,7 +1735,7 @@ const functionImplementation = {
                     sumRangeEnd = real_ABC + real_Num;
                     //console.log("合成新的末尾位置：" + sumRangeEnd);
 
-                    realSumRange = sumRangeSheet + "!" +sumRangeStart + ":" + sumRangeEnd;
+                    realSumRange = sumRangeSheet + "!" + sumRangeStart + ":" + sumRangeEnd;
                     sumRangeData = luckysheet_getcelldata(realSumRange).data;
                     //console.log("最终的目标范围：",sumRangeData);
                 }
@@ -1743,11 +1743,11 @@ const functionImplementation = {
                 sumRangeData = formula.getRangeArray(sumRangeData)[0];
 
                 //循环遍历查找匹配项
-                for(var i = 0; i < rangeData.length;i++){
+                for (var i = 0; i < rangeData.length; i++) {
                     var v = rangeData[i];
 
-                    if(!!v && formula.acompareb(v, criteria)){
-                        if(!isRealNum(sumRangeData[i])){
+                    if (!!v && formula.acompareb(v, criteria)) {
+                        if (!isRealNum(sumRangeData[i])) {
                             continue;
                         }
 
@@ -1755,13 +1755,13 @@ const functionImplementation = {
                     }
                 }
             }
-            else{
+            else {
                 //循环遍历查找匹配项
-                for(var i = 0; i < rangeData.length;i++){
+                for (var i = 0; i < rangeData.length; i++) {
                     var v = rangeData[i];
 
-                    if(!!v && formula.acompareb(v, criteria)){
-                        if(!isRealNum(v)){
+                    if (!!v && formula.acompareb(v, criteria)) {
+                        if (!isRealNum(v)) {
                             continue;
                         }
 
@@ -1778,7 +1778,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TAN": function() {
+    "TAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1795,11 +1795,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -1813,7 +1813,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TANH": function() {
+    "TANH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1830,11 +1830,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -1850,7 +1850,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CEILING": function() {
+    "CEILING": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1868,11 +1868,11 @@ const functionImplementation = {
         try {
             //number
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -1880,21 +1880,21 @@ const functionImplementation = {
 
             //significance
             var significance = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(significance)){
+            if (valueIsError(significance)) {
                 return significance;
             }
 
-            if(!isRealNum(significance)){
+            if (!isRealNum(significance)) {
                 return formula.error.v;
             }
 
             significance = parseFloat(significance);
 
-            if(significance == 0){
+            if (significance == 0) {
                 return 0;
             }
 
-            if(number > 0 && significance < 0){
+            if (number > 0 && significance < 0) {
                 return formula.error.nm;
             }
 
@@ -1906,7 +1906,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ATAN": function() {
+    "ATAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1923,11 +1923,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -1941,7 +1941,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ASINH": function() {
+    "ASINH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1958,11 +1958,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -1976,7 +1976,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ABS": function() {
+    "ABS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -1993,11 +1993,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2011,7 +2011,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ACOS": function() {
+    "ACOS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2028,17 +2028,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number < -1 || number > 1){
+            if (number < -1 || number > 1) {
                 return formula.error.nm;
             }
 
@@ -2050,7 +2050,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ACOSH": function() {
+    "ACOSH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2067,17 +2067,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number < 1){
+            if (number < 1) {
                 return formula.error.nm;
             }
 
@@ -2089,7 +2089,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MULTINOMIAL": function() {
+    "MULTINOMIAL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2110,33 +2110,33 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var sum = 0, divisor = 1;
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
                 number = parseFloat(number);
 
-                if(number < 0){
+                if (number < 0) {
                     return formula.error.nm;
                 }
 
@@ -2152,7 +2152,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ATANH": function() {
+    "ATANH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2169,17 +2169,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number <= -1 ||　number >= 1){
+            if (number <= -1 || number >= 1) {
                 return formula.error.nm;
             }
 
@@ -2191,7 +2191,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ATAN2": function() {
+    "ATAN2": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2209,11 +2209,11 @@ const functionImplementation = {
         try {
             //要计算其与x轴夹角大小的线段的终点x坐标
             var number_x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number_x)){
+            if (valueIsError(number_x)) {
                 return number_x;
             }
 
-            if(!isRealNum(number_x)){
+            if (!isRealNum(number_x)) {
                 return formula.error.v;
             }
 
@@ -2221,17 +2221,17 @@ const functionImplementation = {
 
             //要计算其与x轴夹角大小的线段的终点y坐标
             var number_y = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_y)){
+            if (valueIsError(number_y)) {
                 return number_y;
             }
 
-            if(!isRealNum(number_y)){
+            if (!isRealNum(number_y)) {
                 return formula.error.v;
             }
 
             number_y = parseFloat(number_y);
 
-            if(number_x == 0 && number_y == 0){
+            if (number_x == 0 && number_y == 0) {
                 return formula.error.d;
             }
 
@@ -2243,7 +2243,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNTBLANK": function() {
+    "COUNTBLANK": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2262,22 +2262,22 @@ const functionImplementation = {
             var data = arguments[0];
             var sum = 0;
 
-            if(getObjType(data) == "object" && data.startCell != null){
-                if(data.data == null){
+            if (getObjType(data) == "object" && data.startCell != null) {
+                if (data.data == null) {
                     return 1;
                 }
 
-                if(getObjType(data.data) == "array"){
-                    for(var r = 0; r < data.data.length; r++){
-                        for(var c = 0; c < data.data[r].length; c++){
-                            if(data.data[r][c] == null || isRealNull(data.data[r][c].v)){
+                if (getObjType(data.data) == "array") {
+                    for (var r = 0; r < data.data.length; r++) {
+                        for (var c = 0; c < data.data[r].length; c++) {
+                            if (data.data[r][c] == null || isRealNull(data.data[r][c].v)) {
                                 sum++;
                             }
                         }
                     }
                 }
-                else{
-                    if(isRealNull(data.data.v)){
+                else {
+                    if (isRealNull(data.data.v)) {
                         sum++;
                     }
                 }
@@ -2291,7 +2291,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COSH": function() {
+    "COSH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2308,11 +2308,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2326,7 +2326,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "INT": function() {
+    "INT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2344,67 +2344,67 @@ const functionImplementation = {
         try {
             var data = arguments[0];
 
-            if(getObjType(data) == "array"){
-                if(getObjType(data[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data)){
+            if (getObjType(data) == "array") {
+                if (getObjType(data[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
-                    if(!isRealNum(data[0][0])){
+                    if (!isRealNum(data[0][0])) {
                         return formula.error.v;
                     }
 
                     return Math.floor(parseFloat(data[0][0]));
                 }
-                else{
-                    if(!isRealNum(data[0])){
+                else {
+                    if (!isRealNum(data[0])) {
                         return formula.error.v;
                     }
 
                     return Math.floor(parseFloat(data[0]));
                 }
             }
-            else if(getObjType(data) == "object" && data.startCell != null){
-                if(data.coll > 1){
+            else if (getObjType(data) == "object" && data.startCell != null) {
+                if (data.coll > 1) {
                     return formula.error.v;
                 }
 
-                if(data.rowl > 1){
+                if (data.rowl > 1) {
                     var cellrange = formula.getcellrange(data.startCell);
                     var str = cellrange.row[0];
 
-                    if(window.luckysheetCurrentRow < str || window.luckysheetCurrentRow > str + data.rowl - 1){
+                    if (window.luckysheetCurrentRow < str || window.luckysheetCurrentRow > str + data.rowl - 1) {
                         return formula.error.v;
                     }
 
                     var cell = data.data[window.luckysheetCurrentRow - str][0];
                 }
-                else{
+                else {
                     var cell = data.data;
                 }
 
-                if(cell == null || isRealNull(cell.v)){
+                if (cell == null || isRealNull(cell.v)) {
                     return 0;
                 }
 
-                if(!isRealNum(cell.v)){
+                if (!isRealNum(cell.v)) {
                     return formula.error.v;
                 }
 
                 return Math.floor(parseFloat(cell.v));
             }
-            else{
-                if(getObjType(data) == "boolean"){
-                    if(data.toString().toLowerCase() == "true"){
+            else {
+                if (getObjType(data) == "boolean") {
+                    if (data.toString().toLowerCase() == "true") {
                         return 1;
                     }
 
-                    if(data.toString().toLowerCase() == "false"){
+                    if (data.toString().toLowerCase() == "false") {
                         return 0;
                     }
                 }
 
-                if(!isRealNum(data)){
+                if (!isRealNum(data)) {
                     return formula.error.v;
                 }
 
@@ -2417,7 +2417,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISEVEN": function() {
+    "ISEVEN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2434,11 +2434,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2452,7 +2452,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISODD": function() {
+    "ISODD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2469,11 +2469,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2487,7 +2487,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LCM": function() {
+    "LCM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2508,36 +2508,36 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array"){
-                        if(!func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array") {
+                        if (!func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         o = o.concat(func_methods.getDataArr(data));
                     }
-                    else{
+                    else {
                         o = o.concat(data);
                     }
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     o = o.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     o.push(data);
                 }
             }
 
-            for(var y = 0; y < o.length; y++){
+            for (var y = 0; y < o.length; y++) {
                 var number = o[y];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
                 number = parseInt(number);
 
-                if(number < 0){
+                if (number < 0) {
                     return formula.error.nm;
                 }
 
@@ -2545,7 +2545,7 @@ const functionImplementation = {
             }
 
             for (var i, j, n, d, r = 1; (n = o.pop()) !== undefined;) {
-                if(n == 0){
+                if (n == 0) {
                     r = 0;
                 }
 
@@ -2567,7 +2567,7 @@ const functionImplementation = {
                 }
             }
 
-            if(r >= Math.pow(2, 53)){
+            if (r >= Math.pow(2, 53)) {
                 return formula.error.nm;
             }
 
@@ -2579,7 +2579,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LN": function() {
+    "LN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2596,17 +2596,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number <= 0){
+            if (number <= 0) {
                 return formula.error.nm;
             }
 
@@ -2618,7 +2618,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOG": function() {
+    "LOG": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2635,37 +2635,37 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number <= 0){
+            if (number <= 0) {
                 return formula.error.nm;
             }
 
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 var base = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(base)){
+                if (valueIsError(base)) {
                     return base;
                 }
 
-                if(!isRealNum(base)){
+                if (!isRealNum(base)) {
                     return formula.error.v;
                 }
 
                 base = parseFloat(base);
 
-                if(base <= 0){
+                if (base <= 0) {
                     return formula.error.nm;
                 }
             }
-            else{
+            else {
                 var base = 10;
             }
 
@@ -2677,7 +2677,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOG10": function() {
+    "LOG10": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2694,17 +2694,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number <= 0){
+            if (number <= 0) {
                 return formula.error.nm;
             }
 
@@ -2716,7 +2716,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MOD": function() {
+    "MOD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2734,11 +2734,11 @@ const functionImplementation = {
         try {
             //被除数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2746,17 +2746,17 @@ const functionImplementation = {
 
             //除数
             var divisor = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(divisor)){
+            if (valueIsError(divisor)) {
                 return divisor;
             }
 
-            if(!isRealNum(divisor)){
+            if (!isRealNum(divisor)) {
                 return formula.error.v;
             }
 
             divisor = parseFloat(divisor);
 
-            if(divisor == 0){
+            if (divisor == 0) {
                 return formula.error.d;
             }
 
@@ -2770,7 +2770,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MROUND": function() {
+    "MROUND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2788,11 +2788,11 @@ const functionImplementation = {
         try {
             //要舍入的值
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2800,17 +2800,17 @@ const functionImplementation = {
 
             //要舍入到的倍数
             var multiple = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(multiple)){
+            if (valueIsError(multiple)) {
                 return multiple;
             }
 
-            if(!isRealNum(multiple)){
+            if (!isRealNum(multiple)) {
                 return formula.error.v;
             }
 
             multiple = parseFloat(multiple);
 
-            if (number * multiple < 0){
+            if (number * multiple < 0) {
                 return formula.error.nm;
             }
 
@@ -2823,7 +2823,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ODD": function() {
+    "ODD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2840,11 +2840,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2860,7 +2860,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMSQ": function() {
+    "SUMSQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2881,28 +2881,28 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var sum = 0;
 
-            if(dataArr.length > 0){
-                for(var i = 0; i < dataArr.length; i++){
+            if (dataArr.length > 0) {
+                for (var i = 0; i < dataArr.length; i++) {
                     var number = dataArr[i];
 
-                    if(!isRealNum(number)){
+                    if (!isRealNum(number)) {
                         return formula.error.v;
                     }
 
@@ -2920,7 +2920,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COMBIN": function() {
+    "COMBIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2938,11 +2938,11 @@ const functionImplementation = {
         try {
             //项目的数量
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -2950,17 +2950,17 @@ const functionImplementation = {
 
             //每一组合中项目的数量
             var number_chosen = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_chosen)){
+            if (valueIsError(number_chosen)) {
                 return number_chosen;
             }
 
-            if(!isRealNum(number_chosen)){
+            if (!isRealNum(number_chosen)) {
                 return formula.error.v;
             }
 
             number_chosen = parseInt(number_chosen);
 
-            if (number < 0 || number_chosen < 0 || number < number_chosen){
+            if (number < 0 || number_chosen < 0 || number < number_chosen) {
                 return formula.error.nm;
             }
 
@@ -2973,7 +2973,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUBTOTAL": function() {
+    "SUBTOTAL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -2993,36 +2993,36 @@ const functionImplementation = {
             var data_function_num = arguments[0];
             var function_num;
 
-            if(getObjType(data_function_num) == "array"){
-                if(getObjType(data_function_num[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_function_num)){
+            if (getObjType(data_function_num) == "array") {
+                if (getObjType(data_function_num[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_function_num)) {
                         return formula.error.v;
                     }
 
                     function_num = [];
 
-                    for(var i = 0; i < data_function_num.length; i++){
+                    for (var i = 0; i < data_function_num.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < data_function_num[i].length; j++){
+                        for (var j = 0; j < data_function_num[i].length; j++) {
                             rowArr.push(data_function_num[i][j]);
                         }
 
                         function_num.push(rowArr);
                     }
                 }
-                else{
+                else {
                     function_num = [];
 
-                    for(var i = 0; i < data_function_num.length; i++){
+                    for (var i = 0; i < data_function_num.length; i++) {
                         function_num.push(data_function_num[i]);
                     }
                 }
             }
-            else if(getObjType(data_function_num) == "object" && data_function_num.startCell != null){
+            else if (getObjType(data_function_num) == "object" && data_function_num.startCell != null) {
                 function_num = func_methods.getFirstValue(data_function_num);
             }
-            else{
+            else {
                 function_num = data_function_num;
             }
 
@@ -3030,29 +3030,29 @@ const functionImplementation = {
             arr.shift();
 
             //计算结果
-            if(getObjType(function_num) == "array"){
+            if (getObjType(function_num) == "array") {
                 var result = [];
 
-                if(getObjType(function_num[0]) == "array"){
-                    for(var i = 0; i < function_num.length; i++){
+                if (getObjType(function_num[0]) == "array") {
+                    for (var i = 0; i < function_num.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < function_num[i].length; j++){
+                        for (var j = 0; j < function_num[i].length; j++) {
                             var value = function_num[i][j];
 
-                            if(valueIsError(value)){
+                            if (valueIsError(value)) {
                                 rowArr.push(value);
                             }
-                            else if(!isRealNum(value)){
+                            else if (!isRealNum(value)) {
                                 rowArr.push(formula.error.v);
                             }
-                            else{
+                            else {
                                 value = parseInt(value);
 
-                                if(value < 1 || value > 111 || (value > 11 && value < 101)){
+                                if (value < 1 || value > 111 || (value > 11 && value < 101)) {
                                     rowArr.push(formula.error.v);
                                 }
-                                else{
+                                else {
                                     rowArr.push(compute(value));
                                 }
                             }
@@ -3061,23 +3061,23 @@ const functionImplementation = {
                         result.push(rowArr);
                     }
                 }
-                else{
-                    for(var i = 0; i < function_num.length; i++){
+                else {
+                    for (var i = 0; i < function_num.length; i++) {
                         var value = function_num[i];
 
-                        if(valueIsError(value)){
+                        if (valueIsError(value)) {
                             result.push(value);
                         }
-                        else if(!isRealNum(value)){
+                        else if (!isRealNum(value)) {
                             result.push(formula.error.v);
                         }
-                        else{
+                        else {
                             value = parseInt(value);
 
-                            if(value < 1 || value > 111 || (value > 11 && value < 101)){
+                            if (value < 1 || value > 111 || (value > 11 && value < 101)) {
                                 result.push(formula.error.v);
                             }
-                            else{
+                            else {
                                 result.push(compute(value));
                             }
                         }
@@ -3086,18 +3086,18 @@ const functionImplementation = {
 
                 return result;
             }
-            else{
-                if(valueIsError(function_num)){
+            else {
+                if (valueIsError(function_num)) {
                     return function_num;
                 }
 
-                if(!isRealNum(function_num)){
+                if (!isRealNum(function_num)) {
                     return formula.error.v;
                 }
 
                 function_num = parseInt(function_num);
 
-                if(function_num < 1 || function_num > 111 || (function_num > 11 && function_num < 101)){
+                if (function_num < 1 || function_num > 111 || (function_num > 11 && function_num < 101)) {
                     return formula.error.v;
                 }
 
@@ -3105,8 +3105,8 @@ const functionImplementation = {
             }
 
 
-            function compute(function_num){
-                switch(function_num){
+            function compute(function_num) {
+                switch (function_num) {
                     case 1:    //AVERAGE
                     case 101:
                         return window.luckysheet_function.AVERAGE.f.apply(window.luckysheet_function.AVERAGE, arr);
@@ -3160,7 +3160,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ASIN": function() {
+    "ASIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3177,17 +3177,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number < -1 || number > 1){
+            if (number < -1 || number > 1) {
                 return formula.error.nm;
             }
 
@@ -3199,7 +3199,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNTIF": function() {
+    "COUNTIF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3219,10 +3219,10 @@ const functionImplementation = {
             var data_range = arguments[0];
             var range;
 
-            if(getObjType(data_range) == "object" && data_range.startCell != null){
+            if (getObjType(data_range) == "object" && data_range.startCell != null) {
                 range = data_range.data;
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -3230,69 +3230,69 @@ const functionImplementation = {
             var data_criteria = arguments[1];
             var criteria;
 
-            if(getObjType(data_criteria) == "array"){
+            if (getObjType(data_criteria) == "array") {
                 criteria = [];
 
-                if(getObjType(data_criteria[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_criteria)){
+                if (getObjType(data_criteria[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_criteria)) {
                         return formula.error.v;
                     }
 
-                    for(var i = 0; i < data_criteria.length; i++){
+                    for (var i = 0; i < data_criteria.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < data_criteria[i].length; j++){
+                        for (var j = 0; j < data_criteria[i].length; j++) {
                             rowArr.push(data_criteria[i][j]);
                         }
 
                         criteria.push(rowArr);
                     }
                 }
-                else{
-                    for(var i = 0; i < data_criteria.length; i++){
+                else {
+                    for (var i = 0; i < data_criteria.length; i++) {
                         criteria.push(data_criteria[i]);
                     }
                 }
             }
-            else if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.rowl > 1 || data_criteria.coll > 1){
+            else if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.rowl > 1 || data_criteria.coll > 1) {
                     return 0;
                 }
 
                 criteria = data_criteria.data.v;
             }
-            else{
+            else {
                 criteria = data_criteria;
             }
 
             //计算
-            if(getObjType(criteria) == "array"){
+            if (getObjType(criteria) == "array") {
                 var result = [];
 
-                if(getObjType(criteria[0]) == "array"){
-                    for(var i = 0; i < criteria.length; i++){
+                if (getObjType(criteria[0]) == "array") {
+                    for (var i = 0; i < criteria.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < criteria[i].length; j++){
+                        for (var j = 0; j < criteria[i].length; j++) {
                             rowArr.push(getCriteriaResult(range, criteria[i][j]));
                         }
 
                         result.push(rowArr);
                     }
                 }
-                else{
-                    for(var i = 0; i < criteria.length; i++){
+                else {
+                    for (var i = 0; i < criteria.length; i++) {
                         result.push(getCriteriaResult(range, criteria[i]));
                     }
                 }
 
                 return result;
             }
-            else{
+            else {
                 return getCriteriaResult(range, criteria);
             }
 
-            function getCriteriaResult(range, criter){
+            function getCriteriaResult(range, criter) {
                 if (!/[<>=!*?]/.test(criter)) {
                     criter = '=="' + criter + '"';
                 }
@@ -3301,18 +3301,18 @@ const functionImplementation = {
 
                 var matches = 0;
 
-                if(getObjType(range) == "array"){
+                if (getObjType(range) == "array") {
                     for (var i = 0; i < range.length; i++) {
-                        for(var j = 0; j < range[i].length; j++){
-                            if(range[i][j] != null && !isRealNull(range[i][j].v)){
+                        for (var j = 0; j < range[i].length; j++) {
+                            if (range[i][j] != null && !isRealNull(range[i][j].v)) {
                                 var value = range[i][j].v;
 
-                                if(criter.indexOf("*") > -1 || criter.indexOf("?") > -1){
-                                    if(formula.isWildcard(value, criter)){
+                                if (criter.indexOf("*") > -1 || criter.indexOf("?") > -1) {
+                                    if (formula.isWildcard(value, criter)) {
                                         matches++;
                                     }
                                 }
-                                else{
+                                else {
                                     if (typeof value !== 'string') {
                                         if (new Function("return " + value + criter)()) {
                                             matches++;
@@ -3328,16 +3328,16 @@ const functionImplementation = {
                         }
                     }
                 }
-                else{
-                    if(range != null && !isRealNull(range.v)){
+                else {
+                    if (range != null && !isRealNull(range.v)) {
                         var value = range.v;
 
-                        if(criter.indexOf("*") > -1 || criter.indexOf("?") > -1){
-                            if(formula.isWildcard(value, criter)){
+                        if (criter.indexOf("*") > -1 || criter.indexOf("?") > -1) {
+                            if (formula.isWildcard(value, criter)) {
                                 matches++;
                             }
                         }
-                        else{
+                        else {
                             if (typeof value !== 'string') {
                                 if (new Function("return " + value + criter)()) {
                                     matches++;
@@ -3361,7 +3361,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RADIANS": function() {
+    "RADIANS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3378,11 +3378,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3396,7 +3396,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RAND": function() {
+    "RAND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3411,7 +3411,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNTUNIQUE": function() {
+    "COUNTUNIQUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3432,17 +3432,17 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -3455,7 +3455,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DEGREES": function() {
+    "DEGREES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3472,11 +3472,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3490,7 +3490,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ERFC": function() {
+    "ERFC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3507,11 +3507,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3525,7 +3525,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EVEN": function() {
+    "EVEN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3542,11 +3542,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3562,7 +3562,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EXP": function() {
+    "EXP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3579,11 +3579,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3597,7 +3597,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FACT": function() {
+    "FACT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3614,27 +3614,27 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
-                if(getObjType(number) == "boolean"){
-                    if(number.toString().toLowerCase() == "true"){
+            if (!isRealNum(number)) {
+                if (getObjType(number) == "boolean") {
+                    if (number.toString().toLowerCase() == "true") {
                         number = 1;
                     }
-                    else if(number.toString().toLowerCase() == "false"){
+                    else if (number.toString().toLowerCase() == "false") {
                         number = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
 
             number = parseInt(number);
 
-            if(number < 0){
+            if (number < 0) {
                 return formula.error.nm;
             }
 
@@ -3646,7 +3646,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FACTDOUBLE": function() {
+    "FACTDOUBLE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3663,27 +3663,27 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
-                if(getObjType(number) == "boolean"){
-                    if(number.toString().toLowerCase() == "true"){
+            if (!isRealNum(number)) {
+                if (getObjType(number) == "boolean") {
+                    if (number.toString().toLowerCase() == "true") {
                         number = 1;
                     }
-                    else if(number.toString().toLowerCase() == "false"){
+                    else if (number.toString().toLowerCase() == "false") {
                         number = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
 
             number = parseInt(number);
 
-            if(number < 0){
+            if (number < 0) {
                 return formula.error.nm;
             }
 
@@ -3695,7 +3695,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PI": function() {
+    "PI": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3710,7 +3710,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FLOOR": function() {
+    "FLOOR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3728,11 +3728,11 @@ const functionImplementation = {
         try {
             //number
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3740,21 +3740,21 @@ const functionImplementation = {
 
             //significance
             var significance = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(significance)){
+            if (valueIsError(significance)) {
                 return significance;
             }
 
-            if(!isRealNum(significance)){
+            if (!isRealNum(significance)) {
                 return formula.error.v;
             }
 
             significance = parseFloat(significance);
 
-            if(significance == 0){
+            if (significance == 0) {
                 return formula.error.d;
             }
 
-            if(number > 0 && significance < 0){
+            if (number > 0 && significance < 0) {
                 return formula.error.nm;
             }
 
@@ -3774,7 +3774,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GCD": function() {
+    "GCD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3795,41 +3795,41 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", false));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
-            if(!isRealNum(dataArr[0])){
+            if (!isRealNum(dataArr[0])) {
                 return formula.error.v;
             }
 
             var x = parseInt(dataArr[0]);
 
-            if(x < 0 || x >= Math.pow(2, 53)){
+            if (x < 0 || x >= Math.pow(2, 53)) {
                 return formula.error.nm;
             }
 
             for (var i = 1; i < dataArr.length; i++) {
                 var y = dataArr[i];
 
-                if(!isRealNum(y)){
+                if (!isRealNum(y)) {
                     return formula.error.v;
                 }
 
                 y = parseInt(y);
 
-                if(y < 0 || y >= Math.pow(2, 53)){
+                if (y < 0 || y >= Math.pow(2, 53)) {
                     return formula.error.nm;
                 }
 
@@ -3853,7 +3853,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RANDBETWEEN": function() {
+    "RANDBETWEEN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3871,11 +3871,11 @@ const functionImplementation = {
         try {
             //下界
             var bottom = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(bottom)){
+            if (valueIsError(bottom)) {
                 return bottom;
             }
 
-            if(!isRealNum(bottom)){
+            if (!isRealNum(bottom)) {
                 return formula.error.v;
             }
 
@@ -3883,17 +3883,17 @@ const functionImplementation = {
 
             //上界
             var top = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(top)){
+            if (valueIsError(top)) {
                 return top;
             }
 
-            if(!isRealNum(top)){
+            if (!isRealNum(top)) {
                 return formula.error.v;
             }
 
             top = parseInt(top);
 
-            if(bottom > top){
+            if (bottom > top) {
                 return formula.error.nm;
             }
 
@@ -3906,7 +3906,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROUND": function() {
+    "ROUND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3924,11 +3924,11 @@ const functionImplementation = {
         try {
             //四舍五入的数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3936,11 +3936,11 @@ const functionImplementation = {
 
             //位数
             var digits = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(digits)){
+            if (valueIsError(digits)) {
                 return digits;
             }
 
-            if(!isRealNum(digits)){
+            if (!isRealNum(digits)) {
                 return formula.error.v;
             }
 
@@ -3956,7 +3956,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROUNDDOWN": function() {
+    "ROUNDDOWN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -3974,11 +3974,11 @@ const functionImplementation = {
         try {
             //四舍五入的数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -3986,11 +3986,11 @@ const functionImplementation = {
 
             //位数
             var digits = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(digits)){
+            if (valueIsError(digits)) {
                 return digits;
             }
 
-            if(!isRealNum(digits)){
+            if (!isRealNum(digits)) {
                 return formula.error.v;
             }
 
@@ -4006,7 +4006,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROUNDUP": function() {
+    "ROUNDUP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4024,11 +4024,11 @@ const functionImplementation = {
         try {
             //四舍五入的数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -4036,11 +4036,11 @@ const functionImplementation = {
 
             //位数
             var digits = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(digits)){
+            if (valueIsError(digits)) {
                 return digits;
             }
 
-            if(!isRealNum(digits)){
+            if (!isRealNum(digits)) {
                 return formula.error.v;
             }
 
@@ -4056,7 +4056,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SERIESSUM": function() {
+    "SERIESSUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4074,11 +4074,11 @@ const functionImplementation = {
         try {
             //幂级数的输入值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -4086,11 +4086,11 @@ const functionImplementation = {
 
             //x 的首项乘幂
             var n = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(n)){
+            if (valueIsError(n)) {
                 return n;
             }
 
-            if(!isRealNum(n)){
+            if (!isRealNum(n)) {
                 return formula.error.v;
             }
 
@@ -4098,11 +4098,11 @@ const functionImplementation = {
 
             //级数中每一项的乘幂 n 的步长增加值
             var m = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(m)){
+            if (valueIsError(m)) {
                 return m;
             }
 
-            if(!isRealNum(m)){
+            if (!isRealNum(m)) {
                 return formula.error.v;
             }
 
@@ -4112,22 +4112,22 @@ const functionImplementation = {
             var data_coefficients = arguments[3];
             var coefficients = [];
 
-            if(getObjType(data_coefficients) == "array"){
-                if(getObjType(data_coefficients[0]) == "array" && !func_methods.isDyadicArr(data_coefficients)){
+            if (getObjType(data_coefficients) == "array") {
+                if (getObjType(data_coefficients[0]) == "array" && !func_methods.isDyadicArr(data_coefficients)) {
                     return formula.error.v;
                 }
 
                 coefficients = coefficients.concat(func_methods.getDataArr(data_coefficients, false));
             }
-            else if(getObjType(data_coefficients) == "object" && data_coefficients.startCell != null){
+            else if (getObjType(data_coefficients) == "object" && data_coefficients.startCell != null) {
                 coefficients = coefficients.concat(func_methods.getCellDataArr(data_coefficients, "number", false));
             }
-            else{
+            else {
                 coefficients.push(data_coefficients);
             }
 
             //计算
-            if(!isRealNum(coefficients[0])){
+            if (!isRealNum(coefficients[0])) {
                 return formula.error.v;
             }
 
@@ -4136,7 +4136,7 @@ const functionImplementation = {
             for (var i = 1; i < coefficients.length; i++) {
                 var number = coefficients[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -4153,7 +4153,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SIGN": function() {
+    "SIGN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4170,23 +4170,23 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number > 0){
+            if (number > 0) {
                 return 1;
             }
-            else if(number == 0){
+            else if (number == 0) {
                 return 0;
             }
-            else if(number < 0){
+            else if (number < 0) {
                 return -1;
             }
         }
@@ -4196,7 +4196,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SIN": function() {
+    "SIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4213,11 +4213,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -4231,7 +4231,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SINH": function() {
+    "SINH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4248,11 +4248,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -4266,7 +4266,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SQRT": function() {
+    "SQRT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4283,17 +4283,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number < 0){
+            if (number < 0) {
                 return formula.error.nm;
             }
 
@@ -4305,7 +4305,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SQRTPI": function() {
+    "SQRTPI": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4322,17 +4322,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number < 0){
+            if (number < 0) {
                 return formula.error.nm;
             }
 
@@ -4344,7 +4344,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GAMMALN": function() {
+    "GAMMALN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4361,17 +4361,17 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
-            if(number <= 0){
+            if (number <= 0) {
                 return formula.error.nm;
             }
 
@@ -4383,7 +4383,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COS": function() {
+    "COS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4400,11 +4400,11 @@ const functionImplementation = {
 
         try {
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -4418,7 +4418,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRUNC": function() {
+    "TRUNC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4436,30 +4436,30 @@ const functionImplementation = {
         try {
             //要截取的数据
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseFloat(number);
 
             //位数
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 var digits = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(digits)){
+                if (valueIsError(digits)) {
                     return digits;
                 }
 
-                if(!isRealNum(digits)){
+                if (!isRealNum(digits)) {
                     return formula.error.v;
                 }
 
                 digits = parseInt(digits);
             }
-            else{
+            else {
                 var digits = 0;
             }
 
@@ -4473,7 +4473,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "QUOTIENT": function() {
+    "QUOTIENT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4491,11 +4491,11 @@ const functionImplementation = {
         try {
             //被除数
             var numerator = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(numerator)){
+            if (valueIsError(numerator)) {
                 return numerator;
             }
 
-            if(!isRealNum(numerator)){
+            if (!isRealNum(numerator)) {
                 return formula.error.v;
             }
 
@@ -4503,17 +4503,17 @@ const functionImplementation = {
 
             //除数
             var denominator = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(denominator)){
+            if (valueIsError(denominator)) {
                 return denominator;
             }
 
-            if(!isRealNum(denominator)){
+            if (!isRealNum(denominator)) {
                 return formula.error.v;
             }
 
             denominator = parseFloat(denominator);
 
-            if(denominator == 0){
+            if (denominator == 0) {
                 return formula.error.d;
             }
 
@@ -4526,7 +4526,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "POWER": function() {
+    "POWER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4544,11 +4544,11 @@ const functionImplementation = {
         try {
             //底数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -4556,21 +4556,21 @@ const functionImplementation = {
 
             //指数
             var power = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(power)){
+            if (valueIsError(power)) {
                 return power;
             }
 
-            if(!isRealNum(power)){
+            if (!isRealNum(power)) {
                 return formula.error.v;
             }
 
             power = parseFloat(power);
 
-            if(number == 0 && power == 0){
+            if (number == 0 && power == 0) {
                 return formula.error.nm;
             }
 
-            if(number < 0 && power.toString().indexOf(".") > -1){
+            if (number < 0 && power.toString().indexOf(".") > -1) {
                 return formula.error.nm;
             }
 
@@ -4582,7 +4582,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMIFS": function() {
+    "SUMIFS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4604,21 +4604,21 @@ const functionImplementation = {
             var rangeData = formula.getRangeArray(args[0])[0];
             var results = new Array(rangeData.length);
 
-            for(var i = 0;i < results.length; i++){
+            for (var i = 0; i < results.length; i++) {
                 results[i] = true;
             }
 
-            for(var i = 1; i < args.length; i += 2){
+            for (var i = 1; i < args.length; i += 2) {
                 var range = formula.getRangeArray(args[i])[0];
-                var criteria = args[i+1];
-                for(var j = 0; j < range.length; j++){
+                var criteria = args[i + 1];
+                for (var j = 0; j < range.length; j++) {
                     var v = range[j];
-                    results[j] = results[j] && (!!v) && formula.acompareb(v,criteria);
+                    results[j] = results[j] && (!!v) && formula.acompareb(v, criteria);
                 }
             }
 
-            for(var i = 0; i < rangeData.length; i++){
-                if(results[i]){
+            for (var i = 0; i < rangeData.length; i++) {
+                if (results[i]) {
                     sum = luckysheet_calcADPMM(sum, "+", rangeData[i]); //parseFloat(rangeData[i]);
                 }
             }
@@ -4631,72 +4631,72 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GET_TARGET": function() {
-        try {   
-                var luckysheetCurrentIndex = window.luckysheetCurrentIndex;
-                var currentSheetIndex = Store.currentSheetIndex;
-                if(luckysheetCurrentIndex !== currentSheetIndex){
-                    return
+    "GET_TARGET": function () {
+        try {
+            var luckysheetCurrentIndex = window.luckysheetCurrentIndex;
+            var currentSheetIndex = Store.currentSheetIndex;
+            if (luckysheetCurrentIndex !== currentSheetIndex) {
+                return
+            }
+            var startRow = window.luckysheetCurrentRow;
+            var startColumn = window.luckysheetCurrentColumn;
+
+            // const {row, column} = Store.luckysheet_select_save[0];
+            // const startRow = row[0]
+            // const endRow = row[1]
+            // const startColumn = column[0]
+            // const endColumn = column[1]
+            var cell_fp = window.luckysheetCurrentFunction;
+
+            setTimeout(() => {
+                var d = editor.deepCopyFlowData(Store.flowdata);
+
+                const target = excelToLuckyArray(companyTargetData);
+
+                const rowheight = startRow + target.length;
+                const colwidth = startColumn + target[0].length;
+
+                if (rowheight >= d.length && colwidth >= d[0].length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, colwidth - d[0].length + 1)
+                } else if (rowheight >= d.length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, 0)
+                } else if (colwidth >= d[0].length) {
+                    d = datagridgrowth(d, 0, colwidth - d[0].length + 1)
                 }
-                var startRow = window.luckysheetCurrentRow;
-                var startColumn = window.luckysheetCurrentColumn;
-                
-                // const {row, column} = Store.luckysheet_select_save[0];
-                // const startRow = row[0]
-                // const endRow = row[1]
-                // const startColumn = column[0]
-                // const endColumn = column[1]
-                var cell_fp = window.luckysheetCurrentFunction;
 
-                setTimeout(() => {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
-
-                    const target = excelToLuckyArray(companyTargetData);
-
-                    const rowheight = startRow + target.length;
-                    const colwidth = startColumn + target[0].length;
-                    
-                    if(rowheight >= d.length && colwidth >= d[0].length){
-                        d = datagridgrowth(d,rowheight - d.length + 1, colwidth - d[0].length + 1)
-                    }else if(rowheight >= d.length){
-                        d = datagridgrowth(d,rowheight - d.length + 1, 0)
-                    }else if(colwidth >= d[0].length){
-                        d = datagridgrowth(d,0, colwidth - d[0].length + 1)
-                    }
-
-                    target.forEach((row,r)=>{
-                        row.forEach((cell,c)=>{
-                            // d[startRow+r][startColumn+c] = Object.assign({},d[startRow+r][startColumn+c],cell)
-                            setcellvalue(startRow+r,startColumn+c,d,cell)
-                        })
+                target.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        // d[startRow+r][startColumn+c] = Object.assign({},d[startRow+r][startColumn+c],cell)
+                        setcellvalue(startRow + r, startColumn + c, d, cell)
                     })
+                })
 
-                    d[startRow][startColumn].f = cell_fp
-                    delete d[startRow][startColumn].m;
+                d[startRow][startColumn].f = cell_fp
+                delete d[startRow][startColumn].m;
 
-                    // 切换到包含远程公式的页之后300ms内又切换到其他页，不需要刷新，否则会导致公式页的数据刷到当前页
-                    if(currentSheetIndex === Store.currentSheetIndex){
-                        let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-                        file.row = d.length
-                        file.data = d
-                        jfrefreshgridall(
-                            d[0].length,
-                            d.length,
-                            d,
-                            null,
-                            Store.luckysheet_select_save,
-                            "datachangeAll",
-                            undefined,
-                            undefined,
-                        );
+                // 切换到包含远程公式的页之后300ms内又切换到其他页，不需要刷新，否则会导致公式页的数据刷到当前页
+                if (currentSheetIndex === Store.currentSheetIndex) {
+                    let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
+                    file.row = d.length
+                    file.data = d
+                    jfrefreshgridall(
+                        d[0].length,
+                        d.length,
+                        d,
+                        null,
+                        Store.luckysheet_select_save,
+                        "datachangeAll",
+                        undefined,
+                        undefined,
+                    );
 
-                        // jfrefreshgrid(d, [{"row": [startRow, startRow+target.length], "column": [startColumn, startColumn + target[0].length]}]);
-                    }else{
-                        let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-                        file.data = d
-                    }
-                    
-                }, 300);
+                    // jfrefreshgrid(d, [{"row": [startRow, startRow+target.length], "column": [startColumn, startColumn + target[0].length]}]);
+                } else {
+                    let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
+                    file.data = d
+                }
+
+            }, 300);
 
             return "loading...";
         }
@@ -4706,7 +4706,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GET_AIRTABLE_DATA": function() {
+    "GET_AIRTABLE_DATA": function () {
 
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
@@ -4725,7 +4725,7 @@ const functionImplementation = {
         try {
             var luckysheetCurrentIndex = window.luckysheetCurrentIndex;
             var currentSheetIndex = Store.currentSheetIndex;
-            if(luckysheetCurrentIndex !== currentSheetIndex){
+            if (luckysheetCurrentIndex !== currentSheetIndex) {
                 return
             }
 
@@ -4747,22 +4747,22 @@ const functionImplementation = {
 
             var d = editor.deepCopyFlowData(Store.flowdata);
 
-            getAirTable(url,sort_index,sort_order,(data)=>{
+            getAirTable(url, sort_index, sort_order, (data) => {
                 const rowheight = startRow + data.length;
                 const colwidth = startColumn + data[0].length;
-                
-                if(rowheight >= d.length && colwidth >= d[0].length){
-                    d = datagridgrowth(d,rowheight - d.length + 1, colwidth - d[0].length + 1)
-                }else if(rowheight >= d.length){
-                    d = datagridgrowth(d,rowheight - d.length + 1, 0)
-                }else if(colwidth >= d[0].length){
-                    d = datagridgrowth(d,0, colwidth - d[0].length + 1)
+
+                if (rowheight >= d.length && colwidth >= d[0].length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, colwidth - d[0].length + 1)
+                } else if (rowheight >= d.length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, 0)
+                } else if (colwidth >= d[0].length) {
+                    d = datagridgrowth(d, 0, colwidth - d[0].length + 1)
                 }
 
-                data.forEach((row,r)=>{
-                    row.forEach((cell,c)=>{
+                data.forEach((row, r) => {
+                    row.forEach((cell, c) => {
                         // d[startRow+r][startColumn+c] = Object.assign({},d[startRow+r][startColumn+c],{v:cell})
-                        setcellvalue(startRow+r,startColumn+c,d,cell)
+                        setcellvalue(startRow + r, startColumn + c, d, cell)
                     })
                 })
 
@@ -4770,7 +4770,7 @@ const functionImplementation = {
                 delete d[startRow][startColumn].m;
 
                 // 切换到包含远程公式的页之后300ms内又切换到其他页，不需要刷新，否则会导致公式页的数据刷到当前页
-                if(currentSheetIndex === Store.currentSheetIndex){
+                if (currentSheetIndex === Store.currentSheetIndex) {
                     let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
                     file.row = d.length
                     file.data = d
@@ -4785,29 +4785,29 @@ const functionImplementation = {
                         undefined,
                     );
                     // jfrefreshgrid(d, [{"row": [startRow, startRow+data.length], "column": [startColumn, startColumn + data[0].length]}]);
-                }else{
+                } else {
                     let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
                     file.data = d
                 }
-                
-                
-            },(e)=>{
+
+
+            }, (e) => {
                 var err = e;
                 err = formula.errorInfo(err);
                 return [formula.error.v, err];
             });
-            
-        return "loading...";
-    }
-    catch (e) {
-        var err = e;
-        err = formula.errorInfo(err);
-        return [formula.error.v, err];
-    }
+
+            return "loading...";
+        }
+        catch (e) {
+            var err = e;
+            err = formula.errorInfo(err);
+            return [formula.error.v, err];
+        }
     },
-    "ASK_AI": function() {
-         //必要参数个数错误检测
-         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
+    "ASK_AI": function () {
+        //必要参数个数错误检测
+        if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
         }
 
@@ -4819,96 +4819,96 @@ const functionImplementation = {
                 return formula.error.v;
             }
         }
-        try {   
-                let luckysheetCurrentIndex = window.luckysheetCurrentIndex;
-                let currentSheetIndex = Store.currentSheetIndex;
-                if(luckysheetCurrentIndex !== currentSheetIndex){
-                    return
-                }
-                var startRow = window.luckysheetCurrentRow;
-                var startColumn = window.luckysheetCurrentColumn;
-                // const {row, column} = Store.luckysheet_select_save[0];
-                // const startRow = row[0]
-                // const endRow = row[1]
-                // const startColumn = column[0]
-                // const endColumn = column[1]
-                var cell_fp = window.luckysheetCurrentFunction;
+        try {
+            let luckysheetCurrentIndex = window.luckysheetCurrentIndex;
+            let currentSheetIndex = Store.currentSheetIndex;
+            if (luckysheetCurrentIndex !== currentSheetIndex) {
+                return
+            }
+            var startRow = window.luckysheetCurrentRow;
+            var startColumn = window.luckysheetCurrentColumn;
+            // const {row, column} = Store.luckysheet_select_save[0];
+            // const startRow = row[0]
+            // const endRow = row[1]
+            // const startColumn = column[0]
+            // const endColumn = column[1]
+            var cell_fp = window.luckysheetCurrentFunction;
 
-                var args = arguments;
-                var targetText =  func_methods.getFirstValue(arguments[0]);
-                var rangeData
-                if(args[1]){
-                    rangeData = formula.getRangeArrayTwo(args[1].data);
-                }else{
-                    // 默认是target数据
-                    rangeData = excelToArray(companyTargetData)
-                }
-                
-                const companyTarget  = excelToArray(companyTargetData)
-                
+            var args = arguments;
+            var targetText = func_methods.getFirstValue(arguments[0]);
+            var rangeData
+            if (args[1]) {
+                rangeData = formula.getRangeArrayTwo(args[1].data);
+            } else {
+                // 默认是target数据
+                rangeData = excelToArray(companyTargetData)
+            }
 
-                let resultTable = askAIData(rangeData,companyTarget)
+            const companyTarget = excelToArray(companyTargetData)
 
-                // 没有传数据，默认为target数据
-                if(!args[1]){
-                    if(targetText.indexOf('10月') !== -1){
-                        resultTable = excelToLuckyArray(companyTargetData10);
-                    }else if(targetText.indexOf('11月') !== -1){
-                        resultTable = excelToLuckyArray(companyTargetData11);
-                    }else if(targetText.indexOf('12月') !== -1){
-                        resultTable = excelToLuckyArray(companyTargetData12);
-                    }else{
-                        resultTable = excelToLuckyArray(companyTargetData11);
-                    }
-                    
+
+            let resultTable = askAIData(rangeData, companyTarget)
+
+            // 没有传数据，默认为target数据
+            if (!args[1]) {
+                if (targetText.indexOf('10月') !== -1) {
+                    resultTable = excelToLuckyArray(companyTargetData10);
+                } else if (targetText.indexOf('11月') !== -1) {
+                    resultTable = excelToLuckyArray(companyTargetData11);
+                } else if (targetText.indexOf('12月') !== -1) {
+                    resultTable = excelToLuckyArray(companyTargetData12);
+                } else {
+                    resultTable = excelToLuckyArray(companyTargetData11);
                 }
 
-                setTimeout(() => {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+            }
 
-                    const rowheight = startRow + resultTable.length;
-                    const colwidth = startColumn + resultTable[0].length;
-                    
-                    if(rowheight >= d.length && colwidth >= d[0].length){
-                        d = datagridgrowth(d,rowheight - d.length + 1, colwidth - d[0].length + 1)
-                    }else if(rowheight >= d.length){
-                        d = datagridgrowth(d,rowheight - d.length + 1, 0)
-                    }else if(colwidth >= d[0].length){
-                        d = datagridgrowth(d,0, colwidth - d[0].length + 1)
-                    }
-                        
-                    resultTable.forEach((row,r)=>{
-                        row.forEach((cell,c)=>{
-                            // d[startRow+r][startColumn+c] = Object.assign({},d[startRow+r][startColumn+c],cell)
-                            setcellvalue(startRow+r,startColumn+c,d,cell)
-                        })
+            setTimeout(() => {
+                var d = editor.deepCopyFlowData(Store.flowdata);
+
+                const rowheight = startRow + resultTable.length;
+                const colwidth = startColumn + resultTable[0].length;
+
+                if (rowheight >= d.length && colwidth >= d[0].length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, colwidth - d[0].length + 1)
+                } else if (rowheight >= d.length) {
+                    d = datagridgrowth(d, rowheight - d.length + 1, 0)
+                } else if (colwidth >= d[0].length) {
+                    d = datagridgrowth(d, 0, colwidth - d[0].length + 1)
+                }
+
+                resultTable.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        // d[startRow+r][startColumn+c] = Object.assign({},d[startRow+r][startColumn+c],cell)
+                        setcellvalue(startRow + r, startColumn + c, d, cell)
                     })
-                    d[startRow][startColumn].f = cell_fp
-                    delete d[startRow][startColumn].m;
-                    
-                    // 切换到包含远程公式的页之后300ms内又切换到其他页，不需要刷新，否则会导致公式页的数据刷到当前页
-                    if(currentSheetIndex === Store.currentSheetIndex){
-                        let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-                        file.row = d.length
-                        file.data = d
-                        jfrefreshgridall(
-                            d[0].length,
-                            d.length,
-                            d,
-                            null,
-                            Store.luckysheet_select_save,
-                            "datachangeAll",
-                            undefined,
-                            undefined,
-                        );
+                })
+                d[startRow][startColumn].f = cell_fp
+                delete d[startRow][startColumn].m;
 
-                        // jfrefreshgrid(d, [{"row": [startRow, startRow+resultTable.length], "column": [startColumn, startColumn + resultTable[0].length]}]);
-                    }else{
-                        let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-                        file.data = d
-                    }
-                    
-                }, 300);
+                // 切换到包含远程公式的页之后300ms内又切换到其他页，不需要刷新，否则会导致公式页的数据刷到当前页
+                if (currentSheetIndex === Store.currentSheetIndex) {
+                    let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
+                    file.row = d.length
+                    file.data = d
+                    jfrefreshgridall(
+                        d[0].length,
+                        d.length,
+                        d,
+                        null,
+                        Store.luckysheet_select_save,
+                        "datachangeAll",
+                        undefined,
+                        undefined,
+                    );
+
+                    // jfrefreshgrid(d, [{"row": [startRow, startRow+resultTable.length], "column": [startColumn, startColumn + resultTable[0].length]}]);
+                } else {
+                    let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
+                    file.data = d
+                }
+
+            }, 300);
 
             return "loading...";
         }
@@ -4918,7 +4918,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUNTIFS": function() {
+    "COUNTIFS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4937,20 +4937,20 @@ const functionImplementation = {
             var args = arguments;
             luckysheet_getValue(args);
             var results = new Array(formula.getRangeArray(args[0])[0].length);
-            for(var i = 0;i < results.length; i++){
+            for (var i = 0; i < results.length; i++) {
                 results[i] = true;
             }
-            for(var i = 0; i < args.length; i += 2){
+            for (var i = 0; i < args.length; i += 2) {
                 var range = formula.getRangeArray(args[i])[0];
-                var criteria = args[i+1];
-                for(var j = 0; j < range.length; j++){
+                var criteria = args[i + 1];
+                for (var j = 0; j < range.length; j++) {
                     var v = range[j];
-                    results[j] = results[j] && (!!v) && formula.acompareb(v,criteria);
+                    results[j] = results[j] && (!!v) && formula.acompareb(v, criteria);
                 }
             }
             var result = 0;
-            for(var i = 0; i < results.length; i++){
-                if(results[i]){
+            for (var i = 0; i < results.length; i++) {
+                if (results[i]) {
                     result++;
                 }
             }
@@ -4962,7 +4962,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PRODUCT": function() {
+    "PRODUCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -4983,27 +4983,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var result = 1;
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -5020,7 +5020,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HARMEAN": function() {
+    "HARMEAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5041,33 +5041,33 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
 
             var den = 0, len = 0;
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
                 number = parseFloat(number);
 
-                if(number <= 0){
+                if (number <= 0) {
                     return formula.error.nm;
                 }
 
@@ -5083,7 +5083,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HYPGEOMDIST": function() {
+    "HYPGEOMDIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5101,11 +5101,11 @@ const functionImplementation = {
         try {
             //样本中成功的次数
             var sample_s = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(sample_s)){
+            if (valueIsError(sample_s)) {
                 return sample_s;
             }
 
-            if(!isRealNum(sample_s)){
+            if (!isRealNum(sample_s)) {
                 return formula.error.v;
             }
 
@@ -5113,11 +5113,11 @@ const functionImplementation = {
 
             //样本量
             var number_sample = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_sample)){
+            if (valueIsError(number_sample)) {
                 return number_sample;
             }
 
-            if(!isRealNum(number_sample)){
+            if (!isRealNum(number_sample)) {
                 return formula.error.v;
             }
 
@@ -5125,11 +5125,11 @@ const functionImplementation = {
 
             //总体中成功的次数
             var population_s = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(population_s)){
+            if (valueIsError(population_s)) {
                 return population_s;
             }
 
-            if(!isRealNum(population_s)){
+            if (!isRealNum(population_s)) {
                 return formula.error.v;
             }
 
@@ -5137,11 +5137,11 @@ const functionImplementation = {
 
             //总体大小
             var number_pop = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(number_pop)){
+            if (valueIsError(number_pop)) {
                 return number_pop;
             }
 
-            if(!isRealNum(number_pop)){
+            if (!isRealNum(number_pop)) {
                 return formula.error.v;
             }
 
@@ -5150,23 +5150,23 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[4]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(sample_s < 0 || sample_s > Math.min(number_sample, population_s) || sample_s < Math.max(0, number_sample - number_pop + population_s)){
+            if (sample_s < 0 || sample_s > Math.min(number_sample, population_s) || sample_s < Math.max(0, number_sample - number_pop + population_s)) {
                 return formula.error.nm;
             }
 
-            if(number_sample <= 0 || number_sample > number_pop){
+            if (number_sample <= 0 || number_sample > number_pop) {
                 return formula.error.nm;
             }
 
-            if(population_s <= 0 || population_s > number_pop){
+            if (population_s <= 0 || population_s > number_pop) {
                 return formula.error.nm;
             }
 
-            if(number_pop <= 0){
+            if (number_pop <= 0) {
                 return formula.error.nm;
             }
 
@@ -5197,7 +5197,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "INTERCEPT": function() {
+    "INTERCEPT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5220,17 +5220,17 @@ const functionImplementation = {
             var data_known_y = arguments[0];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
@@ -5238,38 +5238,38 @@ const functionImplementation = {
             var data_known_x = arguments[1];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(func_methods.variance_s(data_x) == 0){
+            if (func_methods.variance_s(data_x) == 0) {
                 return formula.error.d;
             }
 
@@ -5297,7 +5297,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "KURT": function() {
+    "KURT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5318,17 +5318,17 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -5336,10 +5336,10 @@ const functionImplementation = {
             //剔除不是数值类型的值
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -5348,7 +5348,7 @@ const functionImplementation = {
                 dataArr_n.push(number);
             }
 
-            if(dataArr_n.length < 4 || func_methods.standardDeviation_s(dataArr_n) == 0){
+            if (dataArr_n.length < 4 || func_methods.standardDeviation_s(dataArr_n) == 0) {
                 return formula.error.d;
             }
 
@@ -5372,7 +5372,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LARGE": function() {
+    "LARGE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5391,26 +5391,26 @@ const functionImplementation = {
             //数组或范围
             var dataArr = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(arguments[0], true));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(arguments[0], "text", true));
             }
-            else{
+            else {
                 dataArr.push(arguments[0]);
             }
 
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -5422,73 +5422,73 @@ const functionImplementation = {
             //要返回的元素的排行位置
             var n;
 
-            if(getObjType(arguments[1]) == "array"){
-                if(getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])){
+            if (getObjType(arguments[1]) == "array") {
+                if (getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])) {
                     return formula.error.v;
                 }
 
                 n = func_methods.getDataArr(arguments[1]);
             }
-            else if(getObjType(arguments[1]) == "object" && arguments[1].startCell != null){
-                if(arguments[1].rowl > 1 || arguments[1].coll > 1){
+            else if (getObjType(arguments[1]) == "object" && arguments[1].startCell != null) {
+                if (arguments[1].rowl > 1 || arguments[1].coll > 1) {
                     return formula.error.v;
                 }
 
                 var cell = arguments[1].data;
 
-                if(cell == null || isRealNull(cell.v)){
+                if (cell == null || isRealNull(cell.v)) {
                     var n = 0;
                 }
-                else{
+                else {
                     var n = cell.v;
                 }
             }
-            else{
+            else {
                 n = arguments[1];
             }
 
             //计算
-            if(getObjType(n) == "array"){
-                if(dataArr_n.length == 0){
+            if (getObjType(n) == "array") {
+                if (dataArr_n.length == 0) {
                     return formula.error.nm;
                 }
 
                 var result = [];
 
-                for(var i = 0; i < n.length; i++){
-                    if(!isRealNum(n[i])){
+                for (var i = 0; i < n.length; i++) {
+                    if (!isRealNum(n[i])) {
                         result.push(formula.error.v);
                         continue;
                     }
 
                     n[i] = Math.ceil(parseFloat(n[i]));
 
-                    if(n[i] <= 0 || n[i] > dataArr_n.length){
+                    if (n[i] <= 0 || n[i] > dataArr_n.length) {
                         result.push(formula.error.nm);
                         continue;
                     }
 
-                    result.push(dataArr.sort(function(a, b) { return b - a; })[n[i] - 1]);
+                    result.push(dataArr.sort(function (a, b) { return b - a; })[n[i] - 1]);
                 }
 
                 return result;
             }
-            else{
-                if(!isRealNum(n)){
+            else {
+                if (!isRealNum(n)) {
                     return formula.error.v;
                 }
 
                 n = Math.ceil(parseFloat(n));
 
-                if(dataArr_n.length == 0){
+                if (dataArr_n.length == 0) {
                     return formula.error.nm;
                 }
 
-                if(n <= 0 || n > dataArr_n.length){
+                if (n <= 0 || n > dataArr_n.length) {
                     return formula.error.nm;
                 }
 
-                return dataArr.sort(function(a, b) {
+                return dataArr.sort(function (a, b) {
                     return b - a;
                 })[n - 1];
             }
@@ -5499,7 +5499,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STDEVA": function() {
+    "STDEVA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5520,17 +5520,17 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", false));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -5538,29 +5538,29 @@ const functionImplementation = {
             //不是数值类型的值转化成数字（true为1，false和文本为0）
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(!isRealNum(number)){
-                    if(number.toString().toLowerCase() == "true"){
+                if (!isRealNum(number)) {
+                    if (number.toString().toLowerCase() == "true") {
                         number = 1;
                     }
-                    else{
+                    else {
                         number = 0;
                     }
                 }
-                else{
+                else {
                     number = parseFloat(number);
                 }
 
                 dataArr_n.push(number);
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return 0;
             }
 
-            if(dataArr_n.length == 1){
+            if (dataArr_n.length == 1) {
                 return formula.error.d;
             }
 
@@ -5572,7 +5572,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STDEVP": function() {
+    "STDEVP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5593,17 +5593,17 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -5611,10 +5611,10 @@ const functionImplementation = {
             //剔除不是数值类型的值
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -5623,11 +5623,11 @@ const functionImplementation = {
                 dataArr_n.push(number);
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return 0;
             }
 
-            if(dataArr_n.length == 1){
+            if (dataArr_n.length == 1) {
                 return formula.error.d;
             }
 
@@ -5639,7 +5639,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GEOMEAN": function() {
+    "GEOMEAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5660,29 +5660,29 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", true));
                 }
-                else{
-                    if(getObjType(data) == "boolean"){
-                        if(data.toString().toLowerCase() == "true"){
+                else {
+                    if (getObjType(data) == "boolean") {
+                        if (data.toString().toLowerCase() == "true") {
                             dataArr.push(1);
                         }
-                        else if(data.toString().toLowerCase() == "false"){
+                        else if (data.toString().toLowerCase() == "false") {
                             dataArr.push(0);
                         }
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -5691,23 +5691,23 @@ const functionImplementation = {
             //剔除不是数值类型的值
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     continue;
                 }
 
                 number = parseFloat(number);
 
-                if(number <= 0){
+                if (number <= 0) {
                     return formula.error.nm;
                 }
 
                 dataArr_n.push(number);
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
@@ -5719,7 +5719,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RANK_EQ": function() {
+    "RANK_EQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5737,11 +5737,11 @@ const functionImplementation = {
         try {
             //要确定其排名的值
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -5751,26 +5751,26 @@ const functionImplementation = {
             var data_ref = arguments[1];
             var ref = [];
 
-            if(getObjType(data_ref) == "array"){
-                if(getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)){
+            if (getObjType(data_ref) == "array") {
+                if (getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)) {
                     return formula.error.v;
                 }
 
                 ref = ref.concat(func_methods.getDataArr(data_ref, true));
             }
-            else if(getObjType(data_ref) == "object" && data_ref.startCell != null){
+            else if (getObjType(data_ref) == "object" && data_ref.startCell != null) {
                 ref = ref.concat(func_methods.getCellDataArr(data_ref, "number", true));
             }
-            else{
+            else {
                 ref.push(data_ref);
             }
 
             var ref_n = [];
 
-            for(var j = 0; j < ref.length; j++){
+            for (var j = 0; j < ref.length; j++) {
                 var num = ref[j];
 
-                if(!isRealNum(num)){
+                if (!isRealNum(num)) {
                     return formula.error.v;
                 }
 
@@ -5780,21 +5780,21 @@ const functionImplementation = {
             }
 
             //要按升序还是按降序考虑“data”中的值
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var order = func_methods.getCellBoolen(arguments[2]);
 
-                if(valueIsError(order)){
+                if (valueIsError(order)) {
                     return order;
                 }
             }
-            else{
+            else {
                 var order = false;
             }
 
             //计算
-            var sort = (order) ? function(a, b) {
+            var sort = (order) ? function (a, b) {
                 return a - b;
-            } : function(a, b) {
+            } : function (a, b) {
                 return b - a;
             };
 
@@ -5802,10 +5802,10 @@ const functionImplementation = {
 
             var index = ref_n.indexOf(number);
 
-            if(index == -1){
+            if (index == -1) {
                 return formula.error.na;
             }
-            else{
+            else {
                 return index + 1;
             }
         }
@@ -5815,7 +5815,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RANK_AVG": function() {
+    "RANK_AVG": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5833,11 +5833,11 @@ const functionImplementation = {
         try {
             //要确定其排名的值
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -5847,26 +5847,26 @@ const functionImplementation = {
             var data_ref = arguments[1];
             var ref = [];
 
-            if(getObjType(data_ref) == "array"){
-                if(getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)){
+            if (getObjType(data_ref) == "array") {
+                if (getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)) {
                     return formula.error.v;
                 }
 
                 ref = ref.concat(func_methods.getDataArr(data_ref, true));
             }
-            else if(getObjType(data_ref) == "object" && data_ref.startCell != null){
+            else if (getObjType(data_ref) == "object" && data_ref.startCell != null) {
                 ref = ref.concat(func_methods.getCellDataArr(data_ref, "number", true));
             }
-            else{
+            else {
                 ref.push(data_ref);
             }
 
             var ref_n = [];
 
-            for(var j = 0; j < ref.length; j++){
+            for (var j = 0; j < ref.length; j++) {
                 var num = ref[j];
 
-                if(!isRealNum(num)){
+                if (!isRealNum(num)) {
                     return formula.error.v;
                 }
 
@@ -5876,42 +5876,42 @@ const functionImplementation = {
             }
 
             //要按升序还是按降序考虑“data”中的值
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var order = func_methods.getFirstValue(arguments[2]);
 
-                if(valueIsError(order)){
+                if (valueIsError(order)) {
                     return order;
                 }
 
-                if(getObjType(order) == "boolean"){
+                if (getObjType(order) == "boolean") {
 
                 }
-                else if(getObjType(order) == "string" && (order.toLowerCase() == "true" || order.toLowerCase() == "false")){
-                    if(order.toLowerCase() == "true"){
+                else if (getObjType(order) == "string" && (order.toLowerCase() == "true" || order.toLowerCase() == "false")) {
+                    if (order.toLowerCase() == "true") {
                         order = true;
                     }
 
-                    if(order.toLowerCase() == "false"){
+                    if (order.toLowerCase() == "false") {
                         order = false;
                     }
                 }
-                else if(isRealNum(order)){
+                else if (isRealNum(order)) {
                     order = parseFloat(order);
 
                     order = order == 0 ? false : true;
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
-            else{
+            else {
                 var order = false;
             }
 
             //计算
-            var sort = (order) ? function(a, b) {
+            var sort = (order) ? function (a, b) {
                 return a - b;
-            } : function(a, b) {
+            } : function (a, b) {
                 return b - a;
             };
 
@@ -5932,7 +5932,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PERCENTRANK_EXC": function() {
+    "PERCENTRANK_EXC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -5952,26 +5952,26 @@ const functionImplementation = {
             var data_ref = arguments[0];
             var ref = [];
 
-            if(getObjType(data_ref) == "array"){
-                if(getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)){
+            if (getObjType(data_ref) == "array") {
+                if (getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)) {
                     return formula.error.v;
                 }
 
                 ref = ref.concat(func_methods.getDataArr(data_ref, true));
             }
-            else if(getObjType(data_ref) == "object" && data_ref.startCell != null){
+            else if (getObjType(data_ref) == "object" && data_ref.startCell != null) {
                 ref = ref.concat(func_methods.getCellDataArr(data_ref, "number", true));
             }
-            else{
+            else {
                 ref.push(data_ref);
             }
 
             var ref_n = [];
 
-            for(var j = 0; j < ref.length; j++){
+            for (var j = 0; j < ref.length; j++) {
                 var number = ref[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -5982,47 +5982,47 @@ const functionImplementation = {
 
             //要确定其百分比排位的值
             var x = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
             x = parseFloat(x);
 
             //要在计算中使用的有效位数
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var significance = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(significance)){
+                if (valueIsError(significance)) {
                     return significance;
                 }
 
-                if(!isRealNum(significance)){
+                if (!isRealNum(significance)) {
                     return formula.error.v;
                 }
 
                 significance = parseInt(significance);
             }
-            else{
+            else {
                 var significance = 3;
             }
 
-            if(ref_n.length == 0){
+            if (ref_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(significance < 1){
+            if (significance < 1) {
                 return formula.error.nm;
             }
 
             //计算
-            if(ref_n.length == 1 && ref_n[0] == x){
+            if (ref_n.length == 1 && ref_n[0] == x) {
                 return 1;
             }
 
-            ref_n = ref_n.sort(function(a, b) {
+            ref_n = ref_n.sort(function (a, b) {
                 return a - b;
             });
             var uniques = window.luckysheet_function.UNIQUE.f(ref_n)[0];
@@ -6048,10 +6048,10 @@ const functionImplementation = {
                 i++;
             }
 
-            if(isNaN(result)){
+            if (isNaN(result)) {
                 return formula.error.na;
             }
-            else{
+            else {
                 return Math.floor(result * power) / power;
             }
         }
@@ -6061,7 +6061,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PERCENTRANK_INC": function() {
+    "PERCENTRANK_INC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6081,26 +6081,26 @@ const functionImplementation = {
             var data_ref = arguments[0];
             var ref = [];
 
-            if(getObjType(data_ref) == "array"){
-                if(getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)){
+            if (getObjType(data_ref) == "array") {
+                if (getObjType(data_ref[0]) == "array" && !func_methods.isDyadicArr(data_ref)) {
                     return formula.error.v;
                 }
 
                 ref = ref.concat(func_methods.getDataArr(data_ref, true));
             }
-            else if(getObjType(data_ref) == "object" && data_ref.startCell != null){
+            else if (getObjType(data_ref) == "object" && data_ref.startCell != null) {
                 ref = ref.concat(func_methods.getCellDataArr(data_ref, "number", true));
             }
-            else{
+            else {
                 ref.push(data_ref);
             }
 
             var ref_n = [];
 
-            for(var j = 0; j < ref.length; j++){
+            for (var j = 0; j < ref.length; j++) {
                 var number = ref[j];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -6111,47 +6111,47 @@ const functionImplementation = {
 
             //要确定其百分比排位的值
             var x = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
             x = parseFloat(x);
 
             //要在计算中使用的有效位数
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var significance = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(significance)){
+                if (valueIsError(significance)) {
                     return significance;
                 }
 
-                if(!isRealNum(significance)){
+                if (!isRealNum(significance)) {
                     return formula.error.v;
                 }
 
                 significance = parseInt(significance);
             }
-            else{
+            else {
                 var significance = 3;
             }
 
-            if(ref_n.length == 0){
+            if (ref_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(significance < 1){
+            if (significance < 1) {
                 return formula.error.nm;
             }
 
             //计算
-            if(ref_n.length == 1 && ref_n[0] == x){
+            if (ref_n.length == 1 && ref_n[0] == x) {
                 return 1;
             }
 
-            ref_n = ref_n.sort(function(a, b) {
+            ref_n = ref_n.sort(function (a, b) {
                 return a - b;
             });
             var uniques = window.luckysheet_function.UNIQUE.f(ref_n)[0];
@@ -6177,10 +6177,10 @@ const functionImplementation = {
                 i++;
             }
 
-            if(isNaN(result)){
+            if (isNaN(result)) {
                 return formula.error.na;
             }
-            else{
+            else {
                 return Math.floor(result * power) / power;
             }
         }
@@ -6190,7 +6190,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FORECAST": function() {
+    "FORECAST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6208,11 +6208,11 @@ const functionImplementation = {
         try {
             //x轴上用于预测的值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -6222,17 +6222,17 @@ const functionImplementation = {
             var data_known_y = arguments[1];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
@@ -6240,38 +6240,38 @@ const functionImplementation = {
             var data_known_x = arguments[2];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(func_methods.variance_s(data_x) == 0){
+            if (func_methods.variance_s(data_x) == 0) {
                 return formula.error.d;
             }
 
@@ -6299,7 +6299,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FISHERINV": function() {
+    "FISHERINV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6316,11 +6316,11 @@ const functionImplementation = {
 
         try {
             var y = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(y)){
+            if (valueIsError(y)) {
                 return y;
             }
 
-            if(!isRealNum(y)){
+            if (!isRealNum(y)) {
                 return formula.error.v;
             }
 
@@ -6336,7 +6336,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FISHER": function() {
+    "FISHER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6353,17 +6353,17 @@ const functionImplementation = {
 
         try {
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
             x = parseFloat(x);
 
-            if(x <= -1 || x >= 1){
+            if (x <= -1 || x >= 1) {
                 return formula.error.nm;
             }
 
@@ -6375,7 +6375,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MODE_SNGL": function() {
+    "MODE_SNGL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6396,18 +6396,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -6417,10 +6417,10 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
@@ -6444,16 +6444,16 @@ const functionImplementation = {
                 }
             }
 
-            if(max <= 1){
+            if (max <= 1) {
                 return formula.error.na;
             }
 
             var resultIndex = dataArr_n.indexOf(maxItems[0]);
 
-            for(var j = 0; j < maxItems.length; j++){
+            for (var j = 0; j < maxItems.length; j++) {
                 var index = dataArr_n.indexOf(maxItems[j]);
 
-                if(index < resultIndex){
+                if (index < resultIndex) {
                     resultIndex = index;
                 }
             }
@@ -6466,7 +6466,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "WEIBULL_DIST": function() {
+    "WEIBULL_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6484,11 +6484,11 @@ const functionImplementation = {
         try {
             //WEIBULL 分布函数的输入值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -6496,11 +6496,11 @@ const functionImplementation = {
 
             //Weibull 分布函数的形状参数
             var alpha = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(alpha)){
+            if (valueIsError(alpha)) {
                 return alpha;
             }
 
-            if(!isRealNum(alpha)){
+            if (!isRealNum(alpha)) {
                 return formula.error.v;
             }
 
@@ -6508,11 +6508,11 @@ const functionImplementation = {
 
             //Weibull 分布函数的尺度参数
             var beta = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(beta)){
+            if (valueIsError(beta)) {
                 return beta;
             }
 
-            if(!isRealNum(beta)){
+            if (!isRealNum(beta)) {
                 return formula.error.v;
             }
 
@@ -6521,11 +6521,11 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(x < 0 || alpha <= 0 || beta <= 0){
+            if (x < 0 || alpha <= 0 || beta <= 0) {
                 return formula.error.nm;
             }
 
@@ -6537,7 +6537,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AVEDEV": function() {
+    "AVEDEV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6558,18 +6558,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -6579,15 +6579,15 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
@@ -6599,7 +6599,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AVERAGEA": function() {
+    "AVERAGEA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6620,27 +6620,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(number.toString.toLowerCase() == "true"){
+                else {
+                    if (number.toString.toLowerCase() == "true") {
                         dataArr.push(1);
                     }
-                    else if(number.toString.toLowerCase() == "false"){
+                    else if (number.toString.toLowerCase() == "false") {
                         dataArr.push(0);
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -6649,17 +6649,17 @@ const functionImplementation = {
             var sum = 0,
                 count = 0;
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     sum += parseFloat(number);
                 }
-                else{
-                    if(number.toString().toLowerCase() == "true"){
+                else {
+                    if (number.toString().toLowerCase() == "true") {
                         sum += 1;
                     }
-                    else{
+                    else {
                         sum += 0;
                     }
                 }
@@ -6667,7 +6667,7 @@ const functionImplementation = {
                 count++;
             }
 
-            if(count == 0){
+            if (count == 0) {
                 return formula.error.d;
             }
 
@@ -6679,7 +6679,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BINOM_DIST": function() {
+    "BINOM_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6697,11 +6697,11 @@ const functionImplementation = {
         try {
             //试验的成功次数
             var number_s = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number_s)){
+            if (valueIsError(number_s)) {
                 return number_s;
             }
 
-            if(!isRealNum(number_s)){
+            if (!isRealNum(number_s)) {
                 return formula.error.v;
             }
 
@@ -6709,11 +6709,11 @@ const functionImplementation = {
 
             //独立检验的次数
             var trials = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(trials)){
+            if (valueIsError(trials)) {
                 return trials;
             }
 
-            if(!isRealNum(trials)){
+            if (!isRealNum(trials)) {
                 return formula.error.v;
             }
 
@@ -6721,11 +6721,11 @@ const functionImplementation = {
 
             //任一给定检验的成功概率
             var probability_s = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(probability_s)){
+            if (valueIsError(probability_s)) {
                 return probability_s;
             }
 
-            if(!isRealNum(probability_s)){
+            if (!isRealNum(probability_s)) {
                 return formula.error.v;
             }
 
@@ -6734,15 +6734,15 @@ const functionImplementation = {
             //是否使用二项式累积分布
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(number_s < 0 || number_s > trials){
+            if (number_s < 0 || number_s > trials) {
                 return formula.error.nm;
             }
 
-            if(probability_s < 0 || probability_s > 1){
+            if (probability_s < 0 || probability_s > 1) {
                 return formula.error.nm;
             }
 
@@ -6754,7 +6754,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BINOM_INV": function() {
+    "BINOM_INV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6772,11 +6772,11 @@ const functionImplementation = {
         try {
             //贝努利试验次数
             var trials = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(trials)){
+            if (valueIsError(trials)) {
                 return trials;
             }
 
-            if(!isRealNum(trials)){
+            if (!isRealNum(trials)) {
                 return formula.error.v;
             }
 
@@ -6784,11 +6784,11 @@ const functionImplementation = {
 
             //任一次给定检验的成功概率
             var probability_s = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(probability_s)){
+            if (valueIsError(probability_s)) {
                 return probability_s;
             }
 
-            if(!isRealNum(probability_s)){
+            if (!isRealNum(probability_s)) {
                 return formula.error.v;
             }
 
@@ -6796,25 +6796,25 @@ const functionImplementation = {
 
             //期望的临界概率
             var alpha = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(alpha)){
+            if (valueIsError(alpha)) {
                 return alpha;
             }
 
-            if(!isRealNum(alpha)){
+            if (!isRealNum(alpha)) {
                 return formula.error.v;
             }
 
             alpha = parseFloat(alpha);
 
-            if(trials < 0){
+            if (trials < 0) {
                 return formula.error.nm;
             }
 
-            if(probability_s < 0 || probability_s > 1){
+            if (probability_s < 0 || probability_s > 1) {
                 return formula.error.nm;
             }
 
-            if(alpha < 0 || alpha > 1){
+            if (alpha < 0 || alpha > 1) {
                 return formula.error.nm;
             }
 
@@ -6834,7 +6834,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CONFIDENCE_NORM": function() {
+    "CONFIDENCE_NORM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6852,11 +6852,11 @@ const functionImplementation = {
         try {
             //置信水平
             var alpha = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(alpha)){
+            if (valueIsError(alpha)) {
                 return alpha;
             }
 
-            if(!isRealNum(alpha)){
+            if (!isRealNum(alpha)) {
                 return formula.error.v;
             }
 
@@ -6864,11 +6864,11 @@ const functionImplementation = {
 
             //数据区域的总体标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
+            if (!isRealNum(standard_dev)) {
                 return formula.error.v;
             }
 
@@ -6876,25 +6876,25 @@ const functionImplementation = {
 
             //样本总量的大小
             var size = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(size)){
+            if (valueIsError(size)) {
                 return size;
             }
 
-            if(!isRealNum(size)){
+            if (!isRealNum(size)) {
                 return formula.error.v;
             }
 
             size = parseInt(size);
 
-            if(alpha <= 0 || alpha >= 1){
+            if (alpha <= 0 || alpha >= 1) {
                 return formula.error.nm;
             }
 
-            if(standard_dev <= 0){
+            if (standard_dev <= 0) {
                 return formula.error.nm;
             }
 
-            if(size < 1){
+            if (size < 1) {
                 return formula.error.nm;
             }
 
@@ -6906,7 +6906,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CORREL": function() {
+    "CORREL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -6926,17 +6926,17 @@ const functionImplementation = {
             var data_known_y = arguments[0];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
@@ -6944,38 +6944,38 @@ const functionImplementation = {
             var data_known_x = arguments[1];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(data_y.length == 0 || data_x.length == 0 || func_methods.standardDeviation(data_y) == 0 || func_methods.standardDeviation(data_x) == 0){
+            if (data_y.length == 0 || data_x.length == 0 || func_methods.standardDeviation(data_y) == 0 || func_methods.standardDeviation(data_x) == 0) {
                 return formula.error.d;
             }
 
@@ -6987,7 +6987,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COVARIANCE_P": function() {
+    "COVARIANCE_P": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7007,17 +7007,17 @@ const functionImplementation = {
             var data_known_x = arguments[0];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
@@ -7025,38 +7025,38 @@ const functionImplementation = {
             var data_known_y = arguments[1];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
-            if(known_x.length != known_y.length){
+            if (known_x.length != known_y.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < known_x.length; i++){
+            for (var i = 0; i < known_x.length; i++) {
                 var num_x = known_x[i];
                 var num_y = known_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
             }
 
-            if(data_x.length == 0 || data_y.length == 0){
+            if (data_x.length == 0 || data_y.length == 0) {
                 return formula.error.d;
             }
 
@@ -7080,7 +7080,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COVARIANCE_S": function() {
+    "COVARIANCE_S": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7100,17 +7100,17 @@ const functionImplementation = {
             var data_known_x = arguments[0];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
@@ -7118,38 +7118,38 @@ const functionImplementation = {
             var data_known_y = arguments[1];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
-            if(known_x.length != known_y.length){
+            if (known_x.length != known_y.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < known_x.length; i++){
+            for (var i = 0; i < known_x.length; i++) {
                 var num_x = known_x[i];
                 var num_y = known_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
             }
 
-            if(data_x.length == 0 || data_y.length == 0){
+            if (data_x.length == 0 || data_y.length == 0) {
                 return formula.error.d;
             }
 
@@ -7161,7 +7161,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DEVSQ": function() {
+    "DEVSQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7182,31 +7182,31 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
-                        if(getObjType(data) == "boolean"){
-                            if(data.toString().toLowerCase() == "true"){
+                else {
+                    if (!isRealNum(data)) {
+                        if (getObjType(data) == "boolean") {
+                            if (data.toString().toLowerCase() == "true") {
                                 dataArr.push(1);
                             }
-                            else if(data.toString().toLowerCase() == "false"){
+                            else if (data.toString().toLowerCase() == "false") {
                                 dataArr.push(0);
                             }
                         }
-                        else{
+                        else {
                             return formula.error.v;
                         }
                     }
-                    else{
+                    else {
                         dataArr.push(data);
                     }
                 }
@@ -7214,10 +7214,10 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
@@ -7237,7 +7237,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EXPON_DIST": function() {
+    "EXPON_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7255,11 +7255,11 @@ const functionImplementation = {
         try {
             //指数分布函数的输入值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -7267,11 +7267,11 @@ const functionImplementation = {
 
             //用于指定指数分布函数的 lambda 值
             var lambda = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(lambda)){
+            if (valueIsError(lambda)) {
                 return lambda;
             }
 
-            if(!isRealNum(lambda)){
+            if (!isRealNum(lambda)) {
                 return formula.error.v;
             }
 
@@ -7280,15 +7280,15 @@ const functionImplementation = {
             //是否使用指数累积分布
             var cumulative = func_methods.getCellBoolen(arguments[2]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(x < 0){
+            if (x < 0) {
                 return formula.error.nm;
             }
 
-            if(lambda < 0){
+            if (lambda < 0) {
                 return formula.error.nm;
             }
 
@@ -7300,7 +7300,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AVERAGEIF": function() {
+    "AVERAGEIF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7326,7 +7326,7 @@ const functionImplementation = {
             var sumRangeData = [];
 
             //如果有第三个参数
-            if(arguments[2]){
+            if (arguments[2]) {
                 //根据选择的目标的区域确定实际目标区域
                 //初始位置
                 var sumRangeStart = arguments[2].startCell;
@@ -7334,16 +7334,16 @@ const functionImplementation = {
                 var sumRangeCol = arguments[2].coll;
                 var sumRangeSheet = arguments[2].sheetName;
 
-                if(rangeRow == sumRangeRow && rangeCol == sumRangeCol){
+                if (rangeRow == sumRangeRow && rangeCol == sumRangeCol) {
                     sumRangeData = arguments[2].data;
                 }
-                else{
-                    var row=[],col=[];
+                else {
+                    var row = [], col = [];
                     var sumRangeEnd = "";
                     var realSumRange = "";
                     //console.log("开始位置！！！",sumRangeStart,typeof(sumRangeStart));
-                    row[0] = parseInt(sumRangeStart.replace(/[^0-9]/g,"")) - 1;
-                    col[0] = ABCatNum(sumRangeStart.replace(/[^A-Za-z]/g,""));
+                    row[0] = parseInt(sumRangeStart.replace(/[^0-9]/g, "")) - 1;
+                    col[0] = ABCatNum(sumRangeStart.replace(/[^A-Za-z]/g, ""));
 
                     //根据第一个范围的长宽确定目标范围的末尾位置
                     row[1] = row[0] + rangeRow - 1;
@@ -7356,7 +7356,7 @@ const functionImplementation = {
                     sumRangeEnd = real_ABC + real_Num;
                     //console.log("合成新的末尾位置：" + sumRangeEnd);
 
-                    realSumRange = sumRangeSheet + "!" +sumRangeStart + ":" + sumRangeEnd;
+                    realSumRange = sumRangeSheet + "!" + sumRangeStart + ":" + sumRangeEnd;
                     sumRangeData = luckysheet_getcelldata(realSumRange).data;
                     //console.log("最终的目标范围：",sumRangeData);
                 }
@@ -7366,12 +7366,12 @@ const functionImplementation = {
             rangeData = formula.getRangeArray(rangeData)[0];
 
             //循环遍历查找匹配项
-            for(var i = 0; i < rangeData.length;i++){
+            for (var i = 0; i < rangeData.length; i++) {
                 var v = rangeData[i];
-                if(!!v && formula.acompareb(v, criteria)){
+                if (!!v && formula.acompareb(v, criteria)) {
                     var vnow = sumRangeData[i] || v;
 
-                    if(!isRealNum(vnow)){
+                    if (!isRealNum(vnow)) {
                         continue;
                     }
 
@@ -7380,10 +7380,10 @@ const functionImplementation = {
                 }
             }
 
-            if(sum == 0 || count == 0){
+            if (sum == 0 || count == 0) {
                 return formula.error.d;
             }
-            else{
+            else {
                 return numFormat(sum / count);
             }
         }
@@ -7393,7 +7393,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AVERAGEIFS": function() {
+    "AVERAGEIFS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7415,28 +7415,28 @@ const functionImplementation = {
             luckysheet_getValue(args);
             var rangeData = formula.getRangeArray(args[0])[0];
             var results = new Array(rangeData.length);
-            for(var i = 0;i < results.length; i++){
+            for (var i = 0; i < results.length; i++) {
                 results[i] = true;
             }
-            for(var i = 1; i < args.length; i += 2){
+            for (var i = 1; i < args.length; i += 2) {
                 var range = formula.getRangeArray(args[i])[0];
-                var criteria = args[i+1];
-                for(var j = 0; j < range.length; j++){
+                var criteria = args[i + 1];
+                for (var j = 0; j < range.length; j++) {
                     var v = range[j];
-                    results[j] = results[j] && (!!v) && formula.acompareb(v,criteria);
+                    results[j] = results[j] && (!!v) && formula.acompareb(v, criteria);
                 }
             }
-            for(var i = 0; i < rangeData.length; i++){
-                if(results[i] && isRealNum(rangeData[i])){
+            for (var i = 0; i < rangeData.length; i++) {
+                if (results[i] && isRealNum(rangeData[i])) {
                     sum += parseFloat(rangeData[i]);
-                    count ++;
+                    count++;
                 }
             }
 
-            if(sum == 0 || count == 0){
+            if (sum == 0 || count == 0) {
                 return formula.error.d;
             }
-            else{
+            else {
                 return numFormat(sum / count);
             }
         }
@@ -7446,7 +7446,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PERMUT": function() {
+    "PERMUT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7464,11 +7464,11 @@ const functionImplementation = {
         try {
             //表示对象个数的整数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -7476,21 +7476,21 @@ const functionImplementation = {
 
             //表示每个排列中对象个数的整数
             var number_chosen = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_chosen)){
+            if (valueIsError(number_chosen)) {
                 return number_chosen;
             }
 
-            if(!isRealNum(number_chosen)){
+            if (!isRealNum(number_chosen)) {
                 return formula.error.v;
             }
 
             number_chosen = parseInt(number_chosen);
 
-            if(number <= 0 || number_chosen < 0){
+            if (number <= 0 || number_chosen < 0) {
                 return formula.error.nm;
             }
 
-            if(number < number_chosen){
+            if (number < number_chosen) {
                 return formula.error.nm;
             }
 
@@ -7502,7 +7502,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRIMMEAN": function() {
+    "TRIMMEAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7522,47 +7522,47 @@ const functionImplementation = {
             var data_dataArr = arguments[0];
             var dataArr = [];
 
-            if(getObjType(data_dataArr) == "array"){
-                if(getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)){
+            if (getObjType(data_dataArr) == "array") {
+                if (getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(data_dataArr, false));
             }
-            else if(getObjType(data_dataArr) == "object" && data_dataArr.startCell != null){
+            else if (getObjType(data_dataArr) == "object" && data_dataArr.startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(data_dataArr, "number", false));
             }
-            else{
+            else {
                 dataArr.push(data_dataArr);
             }
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
             //排除比例
             var percent = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(percent)){
+            if (valueIsError(percent)) {
                 return percent;
             }
 
-            if(!isRealNum(percent)){
+            if (!isRealNum(percent)) {
                 return formula.error.v;
             }
 
             percent = parseFloat(percent);
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(percent < 0 || percent > 1){
+            if (percent < 0 || percent > 1) {
                 return formula.error.nm;
             }
 
@@ -7583,7 +7583,7 @@ const functionImplementation = {
                 return array.slice(0, array.length - idx);
             };
 
-            dataArr_n.sort(function(a, b) {
+            dataArr_n.sort(function (a, b) {
                 return a - b;
             })
 
@@ -7601,7 +7601,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PERCENTILE_EXC": function() {
+    "PERCENTILE_EXC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7621,52 +7621,52 @@ const functionImplementation = {
             var data_dataArr = arguments[0];
             var dataArr = [];
 
-            if(getObjType(data_dataArr) == "array"){
-                if(getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)){
+            if (getObjType(data_dataArr) == "array") {
+                if (getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(data_dataArr, false));
             }
-            else if(getObjType(data_dataArr) == "object" && data_dataArr.startCell != null){
+            else if (getObjType(data_dataArr) == "object" && data_dataArr.startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(data_dataArr, "number", false));
             }
-            else{
+            else {
                 dataArr.push(data_dataArr);
             }
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
             //0 到 1 之间的百分点值，不包含 0 和 1
             var k = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(k)){
+            if (valueIsError(k)) {
                 return k;
             }
 
-            if(!isRealNum(k)){
+            if (!isRealNum(k)) {
                 return formula.error.v;
             }
 
             k = parseFloat(k);
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(k <= 0 || k >= 1){
+            if (k <= 0 || k >= 1) {
                 return formula.error.nm;
             }
 
             //计算
-            dataArr_n = dataArr_n.sort(function(a, b) {
+            dataArr_n = dataArr_n.sort(function (a, b) {
                 return a - b;
             });
 
@@ -7687,7 +7687,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PERCENTILE_INC": function() {
+    "PERCENTILE_INC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7707,52 +7707,52 @@ const functionImplementation = {
             var data_dataArr = arguments[0];
             var dataArr = [];
 
-            if(getObjType(data_dataArr) == "array"){
-                if(getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)){
+            if (getObjType(data_dataArr) == "array") {
+                if (getObjType(data_dataArr[0]) == "array" && !func_methods.isDyadicArr(data_dataArr)) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(data_dataArr, false));
             }
-            else if(getObjType(data_dataArr) == "object" && data_dataArr.startCell != null){
+            else if (getObjType(data_dataArr) == "object" && data_dataArr.startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(data_dataArr, "number", false));
             }
-            else{
+            else {
                 dataArr.push(data_dataArr);
             }
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
             //0 到 1 之间的百分点值，不包含 0 和 1
             var k = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(k)){
+            if (valueIsError(k)) {
                 return k;
             }
 
-            if(!isRealNum(k)){
+            if (!isRealNum(k)) {
                 return formula.error.v;
             }
 
             k = parseFloat(k);
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(k < 0 || k > 1){
+            if (k < 0 || k > 1) {
                 return formula.error.nm;
             }
 
             //计算
-            dataArr_n = dataArr_n.sort(function(a, b) {
+            dataArr_n = dataArr_n.sort(function (a, b) {
                 return a - b;
             });
 
@@ -7769,7 +7769,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PEARSON": function() {
+    "PEARSON": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7789,17 +7789,17 @@ const functionImplementation = {
             var data_known_x = arguments[0];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
+            else {
                 known_x.push(data_known_x);
             }
 
@@ -7807,38 +7807,38 @@ const functionImplementation = {
             var data_known_y = arguments[1];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
+            else {
                 known_y.push(data_known_y);
             }
 
-            if(known_x.length != known_y.length){
+            if (known_x.length != known_y.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < known_x.length; i++){
+            for (var i = 0; i < known_x.length; i++) {
                 var num_x = known_x[i];
                 var num_y = known_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
             }
 
-            if(data_y.length == 0 || data_x.length == 0){
+            if (data_y.length == 0 || data_x.length == 0) {
                 return formula.error.d;
             }
 
@@ -7865,7 +7865,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NORM_S_INV": function() {
+    "NORM_S_INV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7883,17 +7883,17 @@ const functionImplementation = {
         try {
             //对应于正态分布的概率
             var probability = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(probability)){
+            if (valueIsError(probability)) {
                 return probability;
             }
 
-            if(!isRealNum(probability)){
+            if (!isRealNum(probability)) {
                 return formula.error.v;
             }
 
             probability = parseFloat(probability);
 
-            if(probability <= 0 || probability >= 1){
+            if (probability <= 0 || probability >= 1) {
                 return formula.error.nm;
             }
 
@@ -7905,7 +7905,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NORM_S_DIST": function() {
+    "NORM_S_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7923,11 +7923,11 @@ const functionImplementation = {
         try {
             //需要计算其分布的数值
             var z = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(z)){
+            if (valueIsError(z)) {
                 return z;
             }
 
-            if(!isRealNum(z)){
+            if (!isRealNum(z)) {
                 return formula.error.v;
             }
 
@@ -7936,7 +7936,7 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[1]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
@@ -7948,7 +7948,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NORM_INV": function() {
+    "NORM_INV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -7966,20 +7966,20 @@ const functionImplementation = {
         try {
             //对应于正态分布的概率
             var probability = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(probability)){
+            if (valueIsError(probability)) {
                 return probability;
             }
 
-            if(!isRealNum(probability)){
-                if(getObjType(probability) == "boolean"){
-                    if(probability.toString().toLowerCase() == "true"){
+            if (!isRealNum(probability)) {
+                if (getObjType(probability) == "boolean") {
+                    if (probability.toString().toLowerCase() == "true") {
                         probability = 1;
                     }
-                    else if(probability.toString().toLowerCase() == "false"){
+                    else if (probability.toString().toLowerCase() == "false") {
                         probability = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
@@ -7988,20 +7988,20 @@ const functionImplementation = {
 
             //分布的算术平均值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
-                if(getObjType(mean) == "boolean"){
-                    if(mean.toString().toLowerCase() == "true"){
+            if (!isRealNum(mean)) {
+                if (getObjType(mean) == "boolean") {
+                    if (mean.toString().toLowerCase() == "true") {
                         mean = 1;
                     }
-                    else if(mean.toString().toLowerCase() == "false"){
+                    else if (mean.toString().toLowerCase() == "false") {
                         mean = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
@@ -8010,31 +8010,31 @@ const functionImplementation = {
 
             //分布的标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
-                if(getObjType(standard_dev) == "boolean"){
-                    if(standard_dev.toString().toLowerCase() == "true"){
+            if (!isRealNum(standard_dev)) {
+                if (getObjType(standard_dev) == "boolean") {
+                    if (standard_dev.toString().toLowerCase() == "true") {
                         standard_dev = 1;
                     }
-                    else if(standard_dev.toString().toLowerCase() == "false"){
+                    else if (standard_dev.toString().toLowerCase() == "false") {
                         standard_dev = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
 
             standard_dev = parseFloat(standard_dev);
 
-            if(probability <= 0 || probability >= 1){
+            if (probability <= 0 || probability >= 1) {
                 return formula.error.nm;
             }
 
-            if(standard_dev <= 0){
+            if (standard_dev <= 0) {
                 return formula.error.nm;
             }
 
@@ -8047,7 +8047,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NORM_DIST": function() {
+    "NORM_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8065,20 +8065,20 @@ const functionImplementation = {
         try {
             //需要计算其分布的数值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
-                if(getObjType(x) == "boolean"){
-                    if(x.toString().toLowerCase() == "true"){
+            if (!isRealNum(x)) {
+                if (getObjType(x) == "boolean") {
+                    if (x.toString().toLowerCase() == "true") {
                         x = 1;
                     }
-                    else if(x.toString().toLowerCase() == "false"){
+                    else if (x.toString().toLowerCase() == "false") {
                         x = 0;
                     }
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
@@ -8087,11 +8087,11 @@ const functionImplementation = {
 
             //分布的算术平均值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
+            if (!isRealNum(mean)) {
                 return formula.error.v;
             }
 
@@ -8099,11 +8099,11 @@ const functionImplementation = {
 
             //分布的标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
+            if (!isRealNum(standard_dev)) {
                 return formula.error.v;
             }
 
@@ -8112,11 +8112,11 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(standard_dev <= 0){
+            if (standard_dev <= 0) {
                 return formula.error.nm;
             }
 
@@ -8128,7 +8128,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NEGBINOM_DIST": function() {
+    "NEGBINOM_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8146,11 +8146,11 @@ const functionImplementation = {
         try {
             //要模拟的失败次数
             var number_f = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number_f)){
+            if (valueIsError(number_f)) {
                 return number_f;
             }
 
-            if(!isRealNum(number_f)){
+            if (!isRealNum(number_f)) {
                 return formula.error.v;
             }
 
@@ -8158,11 +8158,11 @@ const functionImplementation = {
 
             //要模拟的成功次数
             var number_s = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_s)){
+            if (valueIsError(number_s)) {
                 return number_s;
             }
 
-            if(!isRealNum(number_s)){
+            if (!isRealNum(number_s)) {
                 return formula.error.v;
             }
 
@@ -8170,11 +8170,11 @@ const functionImplementation = {
 
             //任一次给定检验的成功概率
             var probability_s = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(probability_s)){
+            if (valueIsError(probability_s)) {
                 return probability_s;
             }
 
-            if(!isRealNum(probability_s)){
+            if (!isRealNum(probability_s)) {
                 return formula.error.v;
             }
 
@@ -8183,15 +8183,15 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(probability_s < 0 || probability_s > 1){
+            if (probability_s < 0 || probability_s > 1) {
                 return formula.error.nm;
             }
 
-            if(number_f < 0 || number_s < 1){
+            if (number_f < 0 || number_s < 1) {
                 return formula.error.nm;
             }
 
@@ -8203,7 +8203,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MINA": function() {
+    "MINA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8224,27 +8224,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(number.toString.toLowerCase() == "true"){
+                else {
+                    if (number.toString.toLowerCase() == "true") {
                         dataArr.push(1);
                     }
-                    else if(number.toString.toLowerCase() == "false"){
+                    else if (number.toString.toLowerCase() == "false") {
                         dataArr.push(0);
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -8252,17 +8252,17 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
-                else{
-                    if(number.toString().toLowerCase() == "true"){
+                else {
+                    if (number.toString().toLowerCase() == "true") {
                         dataArr_n.push(1);
                     }
-                    else{
+                    else {
                         dataArr_n.push(0);
                     }
                 }
@@ -8276,7 +8276,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MEDIAN": function() {
+    "MEDIAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8297,18 +8297,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -8318,10 +8318,10 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
@@ -8334,7 +8334,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MAXA": function() {
+    "MAXA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8355,27 +8355,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(number.toString.toLowerCase() == "true"){
+                else {
+                    if (number.toString.toLowerCase() == "true") {
                         dataArr.push(1);
                     }
-                    else if(number.toString.toLowerCase() == "false"){
+                    else if (number.toString.toLowerCase() == "false") {
                         dataArr.push(0);
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -8383,17 +8383,17 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
-                else{
-                    if(number.toString().toLowerCase() == "true"){
+                else {
+                    if (number.toString().toLowerCase() == "true") {
                         dataArr_n.push(1);
                     }
-                    else{
+                    else {
                         dataArr_n.push(0);
                     }
                 }
@@ -8407,7 +8407,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOGNORM_INV": function() {
+    "LOGNORM_INV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8425,11 +8425,11 @@ const functionImplementation = {
         try {
             //与对数分布相关的概率
             var probability = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(probability)){
+            if (valueIsError(probability)) {
                 return probability;
             }
 
-            if(!isRealNum(probability)){
+            if (!isRealNum(probability)) {
                 return formula.error.v;
             }
 
@@ -8437,11 +8437,11 @@ const functionImplementation = {
 
             //ln(x) 的平均值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
+            if (!isRealNum(mean)) {
                 return formula.error.v;
             }
 
@@ -8449,21 +8449,21 @@ const functionImplementation = {
 
             //ln(x) 的标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
+            if (!isRealNum(standard_dev)) {
                 return formula.error.v;
             }
 
             standard_dev = parseFloat(standard_dev);
 
-            if(probability <= 0 || probability >= 1){
+            if (probability <= 0 || probability >= 1) {
                 return formula.error.nm;
             }
 
-            if(standard_dev <= 0){
+            if (standard_dev <= 0) {
                 return formula.error.nm;
             }
 
@@ -8475,7 +8475,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOGNORM_DIST": function() {
+    "LOGNORM_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8493,11 +8493,11 @@ const functionImplementation = {
         try {
             //与对数分布相关的概率
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -8505,11 +8505,11 @@ const functionImplementation = {
 
             //ln(x) 的平均值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
+            if (!isRealNum(mean)) {
                 return formula.error.v;
             }
 
@@ -8517,11 +8517,11 @@ const functionImplementation = {
 
             //ln(x) 的标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
+            if (!isRealNum(standard_dev)) {
                 return formula.error.v;
             }
 
@@ -8530,11 +8530,11 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(x <= 0 || standard_dev <= 0){
+            if (x <= 0 || standard_dev <= 0) {
                 return formula.error.nm;
             }
 
@@ -8546,7 +8546,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "Z_TEST": function() {
+    "Z_TEST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8565,55 +8565,55 @@ const functionImplementation = {
             //用来检验 x 的数组或数据区域
             var dataArr = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(arguments[0], true));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(arguments[0], "text", true));
             }
-            else{
+            else {
                 dataArr.push(arguments[0]);
             }
 
             var dataArr_n = [];
 
-            for(var j = 0; j < dataArr.length; j++){
+            for (var j = 0; j < dataArr.length; j++) {
                 var number = dataArr[j];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
             //要测试的值
             var x = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
             x = parseFloat(x);
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.na;
             }
 
             //总体（已知）标准偏差。 如果省略，则使用样本标准偏差
             var sigma = func_methods.standardDeviation_s(dataArr_n);
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 sigma = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(sigma)){
+                if (valueIsError(sigma)) {
                     return sigma;
                 }
 
-                if(!isRealNum(sigma)){
+                if (!isRealNum(sigma)) {
                     return formula.error.v;
                 }
 
@@ -8632,7 +8632,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PROB": function() {
+    "PROB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8651,71 +8651,71 @@ const functionImplementation = {
             //x_range
             var data_x_range = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 data_x_range = data_x_range.concat(func_methods.getDataArr(arguments[0], false));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 data_x_range = data_x_range.concat(func_methods.getCellDataArr(arguments[0], "text", false));
             }
-            else{
+            else {
                 data_x_range.push(arguments[0]);
             }
 
             //prob_range
             var data_prob_range = [];
 
-            if(getObjType(arguments[1]) == "array"){
-                if(getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])){
+            if (getObjType(arguments[1]) == "array") {
+                if (getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])) {
                     return formula.error.v;
                 }
 
                 data_prob_range = data_prob_range.concat(func_methods.getDataArr(arguments[1], false));
             }
-            else if(getObjType(arguments[1]) == "object" && arguments[1].startCell != null){
+            else if (getObjType(arguments[1]) == "object" && arguments[1].startCell != null) {
                 data_prob_range = data_prob_range.concat(func_methods.getCellDataArr(arguments[1], "text", false));
             }
-            else{
+            else {
                 data_prob_range.push(arguments[1]);
             }
 
-            if(data_x_range.length != data_prob_range.length){
+            if (data_x_range.length != data_prob_range.length) {
                 return formula.error.na;
             }
 
             //data_x_range 和 data_prob_range 只取数值
             var x_range = [], prob_range = [], prob_range_sum = 0;
 
-            for(var i = 0; i < data_x_range.length; i++){
+            for (var i = 0; i < data_x_range.length; i++) {
                 var num_x_range = data_x_range[i];
                 var num_prob_range = data_prob_range[i];
 
-                if(isRealNum(num_x_range) && isRealNum(num_prob_range)){
+                if (isRealNum(num_x_range) && isRealNum(num_prob_range)) {
                     x_range.push(parseFloat(num_x_range));
                     prob_range.push(parseFloat(num_prob_range));
 
                     prob_range_sum += parseFloat(num_prob_range);
 
-                    if(parseFloat(num_prob_range) <= 0 || parseFloat(num_prob_range) > 1){
+                    if (parseFloat(num_prob_range) <= 0 || parseFloat(num_prob_range) > 1) {
                         return formula.error.nm;
                     }
                 }
             }
 
-            if(prob_range_sum != 1){
+            if (prob_range_sum != 1) {
                 return formula.error.nm;
             }
 
             //要计算其概率的数值下界
             var lower_limit = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(lower_limit)){
+            if (valueIsError(lower_limit)) {
                 return lower_limit;
             }
 
-            if(!isRealNum(lower_limit)){
+            if (!isRealNum(lower_limit)) {
                 return formula.error.v;
             }
 
@@ -8723,13 +8723,13 @@ const functionImplementation = {
 
             //要计算其概率的数值上界
             var upper_limit = lower_limit;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 upper_limit = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(upper_limit)){
+                if (valueIsError(upper_limit)) {
                     return upper_limit;
                 }
 
-                if(!isRealNum(upper_limit)){
+                if (!isRealNum(upper_limit)) {
                     return formula.error.v;
                 }
 
@@ -8753,7 +8753,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "QUARTILE_EXC": function() {
+    "QUARTILE_EXC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8772,18 +8772,18 @@ const functionImplementation = {
             //要求得四分位数值的数组或数字型单元格区域
             var data_array = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 data_array = data_array.concat(func_methods.getDataArr(arguments[0], true));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 data_array = data_array.concat(func_methods.getCellDataArr(arguments[0], "text", true));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -8792,31 +8792,31 @@ const functionImplementation = {
 
             var array = [];
 
-            for(var i = 0; i < data_array.length; i++){
+            for (var i = 0; i < data_array.length; i++) {
                 var number = data_array[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     array.push(parseFloat(number));
                 }
             }
 
             //要返回第几个四分位值
             var quart = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(quart)){
+            if (valueIsError(quart)) {
                 return quart;
             }
 
-            if(!isRealNum(quart)){
+            if (!isRealNum(quart)) {
                 return formula.error.v;
             }
 
             quart = parseInt(quart);
 
-            if(array.length == 0){
+            if (array.length == 0) {
                 return formula.error.nm;
             }
 
-            if(quart <= 0 || quart >= 4){
+            if (quart <= 0 || quart >= 4) {
                 return formula.error.nm;
             }
 
@@ -8836,7 +8836,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "QUARTILE_INC": function() {
+    "QUARTILE_INC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8855,18 +8855,18 @@ const functionImplementation = {
             //要求得四分位数值的数组或数字型单元格区域
             var data_array = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 data_array = data_array.concat(func_methods.getDataArr(arguments[0], true));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 data_array = data_array.concat(func_methods.getCellDataArr(arguments[0], "text", true));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -8875,31 +8875,31 @@ const functionImplementation = {
 
             var array = [];
 
-            for(var i = 0; i < data_array.length; i++){
+            for (var i = 0; i < data_array.length; i++) {
                 var number = data_array[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     array.push(parseFloat(number));
                 }
             }
 
             //要返回第几个四分位值
             var quart = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(quart)){
+            if (valueIsError(quart)) {
                 return quart;
             }
 
-            if(!isRealNum(quart)){
+            if (!isRealNum(quart)) {
                 return formula.error.v;
             }
 
             quart = parseInt(quart);
 
-            if(array.length == 0){
+            if (array.length == 0) {
                 return formula.error.nm;
             }
 
-            if(quart < 0 || quart > 4){
+            if (quart < 0 || quart > 4) {
                 return formula.error.nm;
             }
 
@@ -8923,7 +8923,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "POISSON_DIST": function() {
+    "POISSON_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -8941,11 +8941,11 @@ const functionImplementation = {
         try {
             //事件数
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -8953,11 +8953,11 @@ const functionImplementation = {
 
             //期望值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
+            if (!isRealNum(mean)) {
                 return formula.error.v;
             }
 
@@ -8966,11 +8966,11 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[2]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(x < 0 || mean < 0){
+            if (x < 0 || mean < 0) {
                 return formula.error.nm;
             }
 
@@ -8982,7 +8982,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RSQ": function() {
+    "RSQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9002,18 +9002,18 @@ const functionImplementation = {
             var data_known_y = arguments[0];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(data_known_y, false));
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(data_known_y, "text", false));
             }
-            else{
-                if(!isRealNum(data_known_y)){
+            else {
+                if (!isRealNum(data_known_y)) {
                     return formula.error.v;
                 }
 
@@ -9024,42 +9024,42 @@ const functionImplementation = {
             var data_known_x = arguments[1];
             var known_x = [];
 
-            if(getObjType(data_known_x) == "array"){
-                if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+            if (getObjType(data_known_x) == "array") {
+                if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(data_known_x, false));
             }
-            else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+            else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(data_known_x, "text", false));
             }
-            else{
-                if(!isRealNum(data_known_x)){
+            else {
+                if (!isRealNum(data_known_x)) {
                     return formula.error.v;
                 }
 
                 known_x.push(data_known_x);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(data_y.length == 0 || data_x.length == 0){
+            if (data_y.length == 0 || data_x.length == 0) {
                 return formula.error.d;
             }
 
@@ -9071,7 +9071,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_DIST": function() {
+    "T_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9089,11 +9089,11 @@ const functionImplementation = {
         try {
             //T-分布函数的输入
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -9101,11 +9101,11 @@ const functionImplementation = {
 
             //自由度数值
             var degrees_freedom = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(degrees_freedom)){
+            if (valueIsError(degrees_freedom)) {
                 return degrees_freedom;
             }
 
-            if(!isRealNum(degrees_freedom)){
+            if (!isRealNum(degrees_freedom)) {
                 return formula.error.v;
             }
 
@@ -9114,11 +9114,11 @@ const functionImplementation = {
             //决定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[2]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(degrees_freedom < 1){
+            if (degrees_freedom < 1) {
                 return formula.error.nm;
             }
 
@@ -9130,7 +9130,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_DIST_2T": function() {
+    "T_DIST_2T": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9148,11 +9148,11 @@ const functionImplementation = {
         try {
             //T-分布函数的输入
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -9160,21 +9160,21 @@ const functionImplementation = {
 
             //自由度数值
             var degrees_freedom = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(degrees_freedom)){
+            if (valueIsError(degrees_freedom)) {
                 return degrees_freedom;
             }
 
-            if(!isRealNum(degrees_freedom)){
+            if (!isRealNum(degrees_freedom)) {
                 return formula.error.v;
             }
 
             degrees_freedom = parseInt(degrees_freedom);
 
-            if(x < 0 || degrees_freedom < 1){
+            if (x < 0 || degrees_freedom < 1) {
                 return formula.error.nm;
             }
 
-            return (1 - jStat.studentt.cdf(x , degrees_freedom)) * 2;
+            return (1 - jStat.studentt.cdf(x, degrees_freedom)) * 2;
         }
         catch (e) {
             var err = e;
@@ -9182,7 +9182,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_DIST_RT": function() {
+    "T_DIST_RT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9200,11 +9200,11 @@ const functionImplementation = {
         try {
             //T-分布函数的输入
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -9212,21 +9212,21 @@ const functionImplementation = {
 
             //自由度数值
             var degrees_freedom = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(degrees_freedom)){
+            if (valueIsError(degrees_freedom)) {
                 return degrees_freedom;
             }
 
-            if(!isRealNum(degrees_freedom)){
+            if (!isRealNum(degrees_freedom)) {
                 return formula.error.v;
             }
 
             degrees_freedom = parseInt(degrees_freedom);
 
-            if(degrees_freedom < 1){
+            if (degrees_freedom < 1) {
                 return formula.error.nm;
             }
 
-            return 1 - jStat.studentt.cdf(x , degrees_freedom);
+            return 1 - jStat.studentt.cdf(x, degrees_freedom);
         }
         catch (e) {
             var err = e;
@@ -9234,7 +9234,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_INV": function() {
+    "T_INV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9252,11 +9252,11 @@ const functionImplementation = {
         try {
             //与学生的 t 分布相关的概率
             var probability = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(probability)){
+            if (valueIsError(probability)) {
                 return probability;
             }
 
-            if(!isRealNum(probability)){
+            if (!isRealNum(probability)) {
                 return formula.error.v;
             }
 
@@ -9264,21 +9264,21 @@ const functionImplementation = {
 
             //自由度数值
             var deg_freedom = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(deg_freedom)){
+            if (valueIsError(deg_freedom)) {
                 return deg_freedom;
             }
 
-            if(!isRealNum(deg_freedom)){
+            if (!isRealNum(deg_freedom)) {
                 return formula.error.v;
             }
 
             deg_freedom = parseInt(deg_freedom);
 
-            if(probability <= 0 || probability > 1){
+            if (probability <= 0 || probability > 1) {
                 return formula.error.nm;
             }
 
-            if(deg_freedom < 1){
+            if (deg_freedom < 1) {
                 return formula.error.nm;
             }
 
@@ -9290,7 +9290,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_INV_2T": function() {
+    "T_INV_2T": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9308,11 +9308,11 @@ const functionImplementation = {
         try {
             //与学生的 t 分布相关的概率
             var probability = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(probability)){
+            if (valueIsError(probability)) {
                 return probability;
             }
 
-            if(!isRealNum(probability)){
+            if (!isRealNum(probability)) {
                 return formula.error.v;
             }
 
@@ -9320,21 +9320,21 @@ const functionImplementation = {
 
             //自由度数值
             var deg_freedom = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(deg_freedom)){
+            if (valueIsError(deg_freedom)) {
                 return deg_freedom;
             }
 
-            if(!isRealNum(deg_freedom)){
+            if (!isRealNum(deg_freedom)) {
                 return formula.error.v;
             }
 
             deg_freedom = parseInt(deg_freedom);
 
-            if(probability <= 0 || probability > 1){
+            if (probability <= 0 || probability > 1) {
                 return formula.error.nm;
             }
 
-            if(deg_freedom < 1){
+            if (deg_freedom < 1) {
                 return formula.error.nm;
             }
 
@@ -9346,7 +9346,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T_TEST": function() {
+    "T_TEST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9365,18 +9365,18 @@ const functionImplementation = {
             //第一个数据集
             var known_x = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(arguments[0], false));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(arguments[0], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -9389,18 +9389,18 @@ const functionImplementation = {
             //第二个数据集
             var known_y = [];
 
-            if(getObjType(arguments[1]) == "array"){
-                if(getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])){
+            if (getObjType(arguments[1]) == "array") {
+                if (getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(arguments[1], false));
             }
-            else if(getObjType(arguments[1]) == "object" && arguments[1].startCell != null){
+            else if (getObjType(arguments[1]) == "object" && arguments[1].startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(arguments[1], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[1])){
+            else {
+                if (!isRealNum(arguments[1])) {
                     return formula.error.v;
                 }
 
@@ -9412,11 +9412,11 @@ const functionImplementation = {
 
             //指定分布的尾数
             var tails = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(tails)){
+            if (valueIsError(tails)) {
                 return tails;
             }
 
-            if(!isRealNum(tails)){
+            if (!isRealNum(tails)) {
                 return formula.error.v;
             }
 
@@ -9424,27 +9424,27 @@ const functionImplementation = {
 
             //指定 t 检验的类型
             var type = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(type)){
+            if (valueIsError(type)) {
                 return type;
             }
 
-            if(!isRealNum(type)){
+            if (!isRealNum(type)) {
                 return formula.error.v;
             }
 
             type = parseInt(type);
 
-            if([1,2].indexOf(tails) == -1){
+            if ([1, 2].indexOf(tails) == -1) {
                 return formula.error.nm;
             }
 
-            if([1,2,3].indexOf(type) == -1){
+            if ([1, 2, 3].indexOf(type) == -1) {
                 return formula.error.nm;
             }
 
             //计算
             var t = null, df = null;
-            if(type == 1){
+            if (type == 1) {
                 var diff_arr = [];
 
                 for (i = 0; i < data_x.length; i++) {
@@ -9457,7 +9457,7 @@ const functionImplementation = {
                 t = diff_mean / (diff_sd / Math.sqrt(data_x.length));
                 df = data_x.length - 1;
             }
-            else{
+            else {
                 var mean_x = jStat.mean(data_x);
                 var mean_y = jStat.mean(data_y);
 
@@ -9466,7 +9466,7 @@ const functionImplementation = {
 
                 t = Math.abs(mean_x - mean_y) / Math.sqrt(s_x / data_x.length + s_y / data_y.length);
 
-                switch(type){
+                switch (type) {
                     case 2:
                         df = data_x.length + data_y.length - 2;
                         break;
@@ -9476,10 +9476,10 @@ const functionImplementation = {
                 }
             }
 
-            if(tails == 1){
+            if (tails == 1) {
                 var result = window.luckysheet_function.T_DIST_RT.f(t, df);
             }
-            else if(tails == 2){
+            else if (tails == 2) {
                 var result = window.luckysheet_function.T_DIST_2T.f(t, df);
             }
 
@@ -9491,7 +9491,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "F_DIST": function() {
+    "F_DIST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9509,11 +9509,11 @@ const functionImplementation = {
         try {
             //用来计算函数的值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -9521,11 +9521,11 @@ const functionImplementation = {
 
             //分子自由度
             var degrees_freedom1 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(degrees_freedom1)){
+            if (valueIsError(degrees_freedom1)) {
                 return degrees_freedom1;
             }
 
-            if(!isRealNum(degrees_freedom1)){
+            if (!isRealNum(degrees_freedom1)) {
                 return formula.error.v;
             }
 
@@ -9533,11 +9533,11 @@ const functionImplementation = {
 
             //分母自由度
             var degrees_freedom2 = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(degrees_freedom2)){
+            if (valueIsError(degrees_freedom2)) {
                 return degrees_freedom2;
             }
 
-            if(!isRealNum(degrees_freedom2)){
+            if (!isRealNum(degrees_freedom2)) {
                 return formula.error.v;
             }
 
@@ -9546,19 +9546,19 @@ const functionImplementation = {
             //用于确定函数形式的逻辑值
             var cumulative = func_methods.getCellBoolen(arguments[3]);
 
-            if(valueIsError(cumulative)){
+            if (valueIsError(cumulative)) {
                 return cumulative;
             }
 
-            if(x < 0){
+            if (x < 0) {
                 return formula.error.nm;
             }
 
-            if(degrees_freedom1 < 1){
+            if (degrees_freedom1 < 1) {
                 return formula.error.nm;
             }
 
-            if(degrees_freedom2 < 1){
+            if (degrees_freedom2 < 1) {
                 return formula.error.nm;
             }
 
@@ -9570,7 +9570,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "F_DIST_RT": function() {
+    "F_DIST_RT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9588,11 +9588,11 @@ const functionImplementation = {
         try {
             //用来计算函数的值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -9600,11 +9600,11 @@ const functionImplementation = {
 
             //分子自由度
             var degrees_freedom1 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(degrees_freedom1)){
+            if (valueIsError(degrees_freedom1)) {
                 return degrees_freedom1;
             }
 
-            if(!isRealNum(degrees_freedom1)){
+            if (!isRealNum(degrees_freedom1)) {
                 return formula.error.v;
             }
 
@@ -9612,25 +9612,25 @@ const functionImplementation = {
 
             //分母自由度
             var degrees_freedom2 = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(degrees_freedom2)){
+            if (valueIsError(degrees_freedom2)) {
                 return degrees_freedom2;
             }
 
-            if(!isRealNum(degrees_freedom2)){
+            if (!isRealNum(degrees_freedom2)) {
                 return formula.error.v;
             }
 
             degrees_freedom2 = parseInt(degrees_freedom2);
 
-            if(x < 0){
+            if (x < 0) {
                 return formula.error.nm;
             }
 
-            if(degrees_freedom1 < 1){
+            if (degrees_freedom1 < 1) {
                 return formula.error.nm;
             }
 
-            if(degrees_freedom2 < 1){
+            if (degrees_freedom2 < 1) {
                 return formula.error.nm;
             }
 
@@ -9642,7 +9642,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VAR_P": function() {
+    "VAR_P": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9663,18 +9663,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -9684,15 +9684,15 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.d;
             }
 
@@ -9711,7 +9711,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VAR_S": function() {
+    "VAR_S": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9732,18 +9732,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -9753,15 +9753,15 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.d;
             }
 
@@ -9780,7 +9780,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VARA": function() {
+    "VARA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9801,27 +9801,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(number.toString.toLowerCase() == "true"){
+                else {
+                    if (number.toString.toLowerCase() == "true") {
                         dataArr.push(1);
                     }
-                    else if(number.toString.toLowerCase() == "false"){
+                    else if (number.toString.toLowerCase() == "false") {
                         dataArr.push(0);
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -9829,17 +9829,17 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
-                else{
-                    if(number.toString().toLowerCase() == "true"){
+                else {
+                    if (number.toString().toLowerCase() == "true") {
                         dataArr_n.push(1);
                     }
-                    else{
+                    else {
                         dataArr_n.push(0);
                     }
                 }
@@ -9860,7 +9860,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VARPA": function() {
+    "VARPA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9881,27 +9881,27 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(number.toString.toLowerCase() == "true"){
+                else {
+                    if (number.toString.toLowerCase() == "true") {
                         dataArr.push(1);
                     }
-                    else if(number.toString.toLowerCase() == "false"){
+                    else if (number.toString.toLowerCase() == "false") {
                         dataArr.push(0);
                     }
-                    else if(isRealNum(data)){
+                    else if (isRealNum(data)) {
                         dataArr.push(data);
                     }
-                    else{
+                    else {
                         return formula.error.v;
                     }
                 }
@@ -9909,17 +9909,17 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
-                else{
-                    if(number.toString().toLowerCase() == "true"){
+                else {
+                    if (number.toString().toLowerCase() == "true") {
                         dataArr_n.push(1);
                     }
-                    else{
+                    else {
                         dataArr_n.push(0);
                     }
                 }
@@ -9940,7 +9940,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STEYX": function() {
+    "STEYX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -9959,18 +9959,18 @@ const functionImplementation = {
             //代表因变量数据数组或矩阵的范围
             var known_y = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(arguments[0], false));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(arguments[0], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -9980,42 +9980,42 @@ const functionImplementation = {
             //代表自变量数据数组或矩阵的范围
             var known_x = [];
 
-            if(getObjType(arguments[1]) == "array"){
-                if(getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])){
+            if (getObjType(arguments[1]) == "array") {
+                if (getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(arguments[1], false));
             }
-            else if(getObjType(arguments[1]) == "object" && arguments[1].startCell != null){
+            else if (getObjType(arguments[1]) == "object" && arguments[1].startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(arguments[1], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[1])){
+            else {
+                if (!isRealNum(arguments[1])) {
                     return formula.error.v;
                 }
 
                 known_x.push(arguments[1]);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(data_y.length < 3 || data_x.length < 3){
+            if (data_y.length < 3 || data_x.length < 3) {
                 return formula.error.d;
             }
 
@@ -10042,7 +10042,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STANDARDIZE": function() {
+    "STANDARDIZE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10060,11 +10060,11 @@ const functionImplementation = {
         try {
             //要正态化的随机变量值
             var x = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
-            if(!isRealNum(x)){
+            if (!isRealNum(x)) {
                 return formula.error.v;
             }
 
@@ -10072,11 +10072,11 @@ const functionImplementation = {
 
             //分布的均值
             var mean = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(mean)){
+            if (valueIsError(mean)) {
                 return mean;
             }
 
-            if(!isRealNum(mean)){
+            if (!isRealNum(mean)) {
                 return formula.error.v;
             }
 
@@ -10084,17 +10084,17 @@ const functionImplementation = {
 
             //分布的标准偏差
             var standard_dev = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(standard_dev)){
+            if (valueIsError(standard_dev)) {
                 return standard_dev;
             }
 
-            if(!isRealNum(standard_dev)){
+            if (!isRealNum(standard_dev)) {
                 return formula.error.v;
             }
 
             standard_dev = parseFloat(standard_dev);
 
-            if(standard_dev <= 0){
+            if (standard_dev <= 0) {
                 return formula.error.nm;
             }
 
@@ -10106,7 +10106,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SMALL": function() {
+    "SMALL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10125,18 +10125,18 @@ const functionImplementation = {
             //要正态化的随机变量值
             var dataArr = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 dataArr = dataArr.concat(func_methods.getDataArr(arguments[0], true));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 dataArr = dataArr.concat(func_methods.getCellDataArr(arguments[0], "number", true));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -10145,39 +10145,39 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
             //要返回的数据在数组或数据区域里的位置（从小到大）
             var k = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(k)){
+            if (valueIsError(k)) {
                 return k;
             }
 
-            if(!isRealNum(k)){
+            if (!isRealNum(k)) {
                 return formula.error.v;
             }
 
             k = parseInt(k);
 
-            if(dataArr_n.length == 0){
+            if (dataArr_n.length == 0) {
                 return formula.error.nm;
             }
 
-            if(k <= 0 || k > dataArr_n.length){
+            if (k <= 0 || k > dataArr_n.length) {
                 return formula.error.nm;
             }
 
             //计算
 
-            return  dataArr_n.sort(function(a, b) {
-                        return a - b;
-                    })[k - 1];
+            return dataArr_n.sort(function (a, b) {
+                return a - b;
+            })[k - 1];
         }
         catch (e) {
             var err = e;
@@ -10185,7 +10185,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SLOPE": function() {
+    "SLOPE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10204,18 +10204,18 @@ const functionImplementation = {
             //代表因变量数据数组或矩阵的范围
             var known_y = [];
 
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array" && !func_methods.isDyadicArr(arguments[0])) {
                     return formula.error.v;
                 }
 
                 known_y = known_y.concat(func_methods.getDataArr(arguments[0], false));
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 known_y = known_y.concat(func_methods.getCellDataArr(arguments[0], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[0])){
+            else {
+                if (!isRealNum(arguments[0])) {
                     return formula.error.v;
                 }
 
@@ -10225,42 +10225,42 @@ const functionImplementation = {
             //代表自变量数据数组或矩阵的范围
             var known_x = [];
 
-            if(getObjType(arguments[1]) == "array"){
-                if(getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])){
+            if (getObjType(arguments[1]) == "array") {
+                if (getObjType(arguments[1][0]) == "array" && !func_methods.isDyadicArr(arguments[1])) {
                     return formula.error.v;
                 }
 
                 known_x = known_x.concat(func_methods.getDataArr(arguments[1], false));
             }
-            else if(getObjType(arguments[1]) == "object" && arguments[1].startCell != null){
+            else if (getObjType(arguments[1]) == "object" && arguments[1].startCell != null) {
                 known_x = known_x.concat(func_methods.getCellDataArr(arguments[1], "text", false));
             }
-            else{
-                if(!isRealNum(arguments[1])){
+            else {
+                if (!isRealNum(arguments[1])) {
                     return formula.error.v;
                 }
 
                 known_x.push(arguments[1]);
             }
 
-            if(known_y.length != known_x.length){
+            if (known_y.length != known_x.length) {
                 return formula.error.na;
             }
 
             //known_y 和 known_x 只取数值
             var data_y = [], data_x = [];
 
-            for(var i = 0; i < known_y.length; i++){
+            for (var i = 0; i < known_y.length; i++) {
                 var num_y = known_y[i];
                 var num_x = known_x[i];
 
-                if(isRealNum(num_y) && isRealNum(num_x)){
+                if (isRealNum(num_y) && isRealNum(num_x)) {
                     data_y.push(parseFloat(num_y));
                     data_x.push(parseFloat(num_x));
                 }
             }
 
-            if(data_y.length < 3 || data_x.length < 3){
+            if (data_y.length < 3 || data_x.length < 3) {
                 return formula.error.d;
             }
 
@@ -10285,7 +10285,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SKEW": function() {
+    "SKEW": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10306,18 +10306,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -10327,15 +10327,15 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
-            if(dataArr_n.length < 3 || func_methods.standardDeviation_s(dataArr_n) == 0){
+            if (dataArr_n.length < 3 || func_methods.standardDeviation_s(dataArr_n) == 0) {
                 return formula.error.d;
             }
 
@@ -10355,7 +10355,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SKEW_P": function() {
+    "SKEW_P": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10376,18 +10376,18 @@ const functionImplementation = {
             for (var i = 0; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
-                    if(!isRealNum(data)){
+                else {
+                    if (!isRealNum(data)) {
                         return formula.error.v;
                     }
 
@@ -10397,15 +10397,15 @@ const functionImplementation = {
 
             var dataArr_n = [];
 
-            for(var i = 0; i < dataArr.length; i++){
+            for (var i = 0; i < dataArr.length; i++) {
                 var number = dataArr[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     dataArr_n.push(parseFloat(number));
                 }
             }
 
-            if(dataArr_n.length < 3 || func_methods.standardDeviation_s(dataArr_n) == 0){
+            if (dataArr_n.length < 3 || func_methods.standardDeviation_s(dataArr_n) == 0) {
                 return formula.error.d;
             }
 
@@ -10431,7 +10431,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ADDRESS": function() {
+    "ADDRESS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10449,11 +10449,11 @@ const functionImplementation = {
         try {
             //行号
             var row_num = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(row_num)){
+            if (valueIsError(row_num)) {
                 return row_num;
             }
 
-            if(!isRealNum(row_num)){
+            if (!isRealNum(row_num)) {
                 return formula.error.v;
             }
 
@@ -10461,11 +10461,11 @@ const functionImplementation = {
 
             //列标
             var column_num = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(column_num)){
+            if (valueIsError(column_num)) {
                 return column_num;
             }
 
-            if(!isRealNum(column_num)){
+            if (!isRealNum(column_num)) {
                 return formula.error.v;
             }
 
@@ -10473,13 +10473,13 @@ const functionImplementation = {
 
             //引用类型
             var abs_num = 1;
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 abs_num = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(abs_num)){
+                if (valueIsError(abs_num)) {
                     return abs_num;
                 }
 
-                if(!isRealNum(abs_num)){
+                if (!isRealNum(abs_num)) {
                     return formula.error.v;
                 }
 
@@ -10488,28 +10488,28 @@ const functionImplementation = {
 
             //A1标记形式 -- R1C1标记形式
             var A1 = true;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 A1 = func_methods.getCellBoolen(arguments[3]);
 
-                if(valueIsError(A1)){
+                if (valueIsError(A1)) {
                     return A1;
                 }
             }
 
-            if(row_num <= 0 || column_num <= 0){
+            if (row_num <= 0 || column_num <= 0) {
                 return formula.error.v;
             }
 
-            if([1,2,3,4].indexOf(abs_num) == -1){
+            if ([1, 2, 3, 4].indexOf(abs_num) == -1) {
                 return formula.error.v;
             }
 
             //计算
             var str;
-            if(A1){
+            if (A1) {
                 column_num = chatatABC(column_num - 1);
 
-                switch(abs_num){
+                switch (abs_num) {
                     case 1:
                         str = "$" + column_num + "$" + row_num;
                         break;
@@ -10524,8 +10524,8 @@ const functionImplementation = {
                         break;
                 }
             }
-            else{
-                switch(abs_num){
+            else {
+                switch (abs_num) {
                     case 1:
                         str = "R" + row_num + "C" + column_num;
                         break;
@@ -10541,16 +10541,16 @@ const functionImplementation = {
                 }
             }
 
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 //工作表名称
                 var sheet_text = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(sheet_text)){
+                if (valueIsError(sheet_text)) {
                     return sheet_text;
                 }
 
                 return sheet_text + "!" + str;
             }
-            else{
+            else {
                 return str;
             }
         }
@@ -10560,7 +10560,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "INDIRECT": function() {
+    "INDIRECT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10578,16 +10578,16 @@ const functionImplementation = {
         try {
             //以带引号的字符串形式提供的单元格引用
             var ref_text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(ref_text)){
+            if (valueIsError(ref_text)) {
                 return ref_text;
             }
 
             //A1标记形式 -- R1C1标记形式
             var A1 = true;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 A1 = func_methods.getCellBoolen(arguments[1]);
 
-                if(valueIsError(A1)){
+                if (valueIsError(A1)) {
                     return A1;
                 }
             }
@@ -10602,35 +10602,35 @@ const functionImplementation = {
             // }
 
             //计算
-            if(A1){
+            if (A1) {
 
             }
-            else{
+            else {
 
             }
 
-            if(formula.iscelldata(ref_text)){
+            if (formula.iscelldata(ref_text)) {
                 let cellrange = formula.getcellrange(ref_text);
                 let row = cellrange.row[0], col = cellrange.column[0];
 
-                if (row < 0 || row >= sheetdata.length || col < 0 || col >= sheetdata[0].length){
+                if (row < 0 || row >= sheetdata.length || col < 0 || col >= sheetdata[0].length) {
                     return formula.error.r;
                 }
 
-                if (sheetdata[row][col] == null || isRealNull(sheetdata[row][col].v)){
+                if (sheetdata[row][col] == null || isRealNull(sheetdata[row][col].v)) {
                     return 0;
                 }
 
                 let value = sheetdata[row][col].v;
                 if (formula.execFunctionGlobalData != null) {
-                    let ef = formula.execFunctionGlobalData[row+"_"+col+"_"+Store.calculateSheetIndex];
-                    if(ef!=null){
+                    let ef = formula.execFunctionGlobalData[row + "_" + col + "_" + Store.calculateSheetIndex];
+                    if (ef != null) {
                         value = ef.v;
                     }
                 }
 
 
-                let retAll= {
+                let retAll = {
                     "sheetName": currentSheet.name,
                     "startCell": ref_text,
                     "rowl": row,
@@ -10640,7 +10640,7 @@ const functionImplementation = {
 
                 return retAll;
             }
-            else{
+            else {
                 return formula.error.r;
             }
         }
@@ -10650,7 +10650,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROW": function() {
+    "ROW": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10666,30 +10666,30 @@ const functionImplementation = {
         }
 
         try {
-            if(arguments.length == 1){
+            if (arguments.length == 1) {
                 //要返回其行号的单元格
                 var reference;
 
-                if(getObjType(arguments[0]) == "array"){
+                if (getObjType(arguments[0]) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+                else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                     reference = arguments[0].startCell;
                 }
-                else{
+                else {
                     reference = arguments[0];
                 }
 
-                if(formula.iscelldata(reference)){
+                if (formula.iscelldata(reference)) {
                     var cellrange = formula.getcellrange(reference);
 
                     return cellrange["row"][0] + 1;
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
-            else{
+            else {
                 return window.luckysheetCurrentRow + 1;
             }
         }
@@ -10699,7 +10699,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROWS": function() {
+    "ROWS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10716,18 +10716,18 @@ const functionImplementation = {
 
         try {
             //要返回其行数的范围
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array"){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array") {
                     return arguments[0].length;
                 }
-                else{
+                else {
                     return 1;
                 }
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 return arguments[0].rowl;
             }
-            else{
+            else {
                 return 1;
             }
         }
@@ -10737,7 +10737,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COLUMN": function() {
+    "COLUMN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10753,30 +10753,30 @@ const functionImplementation = {
         }
 
         try {
-            if(arguments.length == 1){
+            if (arguments.length == 1) {
                 //要返回其列号的单元格
                 var reference;
 
-                if(getObjType(arguments[0]) == "array"){
+                if (getObjType(arguments[0]) == "array") {
                     return formula.error.v;
                 }
-                else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+                else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                     reference = arguments[0].startCell;
                 }
-                else{
+                else {
                     reference = arguments[0];
                 }
 
-                if(formula.iscelldata(reference)){
+                if (formula.iscelldata(reference)) {
                     var cellrange = formula.getcellrange(reference);
 
                     return cellrange["column"][0] + 1;
                 }
-                else{
+                else {
                     return formula.error.v;
                 }
             }
-            else{
+            else {
                 return window.luckysheetCurrentColumn + 1;
             }
         }
@@ -10786,7 +10786,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COLUMNS": function() {
+    "COLUMNS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10803,18 +10803,18 @@ const functionImplementation = {
 
         try {
             //返回指定数组或范围中的列数
-            if(getObjType(arguments[0]) == "array"){
-                if(getObjType(arguments[0][0]) == "array"){
+            if (getObjType(arguments[0]) == "array") {
+                if (getObjType(arguments[0][0]) == "array") {
                     return arguments[0][0].length;
                 }
-                else{
+                else {
                     return arguments[0].length;
                 }
             }
-            else if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            else if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 return arguments[0].coll;
             }
-            else{
+            else {
                 return 1;
             }
         }
@@ -10824,7 +10824,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "OFFSET": function() {
+    "OFFSET": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10841,7 +10841,7 @@ const functionImplementation = {
 
         try {
             //用于计算行列偏移量的起点
-            if(!(getObjType(arguments[0]) == "object" && arguments[0].startCell != null)){
+            if (!(getObjType(arguments[0]) == "object" && arguments[0].startCell != null)) {
                 return formula.error.v;
             }
 
@@ -10850,11 +10850,11 @@ const functionImplementation = {
 
             //要偏移的行数
             var rows = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(rows)){
+            if (valueIsError(rows)) {
                 return rows;
             }
 
-            if(!isRealNum(rows)){
+            if (!isRealNum(rows)) {
                 return formula.error.v;
             }
 
@@ -10862,11 +10862,11 @@ const functionImplementation = {
 
             //要偏移的列数
             var cols = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(cols)){
+            if (valueIsError(cols)) {
                 return cols;
             }
 
-            if(!isRealNum(cols)){
+            if (!isRealNum(cols)) {
                 return formula.error.v;
             }
 
@@ -10874,13 +10874,13 @@ const functionImplementation = {
 
             //要从偏移目标开始返回的范围的高度
             var height = arguments[0].rowl;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 height = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(height)){
+                if (valueIsError(height)) {
                     return height;
                 }
 
-                if(!isRealNum(height)){
+                if (!isRealNum(height)) {
                     return formula.error.v;
                 }
 
@@ -10889,20 +10889,20 @@ const functionImplementation = {
 
             //要从偏移目标开始返回的范围的宽度
             var width = arguments[0].coll;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 width = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(width)){
+                if (valueIsError(width)) {
                     return width;
                 }
 
-                if(!isRealNum(width)){
+                if (!isRealNum(width)) {
                     return formula.error.v;
                 }
 
                 width = parseInt(width);
             }
 
-            if(height < 1 || width < 1){
+            if (height < 1 || width < 1) {
                 return formula.error.r;
             }
 
@@ -10927,29 +10927,29 @@ const functionImplementation = {
             let index = getSheetIndex(Store.calculateSheetIndex);
             let sheetdata = luckysheetfile[index].data;
 
-            if (cellRow0 < 0 || cellRow1 >= sheetdata.length || cellCol0 < 0 || cellCol1 >= sheetdata[0].length){
+            if (cellRow0 < 0 || cellRow1 >= sheetdata.length || cellCol0 < 0 || cellCol1 >= sheetdata[0].length) {
                 return formula.error.r;
             }
 
             var result = [];
 
-            for(var r = cellRow0; r <= cellRow1; r++){
+            for (var r = cellRow0; r <= cellRow1; r++) {
                 var rowArr = [];
 
-                for(var c = cellCol0; c <= cellCol1; c++){
-                    if(formula.execFunctionGlobalData != null && formula.execFunctionGlobalData[r+"_"+c+"_"+Store.calculateSheetIndex]!=null){
-                        let ef = formula.execFunctionGlobalData[r+"_"+c+"_"+Store.calculateSheetIndex];
-                        if(ef!=null){
+                for (var c = cellCol0; c <= cellCol1; c++) {
+                    if (formula.execFunctionGlobalData != null && formula.execFunctionGlobalData[r + "_" + c + "_" + Store.calculateSheetIndex] != null) {
+                        let ef = formula.execFunctionGlobalData[r + "_" + c + "_" + Store.calculateSheetIndex];
+                        if (ef != null) {
                             rowArr.push(ef.v);
                         }
-                        else{
+                        else {
                             rowArr.push(0);
                         }
                     }
-                    else if (sheetdata[r][c] != null && !isRealNull(sheetdata[r][c].v)){
+                    else if (sheetdata[r][c] != null && !isRealNull(sheetdata[r][c].v)) {
                         rowArr.push(sheetdata[r][c].v);
                     }
-                    else{
+                    else {
                         rowArr.push(0);
                     }
                 }
@@ -10958,7 +10958,7 @@ const functionImplementation = {
             }
 
 
-            let retAll= {
+            let retAll = {
                 "sheetName": sheetName,
                 "startCell": getRangetxt(Store.calculateSheetIndex, {
                     row: [cellRow0, cellRow1],
@@ -10977,7 +10977,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MATCH": function() {
+    "MATCH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -10995,7 +10995,7 @@ const functionImplementation = {
         try {
             //lookup_value
             var lookup_value = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(lookup_value)){
+            if (valueIsError(lookup_value)) {
                 return lookup_value;
             }
 
@@ -11003,36 +11003,36 @@ const functionImplementation = {
             var data_lookup_array = arguments[1];
             var lookup_array = [];
 
-            if(getObjType(data_lookup_array) == "array"){
-                if(getObjType(data_lookup_array[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_lookup_array)){
+            if (getObjType(data_lookup_array) == "array") {
+                if (getObjType(data_lookup_array[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_lookup_array)) {
                         return formula.error.v;
                     }
 
                     return formula.error.na;
                 }
-                else{
-                    for(var i = 0; i < data_lookup_array.length; i++){
+                else {
+                    for (var i = 0; i < data_lookup_array.length; i++) {
                         lookup_array.push(data_lookup_array[i]);
                     }
                 }
             }
-            else if(getObjType(data_lookup_array) == "object" && data_lookup_array.startCell != null){
-                if(data_lookup_array.rowl > 1 && data_lookup_array.coll > 1){
+            else if (getObjType(data_lookup_array) == "object" && data_lookup_array.startCell != null) {
+                if (data_lookup_array.rowl > 1 && data_lookup_array.coll > 1) {
                     return formula.error.na;
                 }
 
-                if(data_lookup_array.data != null){
-                    if(getObjType(data_lookup_array.data) == "array"){
-                        for(var i = 0; i < data_lookup_array.data.length; i++){
-                            for(var j = 0; j < data_lookup_array.data[i].length; j++){
-                                if(data_lookup_array.data[i][j] != null && !isRealNull(data_lookup_array.data[i][j].v)){
+                if (data_lookup_array.data != null) {
+                    if (getObjType(data_lookup_array.data) == "array") {
+                        for (var i = 0; i < data_lookup_array.data.length; i++) {
+                            for (var j = 0; j < data_lookup_array.data[i].length; j++) {
+                                if (data_lookup_array.data[i][j] != null && !isRealNull(data_lookup_array.data[i][j].v)) {
                                     lookup_array.push(data_lookup_array.data[i][j].v);
                                 }
                             }
                         }
                     }
-                    else{
+                    else {
                         lookup_array.push(data_lookup_array.data.v);
                     }
                 }
@@ -11040,20 +11040,20 @@ const functionImplementation = {
 
             //match_type
             var match_type = 1;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 match_type = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(match_type)){
+                if (valueIsError(match_type)) {
                     return match_type;
                 }
 
-                if(!isRealNum(match_type)){
+                if (!isRealNum(match_type)) {
                     return formula.error.v;
                 }
 
                 match_type = Math.ceil(parseFloat(match_type));
             }
 
-            if([-1,0,1].indexOf(match_type) == -1){
+            if ([-1, 0, 1].indexOf(match_type) == -1) {
                 return formula.error.na;
             }
 
@@ -11115,7 +11115,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VLOOKUP": function() {
+    "VLOOKUP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11133,11 +11133,11 @@ const functionImplementation = {
         try {
             //lookup_value
             var lookup_value = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(lookup_value)){
+            if (valueIsError(lookup_value)) {
                 return lookup_value;
             }
 
-            if(lookup_value.toString().replace(/\s/g, "") == ""){
+            if (lookup_value.toString().replace(/\s/g, "") == "") {
                 return formula.error.na;
             }
 
@@ -11145,46 +11145,46 @@ const functionImplementation = {
             var data_table_array = arguments[1];
             var table_array = [];
 
-            if(getObjType(data_table_array) == "array"){
-                if(getObjType(data_table_array[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_table_array)){
+            if (getObjType(data_table_array) == "array") {
+                if (getObjType(data_table_array[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_table_array)) {
                         return formula.error.v;
                     }
 
-                    for(var i = 0; i < data_table_array.length; i++){
+                    for (var i = 0; i < data_table_array.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < data_table_array[i].length; j++){
+                        for (var j = 0; j < data_table_array[i].length; j++) {
                             rowArr.push(data_table_array[i][j]);
                         }
 
                         table_array.push(rowArr);
                     }
                 }
-                else{
+                else {
                     var rowArr = [];
 
-                    for(var i = 0; i < data_table_array.length; i++){
+                    for (var i = 0; i < data_table_array.length; i++) {
                         rowArr.push(data_table_array[i]);
                     }
 
                     table_array.push(rowArr);
                 }
             }
-            else if(getObjType(data_table_array) == "object" && data_table_array.startCell != null){
+            else if (getObjType(data_table_array) == "object" && data_table_array.startCell != null) {
                 table_array = func_methods.getCellDataDyadicArr(data_table_array, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //col_index_num
             var col_index_num = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(col_index_num)){
+            if (valueIsError(col_index_num)) {
                 return col_index_num;
             }
 
-            if(!isRealNum(col_index_num)){
+            if (!isRealNum(col_index_num)) {
                 return formula.error.v;
             }
 
@@ -11192,27 +11192,27 @@ const functionImplementation = {
 
             //range_lookup
             var range_lookup = true;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 range_lookup = func_methods.getCellBoolen(arguments[3]);
 
-                if(valueIsError(range_lookup)){
+                if (valueIsError(range_lookup)) {
                     return range_lookup;
                 }
             }
 
             //判断
-            if(col_index_num < 1){
+            if (col_index_num < 1) {
                 return formula.error.v;
             }
-            else if(col_index_num > table_array[0].length){
+            else if (col_index_num > table_array[0].length) {
                 return formula.error.r;
             }
 
             //计算
-            if(range_lookup){
+            if (range_lookup) {
                 table_array = orderbydata(table_array, 0, true);
 
-                for(var r = 0; r < table_array.length; r++){
+                for (var r = 0; r < table_array.length; r++) {
                     var v = table_array[r][0];
 
                     var result;
@@ -11233,32 +11233,32 @@ const functionImplementation = {
                         result = -1;
                     }
 
-                    if(result < 0){
-                        if(r == 0){
+                    if (result < 0) {
+                        if (r == 0) {
                             return formula.error.na;
                         }
-                        else{
+                        else {
                             return table_array[r - 1][col_index_num - 1];
                         }
                     }
-                    else{
-                        if(r == table_array.length - 1){
+                    else {
+                        if (r == table_array.length - 1) {
                             return table_array[r][col_index_num - 1];
                         }
                     }
                 }
             }
-            else{
+            else {
                 var index = null;
 
-                for(var r = 0; r < table_array.length; r++){
-                    if(lookup_value.toString() == table_array[r][0].toString()){
+                for (var r = 0; r < table_array.length; r++) {
+                    if (lookup_value.toString() == table_array[r][0].toString()) {
                         index = r;
                         break;
                     }
                 }
 
-                if(index == null){
+                if (index == null) {
                     return formula.error.na;
                 }
 
@@ -11272,7 +11272,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HLOOKUP": function() {
+    "HLOOKUP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11292,7 +11292,7 @@ const functionImplementation = {
             var cell_c = window.luckysheetCurrentColumn;
             var searchkey = arguments[0];
 
-            if(typeof(searchkey) == "object"){
+            if (typeof (searchkey) == "object") {
                 searchkey = arguments[0].data;
 
                 if (getObjType(searchkey) == "array") {
@@ -11302,7 +11302,7 @@ const functionImplementation = {
                         searchkey = searchkey[c];
                     }
                 }
-                else{
+                else {
                     searchkey = searchkey.v;
                 }
             }
@@ -11320,7 +11320,7 @@ const functionImplementation = {
             }
 
             var result = formula.error.na;
-            for(var c = 0;c < range[0].length;c++){
+            for (var c = 0; c < range[0].length; c++) {
                 var matchv = getcellvalue(0, c, range);
                 var showv = getcellvalue(index - 1, c, range);
 
@@ -11329,7 +11329,7 @@ const functionImplementation = {
                         result = showv;
                     }
                 } else {
-                    if (formula.acompareb(matchv,searchkey)) {
+                    if (formula.acompareb(matchv, searchkey)) {
                         result = showv;
                         return result;
                     }
@@ -11344,7 +11344,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOOKUP": function() {
+    "LOOKUP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11367,7 +11367,7 @@ const functionImplementation = {
             var cell_c = window.luckysheetCurrentColumn;
             var searchkey = arguments[0];
 
-            if(typeof(searchkey) == "object"){
+            if (typeof (searchkey) == "object") {
                 searchkey = arguments[0].data;
 
                 if (getObjType(searchkey) == "array") {
@@ -11377,7 +11377,7 @@ const functionImplementation = {
                         searchkey = searchkey[c];
                     }
                 }
-                else{
+                else {
                     searchkey = searchkey.v;
                 }
             }
@@ -11387,76 +11387,76 @@ const functionImplementation = {
             var range2;
             var result = formula.error.na;
 
-            function sortNum(a,b){ //用于排序
+            function sortNum(a, b) { //用于排序
                 return b - a;
             }
 
             //获得两个范围的数组
-            range= formula.getRangeArray(range)[0];
-            if(arguments[2]){
+            range = formula.getRangeArray(range)[0];
+            if (arguments[2]) {
                 range2 = arguments[2].data;
                 range2 = formula.getRangeArray(range2)[0];
             }
 
-            if(typeof(searchkey) == "string"){ //字符串直接判断是否相等
+            if (typeof (searchkey) == "string") { //字符串直接判断是否相等
 
                 for (var i = 0; i < range.length; i++) {
                     var matchv = range[i];
                     var showv;
-                    if(arguments[2]){
+                    if (arguments[2]) {
                         showv = range2[i];
-                        if(matchv == searchkey) {
+                        if (matchv == searchkey) {
                             result = showv;
                         }
-                    }else{
-                        if (formula.acompareb(matchv,searchkey)) {
+                    } else {
+                        if (formula.acompareb(matchv, searchkey)) {
                             result = matchv;
                         }
                     }
                 }
-            }else if(isdatatype(searchkey) == "num"){ //数字判断1.是否相等2.不等，去找接近值
-                    var rangeNow = [];
+            } else if (isdatatype(searchkey) == "num") { //数字判断1.是否相等2.不等，去找接近值
+                var rangeNow = [];
 
-                    for (var i = 0; i < range.length; i++) {
-                        var matchv = range[i];
-                        var showv;
+                for (var i = 0; i < range.length; i++) {
+                    var matchv = range[i];
+                    var showv;
 
-                        if(arguments[2]){
-                            showv = range2[i];
-                            if(matchv == searchkey) {
-                                result = showv;
-                                return result;
-                            }else if(matchv != searchkey && isdatatype(matchv) == "num"){
-                                rangeNow.push(matchv);
-                            }
-                        }else{
-                            if (matchv == searchkey) {
-                                result = matchv;
-                                return result;
-                            }else if(matchv != searchkey && isdatatype(matchv) == "num"){
-                                rangeNow.push(matchv);
-                            }
+                    if (arguments[2]) {
+                        showv = range2[i];
+                        if (matchv == searchkey) {
+                            result = showv;
+                            return result;
+                        } else if (matchv != searchkey && isdatatype(matchv) == "num") {
+                            rangeNow.push(matchv);
+                        }
+                    } else {
+                        if (matchv == searchkey) {
+                            result = matchv;
+                            return result;
+                        } else if (matchv != searchkey && isdatatype(matchv) == "num") {
+                            rangeNow.push(matchv);
+                        }
+                    }
+
+                }
+                if (rangeNow.length != 0) {
+                    rangeNow.push(searchkey);
+                    rangeNow.sort(sortNum);
+
+                    var index = rangeNow.indexOf(searchkey);
+                    if (index == (rangeNow.length - 1)) {
+                        return [formula.error.na, "找不到对应参数"];
+                    } else {
+                        var mat = rangeNow[index + 1];
+                        if (arguments[2]) {
+                            var i = range.indexOf(mat);//改成数组
+                            result = range2[i];
+                        } else {
+                            result = mat;
                         }
 
                     }
-                    if(rangeNow.length != 0){
-                        rangeNow.push(searchkey);
-                        rangeNow.sort(sortNum);
-
-                        var index = rangeNow.indexOf(searchkey);
-                        if(index == (rangeNow.length -1)){
-                            return [formula.error.na, "找不到对应参数"];
-                        }else{
-                            var mat = rangeNow[index + 1];
-                            if(arguments[2]){
-                                var i = range.indexOf(mat);//改成数组
-                                result = range2[i];
-                            }else{
-                                result = mat;
-                            }
-
-                        }
-                    }
+                }
 
             }
 
@@ -11469,7 +11469,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "INDEX": function() {
+    "INDEX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11489,14 +11489,14 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
             let isReference = false;
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "number");
                 isReference = true;
             }
@@ -11505,11 +11505,11 @@ const functionImplementation = {
 
             //选择数组中的某行，函数从该行返回数值
             var row_num = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(row_num)){
+            if (valueIsError(row_num)) {
                 return row_num;
             }
 
-            if(!isRealNum(row_num)){
+            if (!isRealNum(row_num)) {
                 return formula.error.v;
             }
 
@@ -11517,26 +11517,26 @@ const functionImplementation = {
 
             //选择数组中的某列，函数从该列返回数值
             var column_num = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(column_num)){
+            if (valueIsError(column_num)) {
                 return column_num;
             }
 
 
 
-            if(row_num < 0 || (isRealNum(column_num) && column_num < 0)){
+            if (row_num < 0 || (isRealNum(column_num) && column_num < 0)) {
                 return formula.error.v;
             }
 
-            if(rowlen == 1 && column_num == undefined){
+            if (rowlen == 1 && column_num == undefined) {
                 column_num = row_num;
                 row_num = 1;
             }
 
-            if(row_num > rowlen || (isRealNum(column_num) && column_num > collen)){
+            if (row_num > rowlen || (isRealNum(column_num) && column_num > collen)) {
                 return formula.error.r;
             }
 
-            if(isReference){
+            if (isReference) {
 
                 var cellrange = formula.getcellrange(data_array.startCell);
                 var cellRow0 = cellrange["row"][0];
@@ -11544,34 +11544,34 @@ const functionImplementation = {
 
 
                 let data = array;
-                if(row_num == 0 || column_num == 0){
-                    if(row_num==0){
+                if (row_num == 0 || column_num == 0) {
+                    if (row_num == 0) {
                         data = array[0];
                         row_num = 1;
                     }
-                    else{
-                        data = array[row_num-1];
+                    else {
+                        data = array[row_num - 1];
                     }
 
-                    if(isRealNum(column_num)){
-                        if(column_num==0){
+                    if (isRealNum(column_num)) {
+                        if (column_num == 0) {
                             data = data[0];
                             column_num = 1;
                         }
-                        else{
-                            data = data[column_num-1]
+                        else {
+                            data = data[column_num - 1]
                         }
                     }
-                    else{
+                    else {
                         column_num = 1;
                     }
                 }
-                else{
-                    if(!isRealNum(row_num)){
+                else {
+                    if (!isRealNum(row_num)) {
                         row_num = 1;
                     }
 
-                    if(!isRealNum(column_num)){
+                    if (!isRealNum(column_num)) {
                         column_num = 1;
                     }
                     data = array[row_num - 1][column_num - 1];
@@ -11579,7 +11579,7 @@ const functionImplementation = {
 
                 let row_index = cellRow0 + row_num - 1, column_index = cellCol0 + column_num - 1;
 
-                let retAll= {
+                let retAll = {
                     "sheetName": data_array.sheetName,
                     "startCell": getRangetxt(Store.calculateSheetIndex, {
                         row: [row_index, row_index],
@@ -11591,16 +11591,16 @@ const functionImplementation = {
                 };
                 return retAll;
             }
-            else{
+            else {
                 //计算
 
-                if(!isRealNum(column_num)){
+                if (!isRealNum(column_num)) {
                     return formula.error.v;
                 }
 
                 column_num = parseInt(column_num);
 
-                if(row_num <= 0 || column_num <= 0){
+                if (row_num <= 0 || column_num <= 0) {
                     return formula.error.v;
                 }
                 return array[row_num - 1][column_num - 1];
@@ -11614,7 +11614,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GETPIVOTDATA": function() {
+    "GETPIVOTDATA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11638,7 +11638,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CHOOSE": function() {
+    "CHOOSE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11656,48 +11656,48 @@ const functionImplementation = {
         try {
             //指定要返回哪一项
             var index_num = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(index_num)){
+            if (valueIsError(index_num)) {
                 return index_num;
             }
 
-            if(!isRealNum(index_num)){
+            if (!isRealNum(index_num)) {
                 return formula.error.v;
             }
 
             index_num = parseInt(index_num);
 
-            if(index_num < 1 || index_num > arguments.length - 1){
+            if (index_num < 1 || index_num > arguments.length - 1) {
                 return formula.error.v;
             }
 
             var data_result = arguments[index_num];
 
-            if(getObjType(data_result) == "array"){
-                if(getObjType(data_result[0]) == "array" && !func_methods.isDyadicArr(data_result)){
+            if (getObjType(data_result) == "array") {
+                if (getObjType(data_result[0]) == "array" && !func_methods.isDyadicArr(data_result)) {
                     return formula.error.v;
                 }
 
                 return data_result;
             }
-            else if(getObjType(data_result) == "object" && data_result.startCell != null){
-                if(data_result.data == null){
+            else if (getObjType(data_result) == "object" && data_result.startCell != null) {
+                if (data_result.data == null) {
                     return 0;
                 }
 
-                if(getObjType(data_result.data) == "array"){
+                if (getObjType(data_result.data) == "array") {
                     var result = func_methods.getCellDataDyadicArr(data_result.data, "number");
 
                     return result;
                 }
-                else{
-                    if(isRealNull(data_result.data.v)){
+                else {
+                    if (isRealNull(data_result.data.v)) {
                         return 0;
                     }
 
                     return data_result.data.v;
                 }
             }
-            else{
+            else {
                 return data_result;
             }
         }
@@ -11707,7 +11707,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HYPERLINK": function() {
+    "HYPERLINK": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11731,7 +11731,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TIME": function() {
+    "TIME": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11749,11 +11749,11 @@ const functionImplementation = {
         try {
             //时
             var hour = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(hour)){
+            if (valueIsError(hour)) {
                 return hour;
             }
 
-            if(!isRealNum(hour)){
+            if (!isRealNum(hour)) {
                 return formula.error.v;
             }
 
@@ -11761,11 +11761,11 @@ const functionImplementation = {
 
             //分
             var minute = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(minute)){
+            if (valueIsError(minute)) {
                 return minute;
             }
 
-            if(!isRealNum(minute)){
+            if (!isRealNum(minute)) {
                 return formula.error.v;
             }
 
@@ -11773,33 +11773,33 @@ const functionImplementation = {
 
             //秒
             var second = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(second)){
+            if (valueIsError(second)) {
                 return second;
             }
 
-            if(!isRealNum(second)){
+            if (!isRealNum(second)) {
                 return formula.error.v;
             }
 
             second = parseInt(second);
 
-            if(hour < 0 || hour > 32767){
+            if (hour < 0 || hour > 32767) {
                 return formula.error.nm;
             }
-            else if(hour > 24){
+            else if (hour > 24) {
                 hour = hour % 24;
             }
 
-            if(minute < 0 || minute > 32767){
+            if (minute < 0 || minute > 32767) {
                 return formula.error.nm;
             }
 
-            if(second < 0 || second > 32767){
+            if (second < 0 || second > 32767) {
                 return formula.error.nm;
             }
 
             //计算
-            var time = dayjs().set({'hour': hour, 'minute': minute, 'second': second});
+            var time = dayjs().set({ 'hour': hour, 'minute': minute, 'second': second });
 
             return dayjs(time).format("h:mm:ss a");
         }
@@ -11809,7 +11809,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TIMEVALUE": function() {
+    "TIMEVALUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11827,12 +11827,12 @@ const functionImplementation = {
         try {
             //用于表示时间的字符串
             var time_text = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(time_text)){
+            if (valueIsError(time_text)) {
                 return time_text;
             }
 
             //计算
-            if(!dayjs(time_text).isValid()){
+            if (!dayjs(time_text).isValid()) {
                 return formula.error.v;
             }
 
@@ -11844,7 +11844,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EOMONTH": function() {
+    "EOMONTH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11862,23 +11862,23 @@ const functionImplementation = {
         try {
             //用于计算结果的参照日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
             //月数
             var months = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(months)){
+            if (valueIsError(months)) {
                 return months;
             }
 
-            if(!isRealNum(months)){
+            if (!isRealNum(months)) {
                 return formula.error.v;
             }
 
             months = parseInt(months);
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
@@ -11896,7 +11896,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EDATE": function() {
+    "EDATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11914,23 +11914,23 @@ const functionImplementation = {
         try {
             //用于计算结果的参照日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
             //月数
             var months = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(months)){
+            if (valueIsError(months)) {
                 return months;
             }
 
-            if(!isRealNum(months)){
+            if (!isRealNum(months)) {
                 return formula.error.v;
             }
 
             months = parseInt(months);
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
@@ -11948,7 +11948,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SECOND": function() {
+    "SECOND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -11966,11 +11966,11 @@ const functionImplementation = {
         try {
             //时间值
             var time_text = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(time_text)){
+            if (valueIsError(time_text)) {
                 return time_text;
             }
 
-            if(!dayjs(time_text).isValid()){
+            if (!dayjs(time_text).isValid()) {
                 return formula.error.v;
             }
 
@@ -11984,7 +11984,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MINUTE": function() {
+    "MINUTE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12002,11 +12002,11 @@ const functionImplementation = {
         try {
             //时间值
             var time_text = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(time_text)){
+            if (valueIsError(time_text)) {
                 return time_text;
             }
 
-            if(!dayjs(time_text).isValid()){
+            if (!dayjs(time_text).isValid()) {
                 return formula.error.v;
             }
 
@@ -12020,7 +12020,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HOUR": function() {
+    "HOUR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12038,11 +12038,11 @@ const functionImplementation = {
         try {
             //时间值
             var time_text = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(time_text)){
+            if (valueIsError(time_text)) {
                 return time_text;
             }
 
-            if(!dayjs(time_text).isValid()){
+            if (!dayjs(time_text).isValid()) {
                 return formula.error.v;
             }
 
@@ -12056,7 +12056,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NOW": function() {
+    "NOW": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12080,7 +12080,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NETWORKDAYS": function() {
+    "NETWORKDAYS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12096,10 +12096,10 @@ const functionImplementation = {
         }
 
         try {
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var result = window.luckysheet_function.NETWORKDAYS_INTL.f(arguments[0], arguments[1], 1, arguments[2]);
             }
-            else{
+            else {
                 var result = window.luckysheet_function.NETWORKDAYS_INTL.f(arguments[0], arguments[1], 1);
             }
 
@@ -12111,7 +12111,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NETWORKDAYS_INTL": function() {
+    "NETWORKDAYS_INTL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12150,45 +12150,45 @@ const functionImplementation = {
 
             //用于计算净工作日天数的时间段开始日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
             //用于计算净工作日天数的时间段结束日期
             var end_date = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(end_date)){
+            if (valueIsError(end_date)) {
                 return end_date;
             }
 
-            if(!dayjs(end_date).isValid()){
+            if (!dayjs(end_date).isValid()) {
                 return formula.error.v;
             }
 
             //用于表示哪些天为周末的数字或字符串
             var weekend = WEEKEND_TYPES[1];
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 weekend = arguments[2];
 
-                if(typeof weekend == "string" && weekend.length == "7" && /^[0-1]{7}$/g.test(weekend)){
+                if (typeof weekend == "string" && weekend.length == "7" && /^[0-1]{7}$/g.test(weekend)) {
 
                 }
-                else{
+                else {
                     weekend = func_methods.getFirstValue(arguments[2]);
-                    if(valueIsError(weekend)){
+                    if (valueIsError(weekend)) {
                         return weekend;
                     }
 
-                    if(!isRealNum(weekend)){
+                    if (!isRealNum(weekend)) {
                         return formula.error.v;
                     }
 
                     weekend = parseInt(weekend);
 
-                    if(weekend < 1 || (weekend > 7 && weekend < 11) || weekend > 17){
+                    if (weekend < 1 || (weekend > 7 && weekend < 11) || weekend > 17) {
                         return formula.error.nm;
                     }
 
@@ -12198,15 +12198,15 @@ const functionImplementation = {
 
             //这是一个范围或数组常量，其中包含作为节假日的日期
             var holidays = [];
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 holidays = func_methods.getCellrangeDate(arguments[3]);
-                if(valueIsError(holidays)){
+                if (valueIsError(holidays)) {
                     return holidays;
                 }
             }
 
             for (var i = 0; i < holidays.length; i++) {
-                if(!dayjs(holidays[i]).isValid()){
+                if (!dayjs(holidays[i]).isValid()) {
                     return formula.error.v;
                 }
             }
@@ -12220,23 +12220,23 @@ const functionImplementation = {
                 var d = dayjs(day).weekday();
                 var dec = false;
 
-                if(getObjType(weekend) == "array"){
+                if (getObjType(weekend) == "array") {
                     if (d === weekend[0] || d === weekend[1]) {
                         dec = true;
                     }
                 }
-                else{
-                    if(d == 0){
+                else {
+                    if (d == 0) {
                         d = 7;
                     }
 
-                    if(weekend.charAt(d - 1) == "0"){
+                    if (weekend.charAt(d - 1) == "0") {
                         dec = true;
                     }
                 }
 
                 for (var j = 0; j < holidays.length; j++) {
-                    if(dayjs(day).diff(dayjs(holidays[j]), 'days') === 0){
+                    if (dayjs(day).diff(dayjs(holidays[j]), 'days') === 0) {
                         dec = true;
                         break;
                     }
@@ -12257,7 +12257,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISOWEEKNUM": function() {
+    "ISOWEEKNUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12275,11 +12275,11 @@ const functionImplementation = {
         try {
             //用于日期和时间计算的日期
             var date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(date)){
+            if (valueIsError(date)) {
                 return date;
             }
 
-            if(!dayjs(date).isValid()){
+            if (!dayjs(date).isValid()) {
                 return formula.error.v;
             }
 
@@ -12292,7 +12292,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "WEEKNUM": function() {
+    "WEEKNUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12331,34 +12331,34 @@ const functionImplementation = {
 
             //用于计算净工作日天数的时间段开始日期
             var serial_number = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(serial_number)){
+            if (valueIsError(serial_number)) {
                 return serial_number;
             }
 
-            if(!dayjs(serial_number).isValid()){
+            if (!dayjs(serial_number).isValid()) {
                 return formula.error.v;
             }
 
             //用于表示哪些天为周末的数字或字符串
             var return_type = 1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 return_type = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(return_type)){
+                if (valueIsError(return_type)) {
                     return return_type;
                 }
 
-                if(!isRealNum(return_type)){
+                if (!isRealNum(return_type)) {
                     return formula.error.v;
                 }
 
                 return_type = parseInt(return_type);
             }
 
-            if(return_type == 21){
+            if (return_type == 21) {
                 return window.luckysheet_function.ISOWEEKNUM.f(arguments[0]);
             }
 
-            if([1,2,11,12,13,14,15,16,17].indexOf(return_type) == -1){
+            if ([1, 2, 11, 12, 13, 14, 15, 16, 17].indexOf(return_type) == -1) {
                 return formula.error.nm;
             }
 
@@ -12375,7 +12375,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "WEEKDAY": function() {
+    "WEEKDAY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12414,30 +12414,30 @@ const functionImplementation = {
 
             //用于计算净工作日天数的时间段开始日期
             var serial_number = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(serial_number)){
+            if (valueIsError(serial_number)) {
                 return serial_number;
             }
 
-            if(!dayjs(serial_number).isValid()){
+            if (!dayjs(serial_number).isValid()) {
                 return formula.error.v;
             }
 
             //以数字指示使用哪种编号顺序来表示星期几
             var return_type = 1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 return_type = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(return_type)){
+                if (valueIsError(return_type)) {
                     return return_type;
                 }
 
-                if(!isRealNum(return_type)){
+                if (!isRealNum(return_type)) {
                     return formula.error.v;
                 }
 
                 return_type = parseInt(return_type);
             }
 
-            if([1,2,3,11,12,13,14,15,16,17].indexOf(return_type) == -1){
+            if ([1, 2, 3, 11, 12, 13, 14, 15, 16, 17].indexOf(return_type) == -1) {
                 return formula.error.nm;
             }
 
@@ -12452,7 +12452,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DAY": function() {
+    "DAY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12470,11 +12470,11 @@ const functionImplementation = {
         try {
             //用于计算净工作日天数的时间段开始日期
             var serial_number = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(serial_number)){
+            if (valueIsError(serial_number)) {
                 return serial_number;
             }
 
-            if(!dayjs(serial_number).isValid()){
+            if (!dayjs(serial_number).isValid()) {
                 return formula.error.v;
             }
 
@@ -12487,7 +12487,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DAYS": function() {
+    "DAYS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12505,21 +12505,21 @@ const functionImplementation = {
         try {
             //结束日期
             var end_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(end_date)){
+            if (valueIsError(end_date)) {
                 return end_date;
             }
 
-            if(!dayjs(end_date).isValid()){
+            if (!dayjs(end_date).isValid()) {
                 return formula.error.v;
             }
 
             //开始日期
             var start_date = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
@@ -12534,7 +12534,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DAYS360": function() {
+    "DAYS360": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12552,30 +12552,30 @@ const functionImplementation = {
         try {
             //开始日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
             //结束日期
             var end_date = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(end_date)){
+            if (valueIsError(end_date)) {
                 return end_date;
             }
 
-            if(!dayjs(end_date).isValid()){
+            if (!dayjs(end_date).isValid()) {
                 return formula.error.v;
             }
 
             //天数计算方法
             var method = false;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 method = func_methods.getCellBoolen(arguments[2]);
 
-                if(valueIsError(method)){
+                if (valueIsError(method)) {
                     return method;
                 }
             }
@@ -12618,7 +12618,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATE": function() {
+    "DATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12636,11 +12636,11 @@ const functionImplementation = {
         try {
             //年
             var year = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(year)){
+            if (valueIsError(year)) {
                 return year;
             }
 
-            if(!isRealNum(year)){
+            if (!isRealNum(year)) {
                 return formula.error.v;
             }
 
@@ -12648,11 +12648,11 @@ const functionImplementation = {
 
             //月
             var month = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(month)){
+            if (valueIsError(month)) {
                 return month;
             }
 
-            if(!isRealNum(month)){
+            if (!isRealNum(month)) {
                 return formula.error.v;
             }
 
@@ -12660,26 +12660,26 @@ const functionImplementation = {
 
             //日
             var day = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(day)){
+            if (valueIsError(day)) {
                 return day;
             }
 
-            if(!isRealNum(day)){
+            if (!isRealNum(day)) {
                 return formula.error.v;
             }
 
             day = parseInt(day);
 
-            if(year < 0 || year >= 10000){
+            if (year < 0 || year >= 10000) {
                 return formula.error.nm;
             }
-            else if(year >= 0 && year <= 1899){
+            else if (year >= 0 && year <= 1899) {
                 year = year + 1900;
             }
 
             var date = dayjs().set({ 'year': year, 'month': month - 1, "date": day });
 
-            if(dayjs(date).year() < 1900){
+            if (dayjs(date).year() < 1900) {
                 return formula.error.nm;
             }
 
@@ -12691,7 +12691,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATEVALUE": function() {
+    "DATEVALUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12709,11 +12709,11 @@ const functionImplementation = {
         try {
             //开始日期
             var date_text = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(date_text)){
+            if (valueIsError(date_text)) {
                 return date_text;
             }
 
-            if(!dayjs(date_text).isValid()){
+            if (!dayjs(date_text).isValid()) {
                 return formula.error.v;
             }
 
@@ -12729,7 +12729,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DATEDIF": function() {
+    "DATEDIF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12745,9 +12745,9 @@ const functionImplementation = {
         }
 
         try {
-            for (var i = 0; i < arguments.length-1; i++){
+            for (var i = 0; i < arguments.length - 1; i++) {
                 arguments[i] = func_methods.getCellDate(arguments[i]);
-                if(!isdatetime(arguments[i])){
+                if (!isdatetime(arguments[i])) {
                     return formula.error.v;
                 }
             }
@@ -12756,29 +12756,29 @@ const functionImplementation = {
             var endDate = dayjs(arguments[1]);
             var unit = arguments[2];
             var result = formula.error.v;
-            if(window.luckysheet_function.DAYS.f(endDate,startDate) < 0){
+            if (window.luckysheet_function.DAYS.f(endDate, startDate) < 0) {
                 return formula.error.v;
             }
 
-            switch(unit){
-                case "Y":case "y":
-                    result = endDate.diff(startDate,"years",false);
+            switch (unit) {
+                case "Y": case "y":
+                    result = endDate.diff(startDate, "years", false);
                     break;
-                case "M":case "m":
-                    result = endDate.diff(startDate,"months",false);
+                case "M": case "m":
+                    result = endDate.diff(startDate, "months", false);
                     break;
-                case "D":case "d":
-                    result = endDate.diff(startDate,"days",false);
+                case "D": case "d":
+                    result = endDate.diff(startDate, "days", false);
                     break;
-                case "MD":case "md":
+                case "MD": case "md":
                     result = endDate.format('DD') - startDate.format('DD');
                     break;
-                case "YM":case "ym":
+                case "YM": case "ym":
                     var startM = parseInt(startDate.format('M')); //注意字符串转化为数字
                     var endM = parseInt(endDate.format('M'));
-                    result = (startM <= endM) ?  endM - startM : endM + 12 - startM;
+                    result = (startM <= endM) ? endM - startM : endM + 12 - startM;
                     break;
-                case "YD":case "yd":
+                case "YD": case "yd":
                     const format = `${endDate.$y}-MM-DD`;
                     var startM = genarate(startDate.format(format))[2];
                     var endM = genarate(endDate.format(format))[2];
@@ -12797,7 +12797,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "WORKDAY": function() {
+    "WORKDAY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12813,10 +12813,10 @@ const functionImplementation = {
         }
 
         try {
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 var result = window.luckysheet_function.WORKDAY_INTL.f(arguments[0], arguments[1], 1, arguments[2]);
             }
-            else{
+            else {
                 var result = window.luckysheet_function.WORKDAY_INTL.f(arguments[0], arguments[1], 1);
             }
 
@@ -12828,7 +12828,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "WORKDAY_INTL": function() {
+    "WORKDAY_INTL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12867,21 +12867,21 @@ const functionImplementation = {
 
             //计算的开始日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
             //工作日的天数
             var days = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(days)){
+            if (valueIsError(days)) {
                 return days;
             }
 
-            if(!isRealNum(days)){
+            if (!isRealNum(days)) {
                 return formula.error.v;
             }
 
@@ -12889,25 +12889,25 @@ const functionImplementation = {
 
             //用于表示哪些天为周末的数字或字符串
             var weekend = WEEKEND_TYPES[1];
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 weekend = arguments[2];
 
-                if(typeof weekend == "string" && weekend.length == "7" && /^[0-1]{7}$/g.test(weekend)){
+                if (typeof weekend == "string" && weekend.length == "7" && /^[0-1]{7}$/g.test(weekend)) {
 
                 }
-                else{
+                else {
                     weekend = func_methods.getFirstValue(arguments[2]);
-                    if(valueIsError(weekend)){
+                    if (valueIsError(weekend)) {
                         return weekend;
                     }
 
-                    if(!isRealNum(weekend)){
+                    if (!isRealNum(weekend)) {
                         return formula.error.v;
                     }
 
                     weekend = parseInt(weekend);
 
-                    if(weekend < 1 || (weekend > 7 && weekend < 11) || weekend > 17){
+                    if (weekend < 1 || (weekend > 7 && weekend < 11) || weekend > 17) {
                         return formula.error.nm;
                     }
 
@@ -12917,15 +12917,15 @@ const functionImplementation = {
 
             //这是一个范围或数组常量，其中包含作为节假日的日期
             var holidays = [];
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 holidays = func_methods.getCellrangeDate(arguments[3]);
-                if(valueIsError(holidays)){
+                if (valueIsError(holidays)) {
                     return holidays;
                 }
             }
 
             for (var i = 0; i < holidays.length; i++) {
-                if(!dayjs(holidays[i]).isValid()){
+                if (!dayjs(holidays[i]).isValid()) {
                     return formula.error.v;
                 }
             }
@@ -12937,23 +12937,23 @@ const functionImplementation = {
                 start_date = dayjs(start_date).add(1, 'days');
                 var day = dayjs(start_date).weekday();
 
-                if(getObjType(weekend)){
+                if (getObjType(weekend)) {
                     if (day === weekend[0] || day === weekend[1]) {
                         continue;
                     }
                 }
-                else{
-                    if(day == 0){
+                else {
+                    if (day == 0) {
                         day = 7;
                     }
 
-                    if(weekend.charAt(day - 1) == "0"){
+                    if (weekend.charAt(day - 1) == "0") {
                         continue;
                     }
                 }
 
                 for (var j = 0; j < holidays.length; j++) {
-                    if(dayjs(start_date).diff(dayjs(holidays[j]), 'days') === 0){
+                    if (dayjs(start_date).diff(dayjs(holidays[j]), 'days') === 0) {
                         d--;
                         break;
                     }
@@ -12970,7 +12970,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "YEAR": function() {
+    "YEAR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -12988,11 +12988,11 @@ const functionImplementation = {
         try {
             //开始日期
             var serial_number = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(serial_number)){
+            if (valueIsError(serial_number)) {
                 return serial_number;
             }
 
-            if(!dayjs(serial_number).isValid()){
+            if (!dayjs(serial_number).isValid()) {
                 return formula.error.v;
             }
 
@@ -13005,7 +13005,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "YEARFRAC": function() {
+    "YEARFRAC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13023,40 +13023,40 @@ const functionImplementation = {
         try {
             //开始日期
             var start_date = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(start_date)){
+            if (valueIsError(start_date)) {
                 return start_date;
             }
 
-            if(!dayjs(start_date).isValid()){
+            if (!dayjs(start_date).isValid()) {
                 return formula.error.v;
             }
 
             //结束日期
             var end_date = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(end_date)){
+            if (valueIsError(end_date)) {
                 return end_date;
             }
 
-            if(!dayjs(end_date).isValid()){
+            if (!dayjs(end_date).isValid()) {
                 return formula.error.v;
             }
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 basis = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
@@ -13124,7 +13124,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TODAY": function() {
+    "TODAY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13148,7 +13148,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MONTH": function() {
+    "MONTH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13166,11 +13166,11 @@ const functionImplementation = {
         try {
             //开始日期
             var serial_number = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(serial_number)){
+            if (valueIsError(serial_number)) {
                 return serial_number;
             }
 
-            if(!dayjs(serial_number).isValid()){
+            if (!dayjs(serial_number).isValid()) {
                 return formula.error.v;
             }
 
@@ -13183,7 +13183,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EFFECT": function() {
+    "EFFECT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13201,11 +13201,11 @@ const functionImplementation = {
         try {
             //每年的名义利率
             var nominal_rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(nominal_rate)){
+            if (valueIsError(nominal_rate)) {
                 return nominal_rate;
             }
 
-            if(!isRealNum(nominal_rate)){
+            if (!isRealNum(nominal_rate)) {
                 return formula.error.v;
             }
 
@@ -13213,17 +13213,17 @@ const functionImplementation = {
 
             //每年的复利计算期数
             var npery = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(npery)){
+            if (valueIsError(npery)) {
                 return npery;
             }
 
-            if(!isRealNum(npery)){
+            if (!isRealNum(npery)) {
                 return formula.error.v;
             }
 
             npery = parseInt(npery);
 
-            if(nominal_rate <= 0 || npery < 1){
+            if (nominal_rate <= 0 || npery < 1) {
                 return formula.error.nm;
             }
 
@@ -13235,7 +13235,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DOLLAR": function() {
+    "DOLLAR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13253,11 +13253,11 @@ const functionImplementation = {
         try {
             //要设置格式的值
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -13265,25 +13265,25 @@ const functionImplementation = {
 
             //显示的小数位数
             var decimals = 2;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 decimals = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(decimals)){
+                if (valueIsError(decimals)) {
                     return decimals;
                 }
 
-                if(!isRealNum(decimals)){
+                if (!isRealNum(decimals)) {
                     return formula.error.v;
                 }
 
                 decimals = parseInt(decimals);
             }
 
-            if(decimals > 9){
+            if (decimals > 9) {
                 decimals = 9;
             }
 
             var foucsStatus = "0.";
-            for(var i = 1; i <= decimals; i++){
+            for (var i = 1; i <= decimals; i++) {
                 foucsStatus += "0";
             }
 
@@ -13298,7 +13298,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DOLLARDE": function() {
+    "DOLLARDE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13316,11 +13316,11 @@ const functionImplementation = {
         try {
             //分数
             var fractional_dollar = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(fractional_dollar)){
+            if (valueIsError(fractional_dollar)) {
                 return fractional_dollar;
             }
 
-            if(!isRealNum(fractional_dollar)){
+            if (!isRealNum(fractional_dollar)) {
                 return formula.error.v;
             }
 
@@ -13328,20 +13328,20 @@ const functionImplementation = {
 
             //用作分数中的分母的整数
             var fraction = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(fraction)){
+            if (valueIsError(fraction)) {
                 return fraction;
             }
 
-            if(!isRealNum(fraction)){
+            if (!isRealNum(fraction)) {
                 return formula.error.v;
             }
 
             fraction = parseInt(fraction);
 
-            if(fraction < 0){
+            if (fraction < 0) {
                 return formula.error.nm;
             }
-            else if(fraction == 0){
+            else if (fraction == 0) {
                 return formula.error.d;
             }
 
@@ -13361,7 +13361,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DOLLARFR": function() {
+    "DOLLARFR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13379,11 +13379,11 @@ const functionImplementation = {
         try {
             //小数
             var decimal_dollar = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(decimal_dollar)){
+            if (valueIsError(decimal_dollar)) {
                 return decimal_dollar;
             }
 
-            if(!isRealNum(decimal_dollar)){
+            if (!isRealNum(decimal_dollar)) {
                 return formula.error.v;
             }
 
@@ -13391,20 +13391,20 @@ const functionImplementation = {
 
             //用作分数中的分母的整数
             var fraction = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(fraction)){
+            if (valueIsError(fraction)) {
                 return fraction;
             }
 
-            if(!isRealNum(fraction)){
+            if (!isRealNum(fraction)) {
                 return formula.error.v;
             }
 
             fraction = parseInt(fraction);
 
-            if(fraction < 0){
+            if (fraction < 0) {
                 return formula.error.nm;
             }
-            else if(fraction == 0){
+            else if (fraction == 0) {
                 return formula.error.d;
             }
 
@@ -13421,7 +13421,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DB": function() {
+    "DB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13439,11 +13439,11 @@ const functionImplementation = {
         try {
             //资产原值
             var cost = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(cost)){
+            if (valueIsError(cost)) {
                 return cost;
             }
 
-            if(!isRealNum(cost)){
+            if (!isRealNum(cost)) {
                 return formula.error.v;
             }
 
@@ -13451,11 +13451,11 @@ const functionImplementation = {
 
             //资产残值
             var salvage = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(salvage)){
+            if (valueIsError(salvage)) {
                 return salvage;
             }
 
-            if(!isRealNum(salvage)){
+            if (!isRealNum(salvage)) {
                 return formula.error.v;
             }
 
@@ -13463,11 +13463,11 @@ const functionImplementation = {
 
             //资产的折旧期数
             var life = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(life)){
+            if (valueIsError(life)) {
                 return life;
             }
 
-            if(!isRealNum(life)){
+            if (!isRealNum(life)) {
                 return formula.error.v;
             }
 
@@ -13475,11 +13475,11 @@ const functionImplementation = {
 
             //在使用期限内要计算折旧的折旧期
             var period = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(period)){
+            if (valueIsError(period)) {
                 return period;
             }
 
-            if(!isRealNum(period)){
+            if (!isRealNum(period)) {
                 return formula.error.v;
             }
 
@@ -13487,32 +13487,32 @@ const functionImplementation = {
 
             //折旧第一年中的月数
             var month = 12;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 month = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(month)){
+                if (valueIsError(month)) {
                     return month;
                 }
 
-                if(!isRealNum(month)){
+                if (!isRealNum(month)) {
                     return formula.error.v;
                 }
 
                 month = parseInt(month);
             }
 
-            if(cost < 0 || salvage < 0 || life < 0 || period < 0){
+            if (cost < 0 || salvage < 0 || life < 0 || period < 0) {
                 return formula.error.nm;
             }
 
-            if(month < 1 || month > 12){
+            if (month < 1 || month > 12) {
                 return formula.error.nm;
             }
 
-            if(period > life){
+            if (period > life) {
                 return formula.error.nm;
             }
 
-            if(salvage >= cost){
+            if (salvage >= cost) {
                 return 0;
             }
 
@@ -13548,7 +13548,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DDB": function() {
+    "DDB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13566,11 +13566,11 @@ const functionImplementation = {
         try {
             //资产原值
             var cost = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(cost)){
+            if (valueIsError(cost)) {
                 return cost;
             }
 
-            if(!isRealNum(cost)){
+            if (!isRealNum(cost)) {
                 return formula.error.v;
             }
 
@@ -13578,11 +13578,11 @@ const functionImplementation = {
 
             //资产残值
             var salvage = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(salvage)){
+            if (valueIsError(salvage)) {
                 return salvage;
             }
 
-            if(!isRealNum(salvage)){
+            if (!isRealNum(salvage)) {
                 return formula.error.v;
             }
 
@@ -13590,11 +13590,11 @@ const functionImplementation = {
 
             //资产的折旧期数
             var life = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(life)){
+            if (valueIsError(life)) {
                 return life;
             }
 
-            if(!isRealNum(life)){
+            if (!isRealNum(life)) {
                 return formula.error.v;
             }
 
@@ -13602,11 +13602,11 @@ const functionImplementation = {
 
             //在使用期限内要计算折旧的折旧期
             var period = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(period)){
+            if (valueIsError(period)) {
                 return period;
             }
 
-            if(!isRealNum(period)){
+            if (!isRealNum(period)) {
                 return formula.error.v;
             }
 
@@ -13614,28 +13614,28 @@ const functionImplementation = {
 
             //折旧的递减系数
             var factor = 2;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 factor = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(factor)){
+                if (valueIsError(factor)) {
                     return factor;
                 }
 
-                if(!isRealNum(factor)){
+                if (!isRealNum(factor)) {
                     return formula.error.v;
                 }
 
                 factor = parseFloat(factor);
             }
 
-            if(cost < 0 || salvage < 0 || life < 0 || period < 0 || factor <= 0){
+            if (cost < 0 || salvage < 0 || life < 0 || period < 0 || factor <= 0) {
                 return formula.error.nm;
             }
 
-            if(period > life){
+            if (period > life) {
                 return formula.error.nm;
             }
 
-            if(salvage >= cost){
+            if (salvage >= cost) {
                 return 0;
             }
 
@@ -13656,7 +13656,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RATE": function() {
+    "RATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13674,11 +13674,11 @@ const functionImplementation = {
         try {
             //年金的付款总期数。
             var nper = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -13686,11 +13686,11 @@ const functionImplementation = {
 
             //每期的付款金额
             var pmt = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(pmt)){
+            if (valueIsError(pmt)) {
                 return pmt;
             }
 
-            if(!isRealNum(pmt)){
+            if (!isRealNum(pmt)) {
                 return formula.error.v;
             }
 
@@ -13698,11 +13698,11 @@ const functionImplementation = {
 
             //现值
             var pv = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -13710,13 +13710,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 fv = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -13725,13 +13725,13 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 type = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
@@ -13740,20 +13740,20 @@ const functionImplementation = {
 
             //预期利率
             var guess = 0.1;
-            if(arguments.length == 6){
+            if (arguments.length == 6) {
                 guess = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(guess)){
+                if (valueIsError(guess)) {
                     return guess;
                 }
 
-                if(!isRealNum(guess)){
+                if (!isRealNum(guess)) {
                     return formula.error.v;
                 }
 
                 guess = parseFloat(guess);
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -13770,7 +13770,7 @@ const functionImplementation = {
                 var t2 = Math.pow(rate + 1, nper - 1);
 
                 var f1 = fv + t1 * pv + pmt * (t1 - 1) * (rate * type + 1) / rate;
-                var f2 = nper * t2 * pv - pmt * (t1 - 1) *(rate * type + 1) / Math.pow(rate,2);
+                var f2 = nper * t2 * pv - pmt * (t1 - 1) * (rate * type + 1) / Math.pow(rate, 2);
                 var f3 = nper * pmt * t2 * (rate * type + 1) / rate + pmt * (t1 - 1) * type / rate;
 
                 var newRate = rate - f1 / (f2 + f3);
@@ -13791,7 +13791,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CUMPRINC": function() {
+    "CUMPRINC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13809,11 +13809,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -13821,11 +13821,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -13833,11 +13833,11 @@ const functionImplementation = {
 
             //年金的现值
             var pv = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -13845,11 +13845,11 @@ const functionImplementation = {
 
             //首期
             var start_period = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(start_period)){
+            if (valueIsError(start_period)) {
                 return start_period;
             }
 
-            if(!isRealNum(start_period)){
+            if (!isRealNum(start_period)) {
                 return formula.error.v;
             }
 
@@ -13857,11 +13857,11 @@ const functionImplementation = {
 
             //末期
             var end_period = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(end_period)){
+            if (valueIsError(end_period)) {
                 return end_period;
             }
 
-            if(!isRealNum(end_period)){
+            if (!isRealNum(end_period)) {
                 return formula.error.v;
             }
 
@@ -13869,25 +13869,25 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = func_methods.getFirstValue(arguments[5]);
-            if(valueIsError(type)){
+            if (valueIsError(type)) {
                 return type;
             }
 
-            if(!isRealNum(type)){
+            if (!isRealNum(type)) {
                 return formula.error.v;
             }
 
             type = parseFloat(type);
 
-            if(rate <= 0 || nper <= 0 || pv <= 0){
+            if (rate <= 0 || nper <= 0 || pv <= 0) {
                 return formula.error.nm;
             }
 
-            if(start_period < 1 || end_period < 1 || start_period > end_period){
+            if (start_period < 1 || end_period < 1 || start_period > end_period) {
                 return formula.error.nm;
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -13922,7 +13922,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPNUM": function() {
+    "COUPNUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -13940,31 +13940,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -13972,28 +13972,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 var basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -14061,7 +14061,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SYD": function() {
+    "SYD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14079,11 +14079,11 @@ const functionImplementation = {
         try {
             //资产原值
             var cost = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(cost)){
+            if (valueIsError(cost)) {
                 return cost;
             }
 
-            if(!isRealNum(cost)){
+            if (!isRealNum(cost)) {
                 return formula.error.v;
             }
 
@@ -14091,11 +14091,11 @@ const functionImplementation = {
 
             //资产残值
             var salvage = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(salvage)){
+            if (valueIsError(salvage)) {
                 return salvage;
             }
 
-            if(!isRealNum(salvage)){
+            if (!isRealNum(salvage)) {
                 return formula.error.v;
             }
 
@@ -14103,11 +14103,11 @@ const functionImplementation = {
 
             //资产的折旧期数
             var life = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(life)){
+            if (valueIsError(life)) {
                 return life;
             }
 
-            if(!isRealNum(life)){
+            if (!isRealNum(life)) {
                 return formula.error.v;
             }
 
@@ -14115,21 +14115,21 @@ const functionImplementation = {
 
             //在使用期限内要计算折旧的折旧期
             var period = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(period)){
+            if (valueIsError(period)) {
                 return period;
             }
 
-            if(!isRealNum(period)){
+            if (!isRealNum(period)) {
                 return formula.error.v;
             }
 
             period = parseInt(period);
 
-            if(life == 0){
+            if (life == 0) {
                 return formula.error.nm;
             }
 
-            if(period < 1 || period > life){
+            if (period < 1 || period > life) {
                 return formula.error.nm;
             }
 
@@ -14141,7 +14141,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TBILLEQ": function() {
+    "TBILLEQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14159,45 +14159,45 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //债券购买时的贴现率
             var discount = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(discount)){
+            if (valueIsError(discount)) {
                 return discount;
             }
 
-            if(!isRealNum(discount)){
+            if (!isRealNum(discount)) {
                 return formula.error.v;
             }
 
             discount = parseFloat(discount);
 
-            if(discount <= 0){
+            if (discount <= 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) > 0){
+            if (dayjs(settlement) - dayjs(maturity) > 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000){
+            if (dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000) {
                 return formula.error.nm;
             }
 
@@ -14209,7 +14209,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TBILLYIELD": function() {
+    "TBILLYIELD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14227,45 +14227,45 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的价格
             var pr = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pr)){
+            if (valueIsError(pr)) {
                 return pr;
             }
 
-            if(!isRealNum(pr)){
+            if (!isRealNum(pr)) {
                 return formula.error.v;
             }
 
             pr = parseFloat(pr);
 
-            if(pr <= 0){
+            if (pr <= 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000){
+            if (dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000) {
                 return formula.error.nm;
             }
 
@@ -14277,7 +14277,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TBILLPRICE": function() {
+    "TBILLPRICE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14295,45 +14295,45 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的价格
             var discount = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(discount)){
+            if (valueIsError(discount)) {
                 return discount;
             }
 
-            if(!isRealNum(discount)){
+            if (!isRealNum(discount)) {
                 return formula.error.v;
             }
 
             discount = parseFloat(discount);
 
-            if(discount <= 0){
+            if (discount <= 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) > 0){
+            if (dayjs(settlement) - dayjs(maturity) > 0) {
                 return formula.error.nm;
             }
 
-            if(dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000){
+            if (dayjs(maturity) - dayjs(settlement) > 365 * 24 * 60 * 60 * 1000) {
                 return formula.error.nm;
             }
 
@@ -14345,7 +14345,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PV": function() {
+    "PV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14363,11 +14363,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -14375,11 +14375,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -14387,11 +14387,11 @@ const functionImplementation = {
 
             //每期的付款金额
             var pmt = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pmt)){
+            if (valueIsError(pmt)) {
                 return pmt;
             }
 
-            if(!isRealNum(pmt)){
+            if (!isRealNum(pmt)) {
                 return formula.error.v;
             }
 
@@ -14399,13 +14399,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 fv = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -14414,20 +14414,20 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 type = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -14447,7 +14447,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ACCRINT": function() {
+    "ACCRINT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14465,41 +14465,41 @@ const functionImplementation = {
         try {
             //有价证券的发行日
             var issue = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(issue)){
+            if (valueIsError(issue)) {
                 return issue;
             }
 
-            if(!dayjs(issue).isValid()){
+            if (!dayjs(issue).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的首次计息日
             var first_interest = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(first_interest)){
+            if (valueIsError(first_interest)) {
                 return first_interest;
             }
 
-            if(!dayjs(first_interest).isValid()){
+            if (!dayjs(first_interest).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的结算日
             var settlement = func_methods.getCellDate(arguments[2]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var rate = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -14507,11 +14507,11 @@ const functionImplementation = {
 
             //证券的票面值
             var par = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(par)){
+            if (valueIsError(par)) {
                 return par;
             }
 
-            if(!isRealNum(par)){
+            if (!isRealNum(par)) {
                 return formula.error.v;
             }
 
@@ -14519,11 +14519,11 @@ const functionImplementation = {
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[5]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -14531,13 +14531,13 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length >= 7){
+            if (arguments.length >= 7) {
                 basis = func_methods.getFirstValue(arguments[6]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
@@ -14546,33 +14546,33 @@ const functionImplementation = {
 
             //当结算日期晚于首次计息日期时用于计算总应计利息的方法
             var calc_method = true;
-            if(arguments.length == 8){
+            if (arguments.length == 8) {
                 calc_method = func_methods.getCellBoolen(arguments[7]);
 
-                if(valueIsError(calc_method)){
+                if (valueIsError(calc_method)) {
                     return calc_method;
                 }
             }
 
-            if(rate <= 0 || par <= 0){
+            if (rate <= 0 || par <= 0) {
                 return formula.error.nm;
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(issue) - dayjs(settlement) >= 0){
+            if (dayjs(issue) - dayjs(settlement) >= 0) {
                 return formula.error.nm;
             }
 
             //计算
             var result;
-            if(dayjs(settlement) - dayjs(first_interest) >= 0 && !calc_method){
+            if (dayjs(settlement) - dayjs(first_interest) >= 0 && !calc_method) {
                 var sd = dayjs(first_interest).date();
                 var sm = dayjs(first_interest).month() + 1;
                 var sy = dayjs(first_interest).year();
@@ -14627,7 +14627,7 @@ const functionImplementation = {
                         break;
                 }
             }
-            else{
+            else {
                 var sd = dayjs(issue).date();
                 var sm = dayjs(issue).month() + 1;
                 var sy = dayjs(issue).year();
@@ -14691,7 +14691,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ACCRINTM": function() {
+    "ACCRINTM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14709,31 +14709,31 @@ const functionImplementation = {
         try {
             //有价证券的发行日
             var issue = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(issue)){
+            if (valueIsError(issue)) {
                 return issue;
             }
 
-            if(!dayjs(issue).isValid()){
+            if (!dayjs(issue).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的到期日
             var settlement = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var rate = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -14741,11 +14741,11 @@ const functionImplementation = {
 
             //证券的票面值
             var par = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(par)){
+            if (valueIsError(par)) {
                 return par;
             }
 
-            if(!isRealNum(par)){
+            if (!isRealNum(par)) {
                 return formula.error.v;
             }
 
@@ -14753,28 +14753,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(rate <= 0 || par <= 0){
+            if (rate <= 0 || par <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(issue) - dayjs(settlement) >= 0){
+            if (dayjs(issue) - dayjs(settlement) >= 0) {
                 return formula.error.nm;
             }
 
@@ -14842,7 +14842,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPDAYBS": function() {
+    "COUPDAYBS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -14860,31 +14860,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -14892,28 +14892,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -14922,10 +14922,10 @@ const functionImplementation = {
 
             var maxCount = Math.ceil(dayjs(maturity).diff(dayjs(settlement), 'months') / (12 / frequency)) + 1;
 
-            for(var i = 1; i <= maxCount; i++){
+            for (var i = 1; i <= maxCount; i++) {
                 var di = dayjs(maturity).subtract((12 / frequency) * i, 'months');
 
-                if(di <= dayjs(settlement)){
+                if (di <= dayjs(settlement)) {
                     interest = di;
                     break;
                 }
@@ -14982,7 +14982,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPDAYS": function() {
+    "COUPDAYS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15000,31 +15000,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -15032,28 +15032,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -15067,9 +15067,9 @@ const functionImplementation = {
                 case 1: // Actual/actual
                     var maxCount = Math.ceil(dayjs(maturity).diff(dayjs(settlement), 'months') / (12 / frequency)) + 1;
 
-                    for(var i = 1; i <= maxCount; i++){
+                    for (var i = 1; i <= maxCount; i++) {
                         var d1 = dayjs(maturity).subtract((12 / frequency) * i, 'months');
-                        if(d1 <= dayjs(settlement)){
+                        if (d1 <= dayjs(settlement)) {
                             var d2 = dayjs(maturity).subtract((12 / frequency) * (i - 1), 'months');
                             result = dayjs(d2).diff(dayjs(d1), 'days');
                             break;
@@ -15099,7 +15099,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPDAYSNC": function() {
+    "COUPDAYSNC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15117,31 +15117,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -15149,28 +15149,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -15179,10 +15179,10 @@ const functionImplementation = {
 
             var maxCount = Math.ceil(dayjs(maturity).diff(dayjs(settlement), 'months') / (12 / frequency)) + 1;
 
-            for(var i = 1; i <= maxCount; i++){
+            for (var i = 1; i <= maxCount; i++) {
                 var di = dayjs(maturity).subtract((12 / frequency) * i, 'months');
 
-                if(di <= dayjs(settlement)){
+                if (di <= dayjs(settlement)) {
                     interest = dayjs(maturity).subtract((12 / frequency) * (i - 1), 'months');
                     break;
                 }
@@ -15239,7 +15239,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPNCD": function() {
+    "COUPNCD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15257,31 +15257,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -15289,28 +15289,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -15319,10 +15319,10 @@ const functionImplementation = {
 
             var maxCount = Math.ceil(dayjs(maturity).diff(dayjs(settlement), 'months') / (12 / frequency)) + 1;
 
-            for(var i = 1; i <= maxCount; i++){
+            for (var i = 1; i <= maxCount; i++) {
                 var di = dayjs(maturity).subtract((12 / frequency) * i, 'months');
 
-                if(di <= dayjs(settlement)){
+                if (di <= dayjs(settlement)) {
                     interest = dayjs(maturity).subtract((12 / frequency) * (i - 1), 'months');
                     break;
                 }
@@ -15336,7 +15336,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COUPPCD": function() {
+    "COUPPCD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15354,31 +15354,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -15386,28 +15386,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 basis = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -15416,10 +15416,10 @@ const functionImplementation = {
 
             var maxCount = Math.ceil(dayjs(maturity).diff(dayjs(settlement), 'months') / (12 / frequency)) + 1;
 
-            for(var i = 1; i <= maxCount; i++){
+            for (var i = 1; i <= maxCount; i++) {
                 var di = dayjs(maturity).subtract((12 / frequency) * i, 'months');
 
-                if(di <= dayjs(settlement)){
+                if (di <= dayjs(settlement)) {
                     interest = di;
                     break;
                 }
@@ -15433,7 +15433,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FV": function() {
+    "FV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15451,11 +15451,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -15463,11 +15463,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -15475,11 +15475,11 @@ const functionImplementation = {
 
             //每期的付款金额
             var pmt = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pmt)){
+            if (valueIsError(pmt)) {
                 return pmt;
             }
 
-            if(!isRealNum(pmt)){
+            if (!isRealNum(pmt)) {
                 return formula.error.v;
             }
 
@@ -15487,13 +15487,13 @@ const functionImplementation = {
 
             //现值，或一系列未来付款的当前值的累积和
             var pv = 0;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 pv = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(pv)){
+                if (valueIsError(pv)) {
                     return pv;
                 }
 
-                if(!isRealNum(pv)){
+                if (!isRealNum(pv)) {
                     return formula.error.v;
                 }
 
@@ -15502,20 +15502,20 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 type = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -15542,7 +15542,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FVSCHEDULE": function() {
+    "FVSCHEDULE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15560,11 +15560,11 @@ const functionImplementation = {
         try {
             //现值
             var principal = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(principal)){
+            if (valueIsError(principal)) {
                 return principal;
             }
 
-            if(!isRealNum(principal)){
+            if (!isRealNum(principal)) {
                 return formula.error.v;
             }
 
@@ -15574,26 +15574,26 @@ const functionImplementation = {
             var data_schedule = arguments[1];
             var schedule = [];
 
-            if(getObjType(data_schedule) == "array"){
-                if(getObjType(data_schedule[0]) == "array" && !func_methods.isDyadicArr(data_schedule)){
+            if (getObjType(data_schedule) == "array") {
+                if (getObjType(data_schedule[0]) == "array" && !func_methods.isDyadicArr(data_schedule)) {
                     return formula.error.v;
                 }
 
                 schedule = schedule.concat(func_methods.getDataArr(data_schedule, false));
             }
-            else if(getObjType(data_schedule) == "object" && data_schedule.startCell != null){
+            else if (getObjType(data_schedule) == "object" && data_schedule.startCell != null) {
                 schedule = schedule.concat(func_methods.getCellDataArr(data_schedule, "number", false));
             }
-            else{
+            else {
                 schedule.push(data_schedule);
             }
 
             var schedule_n = [];
 
-            for(var i = 0; i < schedule.length; i++){
+            for (var i = 0; i < schedule.length; i++) {
                 var number = schedule[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -15616,7 +15616,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "YIELD": function() {
+    "YIELD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15634,31 +15634,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var rate = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -15666,11 +15666,11 @@ const functionImplementation = {
 
             //有价证券的价格
             var pr = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(pr)){
+            if (valueIsError(pr)) {
                 return pr;
             }
 
-            if(!isRealNum(pr)){
+            if (!isRealNum(pr)) {
                 return formula.error.v;
             }
 
@@ -15678,11 +15678,11 @@ const functionImplementation = {
 
             //有价证券的清偿价值
             var redemption = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -15690,11 +15690,11 @@ const functionImplementation = {
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[5]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -15702,58 +15702,58 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 7){
+            if (arguments.length == 7) {
                 basis = func_methods.getFirstValue(arguments[6]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(rate < 0){
+            if (rate < 0) {
                 return formula.error.nm;
             }
 
-            if(pr <= 0 || redemption <= 0){
+            if (pr <= 0 || redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
             //计算
             var num = window.luckysheet_function.COUPNUM.f(settlement, maturity, frequency, basis);
 
-            if(num > 1){
+            if (num > 1) {
                 var a = 1;
                 var b = 0;
                 var yld = a;
 
-                for(var i = 1; i <= 100; i++){
+                for (var i = 1; i <= 100; i++) {
                     var price = window.luckysheet_function.PRICE.f(settlement, maturity, rate, yld, redemption, frequency, basis);
 
-                    if(Math.abs(price - pr) < 0.000001){
+                    if (Math.abs(price - pr) < 0.000001) {
                         break;
                     }
 
-                    if(price > pr){
+                    if (price > pr) {
                         b = yld;
                     }
-                    else{
+                    else {
                         a = yld;
                     }
 
@@ -15762,7 +15762,7 @@ const functionImplementation = {
 
                 var result = yld;
             }
-            else{
+            else {
                 var DSR = window.luckysheet_function.COUPDAYSNC.f(settlement, maturity, frequency, basis);
                 var E = window.luckysheet_function.COUPDAYS.f(settlement, maturity, frequency, basis);
                 var A = window.luckysheet_function.COUPDAYBS.f(settlement, maturity, frequency, basis);
@@ -15782,7 +15782,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "YIELDDISC": function() {
+    "YIELDDISC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15800,31 +15800,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的价格
             var pr = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pr)){
+            if (valueIsError(pr)) {
                 return pr;
             }
 
-            if(!isRealNum(pr)){
+            if (!isRealNum(pr)) {
                 return formula.error.v;
             }
 
@@ -15832,11 +15832,11 @@ const functionImplementation = {
 
             //有价证券的清偿价值
             var redemption = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -15844,28 +15844,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(pr <= 0 || redemption <= 0){
+            if (pr <= 0 || redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -15879,7 +15879,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NOMINAL": function() {
+    "NOMINAL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15897,11 +15897,11 @@ const functionImplementation = {
         try {
             //每年的实际利率
             var effect_rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(effect_rate)){
+            if (valueIsError(effect_rate)) {
                 return effect_rate;
             }
 
-            if(!isRealNum(effect_rate)){
+            if (!isRealNum(effect_rate)) {
                 return formula.error.v;
             }
 
@@ -15909,17 +15909,17 @@ const functionImplementation = {
 
             //每年的复利期数
             var npery = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(npery)){
+            if (valueIsError(npery)) {
                 return npery;
             }
 
-            if(!isRealNum(npery)){
+            if (!isRealNum(npery)) {
                 return formula.error.v;
             }
 
             npery = parseInt(npery);
 
-            if(effect_rate <= 0 || npery < 1){
+            if (effect_rate <= 0 || npery < 1) {
                 return formula.error.nm;
             }
 
@@ -15931,7 +15931,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "XIRR": function() {
+    "XIRR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -15951,26 +15951,26 @@ const functionImplementation = {
             var data_values = arguments[0];
             var values = [];
 
-            if(getObjType(data_values) == "array"){
-                if(getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)){
+            if (getObjType(data_values) == "array") {
+                if (getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)) {
                     return formula.error.v;
                 }
 
                 values = values.concat(func_methods.getDataArr(data_values, false));
             }
-            else if(getObjType(data_values) == "object" && data_values.startCell != null){
+            else if (getObjType(data_values) == "object" && data_values.startCell != null) {
                 values = values.concat(func_methods.getCellDataArr(data_values, "number", false));
             }
-            else{
+            else {
                 values.push(data_values);
             }
 
             var values_n = [];
 
-            for(var i = 0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 var number = values[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -15979,25 +15979,25 @@ const functionImplementation = {
 
             //与现金流数额参数中的现金流对应的日期数组或范围
             var dates = func_methods.getCellrangeDate(arguments[1]);
-            if(valueIsError(dates)){
+            if (valueIsError(dates)) {
                 return dates;
             }
 
-            for(var i = 0; i < dates.length; i++){
-                if(!dayjs(dates[i]).isValid()){
+            for (var i = 0; i < dates.length; i++) {
+                if (!dayjs(dates[i]).isValid()) {
                     return formula.error.v;
                 }
             }
 
             //对内部回报率的估算值
             var guess = 0.1;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 guess = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(guess)){
+                if (valueIsError(guess)) {
                     return guess;
                 }
 
-                if(!isRealNum(guess)){
+                if (!isRealNum(guess)) {
                     return formula.error.v;
                 }
 
@@ -16015,21 +16015,21 @@ const functionImplementation = {
                     negative = true;
                 }
 
-                if(positive && negative){
+                if (positive && negative) {
                     break;
                 }
             }
 
-            if(!positive || !negative){
+            if (!positive || !negative) {
                 return formula.error.nm;
             }
 
-            if(values_n.length != dates.length){
+            if (values_n.length != dates.length) {
                 return formula.error.nm;
             }
 
             //计算
-            var irrResult = function(values, dates, rate) {
+            var irrResult = function (values, dates, rate) {
                 var r = rate + 1;
                 var result = values[0];
 
@@ -16040,7 +16040,7 @@ const functionImplementation = {
                 return result;
             };
 
-            var irrResultDeriv = function(values, dates, rate) {
+            var irrResultDeriv = function (values, dates, rate) {
                 var r = rate + 1;
                 var result = 0;
 
@@ -16075,7 +16075,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MIRR": function() {
+    "MIRR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16095,26 +16095,26 @@ const functionImplementation = {
             var data_values = arguments[0];
             var values = [];
 
-            if(getObjType(data_values) == "array"){
-                if(getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)){
+            if (getObjType(data_values) == "array") {
+                if (getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)) {
                     return formula.error.v;
                 }
 
                 values = values.concat(func_methods.getDataArr(data_values, false));
             }
-            else if(getObjType(data_values) == "object" && data_values.startCell != null){
+            else if (getObjType(data_values) == "object" && data_values.startCell != null) {
                 values = values.concat(func_methods.getCellDataArr(data_values, "number", false));
             }
-            else{
+            else {
                 values.push(data_values);
             }
 
             var values_n = [];
 
-            for(var i = 0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 var number = values[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -16123,11 +16123,11 @@ const functionImplementation = {
 
             //现金流中使用的资金支付的利率
             var finance_rate = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(finance_rate)){
+            if (valueIsError(finance_rate)) {
                 return finance_rate;
             }
 
-            if(!isRealNum(finance_rate)){
+            if (!isRealNum(finance_rate)) {
                 return formula.error.v;
             }
 
@@ -16135,11 +16135,11 @@ const functionImplementation = {
 
             //将现金流再投资的收益率
             var reinvest_rate = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(reinvest_rate)){
+            if (valueIsError(reinvest_rate)) {
                 return reinvest_rate;
             }
 
-            if(!isRealNum(reinvest_rate)){
+            if (!isRealNum(reinvest_rate)) {
                 return formula.error.v;
             }
 
@@ -16159,7 +16159,7 @@ const functionImplementation = {
                 }
             }
 
-            if(payments.length == 0 || incomes.length == 0){
+            if (payments.length == 0 || incomes.length == 0) {
                 return formula.error.d;
             }
 
@@ -16174,7 +16174,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IRR": function() {
+    "IRR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16194,26 +16194,26 @@ const functionImplementation = {
             var data_values = arguments[0];
             var values = [];
 
-            if(getObjType(data_values) == "array"){
-                if(getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)){
+            if (getObjType(data_values) == "array") {
+                if (getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)) {
                     return formula.error.v;
                 }
 
                 values = values.concat(func_methods.getDataArr(data_values, false));
             }
-            else if(getObjType(data_values) == "object" && data_values.startCell != null){
+            else if (getObjType(data_values) == "object" && data_values.startCell != null) {
                 values = values.concat(func_methods.getCellDataArr(data_values, "number", true));
             }
-            else{
+            else {
                 values.push(data_values);
             }
 
             var values_n = [];
 
-            for(var i = 0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 var number = values[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -16222,13 +16222,13 @@ const functionImplementation = {
 
             //对内部回报率的估算值
             var guess = 0.1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 guess = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(guess)){
+                if (valueIsError(guess)) {
                     return guess;
                 }
 
-                if(!isRealNum(guess)){
+                if (!isRealNum(guess)) {
                     return formula.error.v;
                 }
 
@@ -16251,12 +16251,12 @@ const functionImplementation = {
                 }
             }
 
-            if(!positive || !negative){
+            if (!positive || !negative) {
                 return formula.error.nm;
             }
 
             //计算
-            var irrResult = function(values, dates, rate) {
+            var irrResult = function (values, dates, rate) {
                 var r = rate + 1;
                 var result = values[0];
 
@@ -16268,7 +16268,7 @@ const functionImplementation = {
                 return result;
             };
 
-            var irrResultDeriv = function(values, dates, rate) {
+            var irrResultDeriv = function (values, dates, rate) {
                 var r = rate + 1;
                 var result = 0;
 
@@ -16304,7 +16304,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NPV": function() {
+    "NPV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16322,11 +16322,11 @@ const functionImplementation = {
         try {
             //某一期间的贴现率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16335,30 +16335,30 @@ const functionImplementation = {
             //支出（负值）和收益（正值）
             var values = [];
 
-            for(var i = 1; i < arguments.length; i++){
+            for (var i = 1; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     values = values.concat(func_methods.getDataArr(data, true));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     values = values.concat(func_methods.getCellDataArr(data, "number", true));
                 }
-                else{
+                else {
                     values.push(data);
                 }
             }
 
             var values_n = [];
 
-            for(var i = 0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 var number = values[i];
 
-                if(isRealNum(number)){
+                if (isRealNum(number)) {
                     values_n.push(parseFloat(number));
                 }
             }
@@ -16366,8 +16366,8 @@ const functionImplementation = {
             //计算
             var result = 0;
 
-            if(values_n.length > 0){
-                for(var i = 0; i < values_n.length; i++){
+            if (values_n.length > 0) {
+                for (var i = 0; i < values_n.length; i++) {
                     result += values_n[i] / Math.pow(1 + rate, i + 1);
                 }
             }
@@ -16380,7 +16380,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "XNPV": function() {
+    "XNPV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16398,11 +16398,11 @@ const functionImplementation = {
         try {
             //应用于现金流的贴现率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16412,26 +16412,26 @@ const functionImplementation = {
             var data_values = arguments[1];
             var values = [];
 
-            if(getObjType(data_values) == "array"){
-                if(getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)){
+            if (getObjType(data_values) == "array") {
+                if (getObjType(data_values[0]) == "array" && !func_methods.isDyadicArr(data_values)) {
                     return formula.error.v;
                 }
 
                 values = values.concat(func_methods.getDataArr(data_values, false));
             }
-            else if(getObjType(data_values) == "object" && data_values.startCell != null){
+            else if (getObjType(data_values) == "object" && data_values.startCell != null) {
                 values = values.concat(func_methods.getCellDataArr(data_values, "number", false));
             }
-            else{
+            else {
                 values.push(data_values);
             }
 
             var values_n = [];
 
-            for(var i = 0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 var number = values[i];
 
-                if(!isRealNum(number)){
+                if (!isRealNum(number)) {
                     return formula.error.v;
                 }
 
@@ -16440,17 +16440,17 @@ const functionImplementation = {
 
             //与现金流支付相对应的支付日期表
             var dates = func_methods.getCellrangeDate(arguments[2]);
-            if(valueIsError(dates)){
+            if (valueIsError(dates)) {
                 return dates;
             }
 
-            for(var i = 0; i < dates.length; i++){
-                if(!dayjs(dates[i]).isValid()){
+            for (var i = 0; i < dates.length; i++) {
+                if (!dayjs(dates[i]).isValid()) {
                     return formula.error.v;
                 }
             }
 
-            if(values_n.length != dates.length){
+            if (values_n.length != dates.length) {
                 return formula.error.nm;
             }
 
@@ -16468,7 +16468,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CUMIPMT": function() {
+    "CUMIPMT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16486,11 +16486,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16498,11 +16498,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -16510,11 +16510,11 @@ const functionImplementation = {
 
             //年金的现值
             var pv = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -16522,11 +16522,11 @@ const functionImplementation = {
 
             //首期
             var start_period = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(start_period)){
+            if (valueIsError(start_period)) {
                 return start_period;
             }
 
-            if(!isRealNum(start_period)){
+            if (!isRealNum(start_period)) {
                 return formula.error.v;
             }
 
@@ -16534,11 +16534,11 @@ const functionImplementation = {
 
             //末期
             var end_period = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(end_period)){
+            if (valueIsError(end_period)) {
                 return end_period;
             }
 
-            if(!isRealNum(end_period)){
+            if (!isRealNum(end_period)) {
                 return formula.error.v;
             }
 
@@ -16546,25 +16546,25 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = func_methods.getFirstValue(arguments[5]);
-            if(valueIsError(type)){
+            if (valueIsError(type)) {
                 return type;
             }
 
-            if(!isRealNum(type)){
+            if (!isRealNum(type)) {
                 return formula.error.v;
             }
 
             type = parseFloat(type);
 
-            if(rate <= 0 || nper <= 0 || pv <= 0){
+            if (rate <= 0 || nper <= 0 || pv <= 0) {
                 return formula.error.nm;
             }
 
-            if(start_period < 1 || end_period < 1 || start_period > end_period){
+            if (start_period < 1 || end_period < 1 || start_period > end_period) {
                 return formula.error.nm;
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -16598,7 +16598,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PMT": function() {
+    "PMT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16616,11 +16616,11 @@ const functionImplementation = {
         try {
             //贷款利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16628,11 +16628,11 @@ const functionImplementation = {
 
             //该项贷款的付款总数
             var nper = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -16640,11 +16640,11 @@ const functionImplementation = {
 
             //现值
             var pv = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -16652,13 +16652,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 fv = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -16667,20 +16667,20 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 type = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -16709,7 +16709,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IPMT": function() {
+    "IPMT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16727,11 +16727,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16739,11 +16739,11 @@ const functionImplementation = {
 
             //用于计算其利息数额的期数
             var per = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(per)){
+            if (valueIsError(per)) {
                 return per;
             }
 
-            if(!isRealNum(per)){
+            if (!isRealNum(per)) {
                 return formula.error.v;
             }
 
@@ -16751,11 +16751,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -16763,11 +16763,11 @@ const functionImplementation = {
 
             //现值
             var pv = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -16775,13 +16775,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 fv = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -16790,24 +16790,24 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 6){
+            if (arguments.length >= 6) {
                 type = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(per < 1 || per > nper){
+            if (per < 1 || per > nper) {
                 return formula.error.nm;
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -16842,7 +16842,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PPMT": function() {
+    "PPMT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16860,11 +16860,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -16872,11 +16872,11 @@ const functionImplementation = {
 
             //用于计算其利息数额的期数
             var per = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(per)){
+            if (valueIsError(per)) {
                 return per;
             }
 
-            if(!isRealNum(per)){
+            if (!isRealNum(per)) {
                 return formula.error.v;
             }
 
@@ -16884,11 +16884,11 @@ const functionImplementation = {
 
             //总付款期数
             var nper = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(nper)){
+            if (valueIsError(nper)) {
                 return nper;
             }
 
-            if(!isRealNum(nper)){
+            if (!isRealNum(nper)) {
                 return formula.error.v;
             }
 
@@ -16896,11 +16896,11 @@ const functionImplementation = {
 
             //现值
             var pv = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -16908,13 +16908,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 fv = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -16923,24 +16923,24 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 6){
+            if (arguments.length >= 6) {
                 type = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(per < 1 || per > nper){
+            if (per < 1 || per > nper) {
                 return formula.error.nm;
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -16956,7 +16956,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "INTRATE": function() {
+    "INTRATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -16974,31 +16974,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的投资额
             var investment = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(investment)){
+            if (valueIsError(investment)) {
                 return investment;
             }
 
-            if(!isRealNum(investment)){
+            if (!isRealNum(investment)) {
                 return formula.error.v;
             }
 
@@ -17006,11 +17006,11 @@ const functionImplementation = {
 
             //有价证券到期时的兑换值
             var redemption = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -17018,28 +17018,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(investment <= 0 || redemption <= 0){
+            if (investment <= 0 || redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17112,7 +17112,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PRICE": function() {
+    "PRICE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17130,31 +17130,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var rate = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -17162,11 +17162,11 @@ const functionImplementation = {
 
             //有价证券的年收益率
             var yld = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(yld)){
+            if (valueIsError(yld)) {
                 return yld;
             }
 
-            if(!isRealNum(yld)){
+            if (!isRealNum(yld)) {
                 return formula.error.v;
             }
 
@@ -17174,11 +17174,11 @@ const functionImplementation = {
 
             //有价证券的清偿价值
             var redemption = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -17186,11 +17186,11 @@ const functionImplementation = {
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[5]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -17198,36 +17198,36 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 7){
+            if (arguments.length == 7) {
                 basis = func_methods.getFirstValue(arguments[6]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(rate < 0 || yld < 0){
+            if (rate < 0 || yld < 0) {
                 return formula.error.nm;
             }
 
-            if(redemption <= 0){
+            if (redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17237,11 +17237,11 @@ const functionImplementation = {
             var A = window.luckysheet_function.COUPDAYBS.f(settlement, maturity, frequency, basis);
             var num = window.luckysheet_function.COUPNUM.f(settlement, maturity, frequency, basis);
 
-            if(num > 1){
+            if (num > 1) {
                 var T1 = redemption / Math.pow(1 + yld / frequency, num - 1 + DSC / E);
 
                 var T2 = 0;
-                for(var i = 1; i <= num; i++){
+                for (var i = 1; i <= num; i++) {
                     T2 += (100 * rate / frequency) / Math.pow(1 + yld / frequency, i - 1 + DSC / E);
                 }
 
@@ -17249,7 +17249,7 @@ const functionImplementation = {
 
                 var result = T1 + T2 - T3;
             }
-            else{
+            else {
                 var DSR = E - A;
                 var T1 = 100 * (rate / frequency) + redemption;
                 var T2 = (yld / frequency) * (DSR / E) + 1;
@@ -17266,7 +17266,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PRICEDISC": function() {
+    "PRICEDISC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17284,31 +17284,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的贴现率
             var discount = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(discount)){
+            if (valueIsError(discount)) {
                 return discount;
             }
 
-            if(!isRealNum(discount)){
+            if (!isRealNum(discount)) {
                 return formula.error.v;
             }
 
@@ -17316,11 +17316,11 @@ const functionImplementation = {
 
             //有价证券的清偿价值
             var redemption = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -17328,28 +17328,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(discount <= 0 || redemption <= 0){
+            if (discount <= 0 || redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17422,7 +17422,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PRICEMAT": function() {
+    "PRICEMAT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17440,41 +17440,41 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //发行日
             var issue = func_methods.getCellDate(arguments[2]);
-            if(valueIsError(issue)){
+            if (valueIsError(issue)) {
                 return issue;
             }
 
-            if(!dayjs(issue).isValid()){
+            if (!dayjs(issue).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券在发行日的利率
             var rate = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -17482,11 +17482,11 @@ const functionImplementation = {
 
             //有价证券的年收益率
             var yld = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(yld)){
+            if (valueIsError(yld)) {
                 return yld;
             }
 
-            if(!isRealNum(yld)){
+            if (!isRealNum(yld)) {
                 return formula.error.v;
             }
 
@@ -17494,28 +17494,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 6){
+            if (arguments.length == 6) {
                 basis = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(rate < 0 || yld < 0){
+            if (rate < 0 || yld < 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17533,15 +17533,15 @@ const functionImplementation = {
             var result;
             switch (basis) {
                 case 0: // US (NASD) 30/360
-                    if(sd == 31){
+                    if (sd == 31) {
                         sd = 30;
                     }
 
-                    if(ed == 31){
+                    if (ed == 31) {
                         ed = 30;
                     }
 
-                    if(td == 31){
+                    if (td == 31) {
                         td = 30;
                     }
 
@@ -17611,7 +17611,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RECEIVED": function() {
+    "RECEIVED": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17629,31 +17629,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的投资额
             var investment = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(investment)){
+            if (valueIsError(investment)) {
                 return investment;
             }
 
-            if(!isRealNum(investment)){
+            if (!isRealNum(investment)) {
                 return formula.error.v;
             }
 
@@ -17661,11 +17661,11 @@ const functionImplementation = {
 
             //有价证券的贴现率
             var discount = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(discount)){
+            if (valueIsError(discount)) {
                 return discount;
             }
 
-            if(!isRealNum(discount)){
+            if (!isRealNum(discount)) {
                 return formula.error.v;
             }
 
@@ -17673,28 +17673,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseFloat(basis);
             }
 
-            if(investment <= 0 || discount <= 0){
+            if (investment <= 0 || discount <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17709,11 +17709,11 @@ const functionImplementation = {
             var result;
             switch (basis) {
                 case 0: // US (NASD) 30/360
-                    if(sd == 31){
+                    if (sd == 31) {
                         sd = 30;
                     }
 
-                    if(ed == 31){
+                    if (ed == 31) {
                         ed = 30;
                     }
 
@@ -17771,7 +17771,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DISC": function() {
+    "DISC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17789,31 +17789,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的价格
             var pr = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pr)){
+            if (valueIsError(pr)) {
                 return pr;
             }
 
-            if(!isRealNum(pr)){
+            if (!isRealNum(pr)) {
                 return formula.error.v;
             }
 
@@ -17821,11 +17821,11 @@ const functionImplementation = {
 
             //有价证券的清偿价值
             var redemption = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(redemption)){
+            if (valueIsError(redemption)) {
                 return redemption;
             }
 
-            if(!isRealNum(redemption)){
+            if (!isRealNum(redemption)) {
                 return formula.error.v;
             }
 
@@ -17833,28 +17833,28 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 5){
+            if (arguments.length == 5) {
                 basis = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseFloat(basis);
             }
 
-            if(pr <= 0 || redemption <= 0){
+            if (pr <= 0 || redemption <= 0) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -17869,11 +17869,11 @@ const functionImplementation = {
             var result;
             switch (basis) {
                 case 0: // US (NASD) 30/360
-                    if(sd == 31){
+                    if (sd == 31) {
                         sd = 30;
                     }
 
-                    if(ed == 31){
+                    if (ed == 31) {
                         ed = 30;
                     }
 
@@ -17931,7 +17931,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NPER": function() {
+    "NPER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -17949,11 +17949,11 @@ const functionImplementation = {
         try {
             //利率
             var rate = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rate)){
+            if (valueIsError(rate)) {
                 return rate;
             }
 
-            if(!isRealNum(rate)){
+            if (!isRealNum(rate)) {
                 return formula.error.v;
             }
 
@@ -17961,11 +17961,11 @@ const functionImplementation = {
 
             //各期所应支付的金额
             var pmt = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(pmt)){
+            if (valueIsError(pmt)) {
                 return pmt;
             }
 
-            if(!isRealNum(pmt)){
+            if (!isRealNum(pmt)) {
                 return formula.error.v;
             }
 
@@ -17973,11 +17973,11 @@ const functionImplementation = {
 
             //现值
             var pv = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(pv)){
+            if (valueIsError(pv)) {
                 return pv;
             }
 
-            if(!isRealNum(pv)){
+            if (!isRealNum(pv)) {
                 return formula.error.v;
             }
 
@@ -17985,13 +17985,13 @@ const functionImplementation = {
 
             //最后一次付款后希望得到的现金余额
             var fv = 0;
-            if(arguments.length >= 4){
+            if (arguments.length >= 4) {
                 fv = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(fv)){
+                if (valueIsError(fv)) {
                     return fv;
                 }
 
-                if(!isRealNum(fv)){
+                if (!isRealNum(fv)) {
                     return formula.error.v;
                 }
 
@@ -18000,20 +18000,20 @@ const functionImplementation = {
 
             //指定各期的付款时间是在期初还是期末
             var type = 0;
-            if(arguments.length >= 5){
+            if (arguments.length >= 5) {
                 type = func_methods.getFirstValue(arguments[4]);
-                if(valueIsError(type)){
+                if (valueIsError(type)) {
                     return type;
                 }
 
-                if(!isRealNum(type)){
+                if (!isRealNum(type)) {
                     return formula.error.v;
                 }
 
                 type = parseFloat(type);
             }
 
-            if(type != 0 && type != 1){
+            if (type != 0 && type != 1) {
                 return formula.error.nm;
             }
 
@@ -18029,7 +18029,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SLN": function() {
+    "SLN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18047,11 +18047,11 @@ const functionImplementation = {
         try {
             //资产原值
             var cost = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(cost)){
+            if (valueIsError(cost)) {
                 return cost;
             }
 
-            if(!isRealNum(cost)){
+            if (!isRealNum(cost)) {
                 return formula.error.v;
             }
 
@@ -18059,11 +18059,11 @@ const functionImplementation = {
 
             //资产残值
             var salvage = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(salvage)){
+            if (valueIsError(salvage)) {
                 return salvage;
             }
 
-            if(!isRealNum(salvage)){
+            if (!isRealNum(salvage)) {
                 return formula.error.v;
             }
 
@@ -18071,17 +18071,17 @@ const functionImplementation = {
 
             //资产的折旧期数
             var life = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(life)){
+            if (valueIsError(life)) {
                 return life;
             }
 
-            if(!isRealNum(life)){
+            if (!isRealNum(life)) {
                 return formula.error.v;
             }
 
             life = parseFloat(life);
 
-            if(life == 0){
+            if (life == 0) {
                 return formula.error.d;
             }
 
@@ -18093,7 +18093,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DURATION": function() {
+    "DURATION": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18111,31 +18111,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var coupon = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(coupon)){
+            if (valueIsError(coupon)) {
                 return coupon;
             }
 
-            if(!isRealNum(coupon)){
+            if (!isRealNum(coupon)) {
                 return formula.error.v;
             }
 
@@ -18143,11 +18143,11 @@ const functionImplementation = {
 
             //有价证券的年收益率
             var yld = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(yld)){
+            if (valueIsError(yld)) {
                 return yld;
             }
 
-            if(!isRealNum(yld)){
+            if (!isRealNum(yld)) {
                 return formula.error.v;
             }
 
@@ -18155,11 +18155,11 @@ const functionImplementation = {
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -18167,32 +18167,32 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 6){
+            if (arguments.length == 6) {
                 basis = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(coupon < 0 || yld < 0){
+            if (coupon < 0 || yld < 0) {
                 return formula.error.nm;
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -18200,7 +18200,7 @@ const functionImplementation = {
 
             var sum1 = 0;
             var sum2 = 0;
-            for(var i = 1; i <= nper; i++){
+            for (var i = 1; i <= nper; i++) {
                 sum1 += 100 * (coupon / frequency) * i / Math.pow(1 + (yld / frequency), i);
                 sum2 += 100 * (coupon / frequency) / Math.pow(1 + (yld / frequency), i);
             }
@@ -18216,7 +18216,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MDURATION": function() {
+    "MDURATION": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18234,31 +18234,31 @@ const functionImplementation = {
         try {
             //结算日
             var settlement = func_methods.getCellDate(arguments[0]);
-            if(valueIsError(settlement)){
+            if (valueIsError(settlement)) {
                 return settlement;
             }
 
-            if(!dayjs(settlement).isValid()){
+            if (!dayjs(settlement).isValid()) {
                 return formula.error.v;
             }
 
             //到期日
             var maturity = func_methods.getCellDate(arguments[1]);
-            if(valueIsError(maturity)){
+            if (valueIsError(maturity)) {
                 return maturity;
             }
 
-            if(!dayjs(maturity).isValid()){
+            if (!dayjs(maturity).isValid()) {
                 return formula.error.v;
             }
 
             //有价证券的年息票利率
             var coupon = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(coupon)){
+            if (valueIsError(coupon)) {
                 return coupon;
             }
 
-            if(!isRealNum(coupon)){
+            if (!isRealNum(coupon)) {
                 return formula.error.v;
             }
 
@@ -18266,11 +18266,11 @@ const functionImplementation = {
 
             //有价证券的年收益率
             var yld = func_methods.getFirstValue(arguments[3]);
-            if(valueIsError(yld)){
+            if (valueIsError(yld)) {
                 return yld;
             }
 
-            if(!isRealNum(yld)){
+            if (!isRealNum(yld)) {
                 return formula.error.v;
             }
 
@@ -18278,11 +18278,11 @@ const functionImplementation = {
 
             //年付息次数
             var frequency = func_methods.getFirstValue(arguments[4]);
-            if(valueIsError(frequency)){
+            if (valueIsError(frequency)) {
                 return frequency;
             }
 
-            if(!isRealNum(frequency)){
+            if (!isRealNum(frequency)) {
                 return formula.error.v;
             }
 
@@ -18290,32 +18290,32 @@ const functionImplementation = {
 
             //日计数基准类型
             var basis = 0;
-            if(arguments.length == 6){
+            if (arguments.length == 6) {
                 basis = func_methods.getFirstValue(arguments[5]);
-                if(valueIsError(basis)){
+                if (valueIsError(basis)) {
                     return basis;
                 }
 
-                if(!isRealNum(basis)){
+                if (!isRealNum(basis)) {
                     return formula.error.v;
                 }
 
                 basis = parseInt(basis);
             }
 
-            if(coupon < 0 || yld < 0){
+            if (coupon < 0 || yld < 0) {
                 return formula.error.nm;
             }
 
-            if(frequency != 1 && frequency != 2 && frequency != 4){
+            if (frequency != 1 && frequency != 2 && frequency != 4) {
                 return formula.error.nm;
             }
 
-            if(basis < 0 || basis > 4){
+            if (basis < 0 || basis > 4) {
                 return formula.error.nm;
             }
 
-            if(dayjs(settlement) - dayjs(maturity) >= 0){
+            if (dayjs(settlement) - dayjs(maturity) >= 0) {
                 return formula.error.nm;
             }
 
@@ -18329,7 +18329,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BIN2DEC": function() {
+    "BIN2DEC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18347,11 +18347,11 @@ const functionImplementation = {
         try {
             //二进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!/^[01]{1,10}$/g.test(number)){
+            if (!/^[01]{1,10}$/g.test(number)) {
                 return formula.error.nm;
             }
 
@@ -18372,7 +18372,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BIN2HEX": function() {
+    "BIN2HEX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18390,26 +18390,26 @@ const functionImplementation = {
         try {
             //二进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
                 places = parseInt(places);
             }
 
-            if(!/^[01]{1,10}$/g.test(number)){
+            if (!/^[01]{1,10}$/g.test(number)) {
                 return formula.error.nm;
             }
 
@@ -18420,7 +18420,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18433,7 +18433,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BIN2OCT": function() {
+    "BIN2OCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18451,26 +18451,26 @@ const functionImplementation = {
         try {
             //二进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
                 places = parseInt(places);
             }
 
-            if(!/^[01]{1,10}$/g.test(number)){
+            if (!/^[01]{1,10}$/g.test(number)) {
                 return formula.error.nm;
             }
 
@@ -18486,7 +18486,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18499,7 +18499,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DEC2BIN": function() {
+    "DEC2BIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18517,11 +18517,11 @@ const functionImplementation = {
         try {
             //十进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -18529,13 +18529,13 @@ const functionImplementation = {
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18557,7 +18557,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18570,7 +18570,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DEC2HEX": function() {
+    "DEC2HEX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18588,11 +18588,11 @@ const functionImplementation = {
         try {
             //十进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -18600,13 +18600,13 @@ const functionImplementation = {
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18628,7 +18628,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18641,7 +18641,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DEC2OCT": function() {
+    "DEC2OCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18659,11 +18659,11 @@ const functionImplementation = {
         try {
             //十进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -18671,13 +18671,13 @@ const functionImplementation = {
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18699,7 +18699,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18712,7 +18712,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HEX2BIN": function() {
+    "HEX2BIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18730,19 +18730,19 @@ const functionImplementation = {
         try {
             //十六进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18772,7 +18772,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18785,7 +18785,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HEX2DEC": function() {
+    "HEX2DEC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18803,7 +18803,7 @@ const functionImplementation = {
         try {
             //十六进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
@@ -18822,7 +18822,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "HEX2OCT": function() {
+    "HEX2OCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18840,19 +18840,19 @@ const functionImplementation = {
         try {
             //十六进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18880,7 +18880,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18893,7 +18893,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "OCT2BIN": function() {
+    "OCT2BIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18911,19 +18911,19 @@ const functionImplementation = {
         try {
             //八进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -18955,7 +18955,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -18968,7 +18968,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "OCT2DEC": function() {
+    "OCT2DEC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -18986,7 +18986,7 @@ const functionImplementation = {
         try {
             //八进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
@@ -19005,7 +19005,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "OCT2HEX": function() {
+    "OCT2HEX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19023,19 +19023,19 @@ const functionImplementation = {
         try {
             //八进制数
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
             //有效位数
             var places = null;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 places = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(places)){
+                if (valueIsError(places)) {
                     return places;
                 }
 
-                if(!isRealNum(places)){
+                if (!isRealNum(places)) {
                     return formula.error.v;
                 }
 
@@ -19059,7 +19059,7 @@ const functionImplementation = {
                 return result;
             }
             else {
-                if(places < 0 || places < result.length){
+                if (places < 0 || places < result.length) {
                     return formula.error.nm;
                 }
 
@@ -19072,7 +19072,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COMPLEX": function() {
+    "COMPLEX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19090,11 +19090,11 @@ const functionImplementation = {
         try {
             //复数的实系数
             var real_num = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(real_num)){
+            if (valueIsError(real_num)) {
                 return real_num;
             }
 
-            if(!isRealNum(real_num)){
+            if (!isRealNum(real_num)) {
                 return formula.error.v;
             }
 
@@ -19102,11 +19102,11 @@ const functionImplementation = {
 
             //复数的虚系数
             var i_num = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(i_num)){
+            if (valueIsError(i_num)) {
                 return i_num;
             }
 
-            if(!isRealNum(i_num)){
+            if (!isRealNum(i_num)) {
                 return formula.error.v;
             }
 
@@ -19114,11 +19114,11 @@ const functionImplementation = {
 
             //复数中虚系数的后缀
             var suffix = "i";
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 suffix = arguments[2].toString();
             }
 
-            if(suffix != "i" && suffix != "j"){
+            if (suffix != "i" && suffix != "j") {
                 return formula.error.v;
             }
 
@@ -19143,7 +19143,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMREAL": function() {
+    "IMREAL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19161,22 +19161,22 @@ const functionImplementation = {
         try {
             //复数
             var inumber = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(inumber)){
+            if (valueIsError(inumber)) {
                 return inumber;
             }
 
             inumber = inumber.toString();
 
-            if(inumber.toLowerCase() == "true" || inumber.toLowerCase() == "false"){
+            if (inumber.toLowerCase() == "true" || inumber.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             //计算
-            if(inumber == "0"){
+            if (inumber == "0") {
                 return 0;
             }
 
-            if(['i', '+i', '1i', '+1i', '-i', '-1i', 'j', '+j', '1j', '+1j', '-j', '-1j'].indexOf(inumber) >= 0){
+            if (['i', '+i', '1i', '+1i', '-i', '-1i', 'j', '+j', '1j', '+1j', '-j', '-1j'].indexOf(inumber) >= 0) {
                 return 0;
             }
 
@@ -19221,7 +19221,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMAGINARY": function() {
+    "IMAGINARY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19239,18 +19239,18 @@ const functionImplementation = {
         try {
             //复数
             var inumber = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(inumber)){
+            if (valueIsError(inumber)) {
                 return inumber;
             }
 
             inumber = inumber.toString();
 
-            if(inumber.toLowerCase() == "true" || inumber.toLowerCase() == "false"){
+            if (inumber.toLowerCase() == "true" || inumber.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             //计算
-            if(inumber == "0"){
+            if (inumber == "0") {
                 return 0;
             }
 
@@ -19301,7 +19301,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMCONJUGATE": function() {
+    "IMCONJUGATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19319,19 +19319,19 @@ const functionImplementation = {
         try {
             //复数
             var inumber = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(inumber)){
+            if (valueIsError(inumber)) {
                 return inumber;
             }
 
             inumber = inumber.toString();
 
             var x = window.luckysheet_function.IMREAL.f(inumber);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
             var y = window.luckysheet_function.IMAGINARY.f(inumber);
-            if(valueIsError(y)){
+            if (valueIsError(y)) {
                 return y;
             }
 
@@ -19346,7 +19346,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMABS": function() {
+    "IMABS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19363,12 +19363,12 @@ const functionImplementation = {
 
         try {
             var x = window.luckysheet_function.IMREAL.f(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
             var y = window.luckysheet_function.IMAGINARY.f(arguments[0]);
-            if(valueIsError(y)){
+            if (valueIsError(y)) {
                 return y;
             }
 
@@ -19380,7 +19380,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DELTA": function() {
+    "DELTA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19398,11 +19398,11 @@ const functionImplementation = {
         try {
             //第一个数字
             var number1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number1)){
+            if (valueIsError(number1)) {
                 return number1;
             }
 
-            if(!isRealNum(number1)){
+            if (!isRealNum(number1)) {
                 return formula.error.v;
             }
 
@@ -19410,13 +19410,13 @@ const functionImplementation = {
 
             //第二个数字
             var number2 = 0;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 number2 = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(number2)){
+                if (valueIsError(number2)) {
                     return number2;
                 }
 
-                if(!isRealNum(number2)){
+                if (!isRealNum(number2)) {
                     return formula.error.v;
                 }
 
@@ -19431,7 +19431,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMSUM": function() {
+    "IMSUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19448,35 +19448,35 @@ const functionImplementation = {
 
         try {
             var x = window.luckysheet_function.IMREAL.f(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
             var y = window.luckysheet_function.IMAGINARY.f(arguments[0]);
-            if(valueIsError(y)){
+            if (valueIsError(y)) {
                 return y;
             }
 
             var result = arguments[0];
 
-            for(var i = 1; i < arguments.length; i++){
+            for (var i = 1; i < arguments.length; i++) {
                 var a = window.luckysheet_function.IMREAL.f(result);
-                if(valueIsError(a)){
+                if (valueIsError(a)) {
                     return a;
                 }
 
                 var b = window.luckysheet_function.IMAGINARY.f(result);
-                if(valueIsError(b)){
+                if (valueIsError(b)) {
                     return b;
                 }
 
                 var c = window.luckysheet_function.IMREAL.f(arguments[i]);
-                if(valueIsError(c)){
+                if (valueIsError(c)) {
                     return c;
                 }
 
                 var d = window.luckysheet_function.IMAGINARY.f(arguments[i]);
-                if(valueIsError(d)){
+                if (valueIsError(d)) {
                     return d;
                 }
 
@@ -19491,7 +19491,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMSUB": function() {
+    "IMSUB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19509,45 +19509,45 @@ const functionImplementation = {
         try {
             //inumber1
             var inumber1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(inumber1)){
+            if (valueIsError(inumber1)) {
                 return inumber1;
             }
 
             inumber1 = inumber1.toString();
 
-            if(inumber1.toLowerCase() == "true" || inumber1.toLowerCase() == "false"){
+            if (inumber1.toLowerCase() == "true" || inumber1.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             var a = window.luckysheet_function.IMREAL.f(inumber1);
-            if(valueIsError(a)){
+            if (valueIsError(a)) {
                 return a;
             }
 
             var b = window.luckysheet_function.IMAGINARY.f(inumber1);
-            if(valueIsError(b)){
+            if (valueIsError(b)) {
                 return b;
             }
 
             //inumber2
             var inumber2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(inumber2)){
+            if (valueIsError(inumber2)) {
                 return inumber2;
             }
 
             inumber2 = inumber2.toString();
 
-            if(inumber2.toLowerCase() == "true" || inumber2.toLowerCase() == "false"){
+            if (inumber2.toLowerCase() == "true" || inumber2.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             var c = window.luckysheet_function.IMREAL.f(inumber2);
-            if(valueIsError(c)){
+            if (valueIsError(c)) {
                 return c;
             }
 
             var d = window.luckysheet_function.IMAGINARY.f(inumber2);
-            if(valueIsError(d)){
+            if (valueIsError(d)) {
                 return d;
             }
 
@@ -19572,7 +19572,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMPRODUCT": function() {
+    "IMPRODUCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19589,35 +19589,35 @@ const functionImplementation = {
 
         try {
             var x = window.luckysheet_function.IMREAL.f(arguments[0]);
-            if(valueIsError(x)){
+            if (valueIsError(x)) {
                 return x;
             }
 
             var y = window.luckysheet_function.IMAGINARY.f(arguments[0]);
-            if(valueIsError(y)){
+            if (valueIsError(y)) {
                 return y;
             }
 
             var result = arguments[0];
 
-            for(var i = 1; i < arguments.length; i++){
+            for (var i = 1; i < arguments.length; i++) {
                 var a = window.luckysheet_function.IMREAL.f(result);
-                if(valueIsError(a)){
+                if (valueIsError(a)) {
                     return a;
                 }
 
                 var b = window.luckysheet_function.IMAGINARY.f(result);
-                if(valueIsError(b)){
+                if (valueIsError(b)) {
                     return b;
                 }
 
                 var c = window.luckysheet_function.IMREAL.f(arguments[i]);
-                if(valueIsError(c)){
+                if (valueIsError(c)) {
                     return c;
                 }
 
                 var d = window.luckysheet_function.IMAGINARY.f(arguments[i]);
-                if(valueIsError(d)){
+                if (valueIsError(d)) {
                     return d;
                 }
 
@@ -19632,7 +19632,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IMDIV": function() {
+    "IMDIV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19650,45 +19650,45 @@ const functionImplementation = {
         try {
             //inumber1
             var inumber1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(inumber1)){
+            if (valueIsError(inumber1)) {
                 return inumber1;
             }
 
             inumber1 = inumber1.toString();
 
-            if(inumber1.toLowerCase() == "true" || inumber1.toLowerCase() == "false"){
+            if (inumber1.toLowerCase() == "true" || inumber1.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             var a = window.luckysheet_function.IMREAL.f(inumber1);
-            if(valueIsError(a)){
+            if (valueIsError(a)) {
                 return a;
             }
 
             var b = window.luckysheet_function.IMAGINARY.f(inumber1);
-            if(valueIsError(b)){
+            if (valueIsError(b)) {
                 return b;
             }
 
             //inumber2
             var inumber2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(inumber2)){
+            if (valueIsError(inumber2)) {
                 return inumber2;
             }
 
             inumber2 = inumber2.toString();
 
-            if(inumber2.toLowerCase() == "true" || inumber2.toLowerCase() == "false"){
+            if (inumber2.toLowerCase() == "true" || inumber2.toLowerCase() == "false") {
                 return formula.error.v;
             }
 
             var c = window.luckysheet_function.IMREAL.f(inumber2);
-            if(valueIsError(c)){
+            if (valueIsError(c)) {
                 return c;
             }
 
             var d = window.luckysheet_function.IMAGINARY.f(inumber2);
-            if(valueIsError(d)){
+            if (valueIsError(d)) {
                 return d;
             }
 
@@ -19719,7 +19719,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NOT": function() {
+    "NOT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19738,7 +19738,7 @@ const functionImplementation = {
             //logical
             var logical = func_methods.getCellBoolen(arguments[0]);
 
-            if(valueIsError(logical)){
+            if (valueIsError(logical)) {
                 return logical;
             }
 
@@ -19750,7 +19750,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRUE": function() {
+    "TRUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19774,7 +19774,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FALSE": function() {
+    "FALSE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19798,7 +19798,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AND": function() {
+    "AND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19816,14 +19816,14 @@ const functionImplementation = {
         try {
             var result = true;
 
-            for(var i = 0; i < arguments.length; i++){
+            for (var i = 0; i < arguments.length; i++) {
                 var logical = func_methods.getCellBoolen(arguments[i]);
 
-                if(valueIsError(logical)){
+                if (valueIsError(logical)) {
                     return logical;
                 }
 
-                if(!logical){
+                if (!logical) {
                     result = false;
                     break;
                 }
@@ -19837,7 +19837,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IFERROR": function() {
+    "IFERROR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19857,7 +19857,7 @@ const functionImplementation = {
 
             var value = func_methods.getFirstValue(arguments[0], "text");
             // (getObjType(value) === 'string' && $.trim(value) === ''It means that the cell associated with IFERROR has been deleted by keyboard
-            if(valueIsError(value) || (getObjType(value) === 'string' && $.trim(value) === '' )){
+            if (valueIsError(value) || (getObjType(value) === 'string' && $.trim(value) === '')) {
                 return value_if_error;
             }
 
@@ -19869,7 +19869,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "IF": function() {
+    "IF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19887,29 +19887,29 @@ const functionImplementation = {
         try {
             //要测试的条件
             var logical_test = func_methods.getCellBoolen(arguments[0]);
-            if(valueIsError(logical_test)){
+            if (valueIsError(logical_test)) {
                 return logical_test;
             }
 
             //结果为 TRUE
             var value_if_true = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(value_if_true) && value_if_true!=error.d){
+            if (valueIsError(value_if_true) && value_if_true != error.d) {
                 return value_if_true;
             }
 
             //结果为 FALSE
             var value_if_false = "";
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 value_if_false = func_methods.getFirstValue(arguments[2], "text");
-                if(valueIsError(value_if_false) && value_if_false!=error.d){
+                if (valueIsError(value_if_false) && value_if_false != error.d) {
                     return value_if_false;
                 }
             }
 
-            if(logical_test){
+            if (logical_test) {
                 return value_if_true;
             }
-            else{
+            else {
                 return value_if_false;
             }
         }
@@ -19919,7 +19919,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "OR": function() {
+    "OR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19937,14 +19937,14 @@ const functionImplementation = {
         try {
             var result = false;
 
-            for(var i = 0; i < arguments.length; i++){
+            for (var i = 0; i < arguments.length; i++) {
                 var logical = func_methods.getCellBoolen(arguments[i]);
 
-                if(valueIsError(logical)){
+                if (valueIsError(logical)) {
                     return logical;
                 }
 
-                if(logical){
+                if (logical) {
                     result = true;
                     break;
                 }
@@ -19958,7 +19958,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NE": function() {
+    "NE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -19976,13 +19976,13 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
@@ -19994,7 +19994,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EQ": function() {
+    "EQ": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20012,13 +20012,13 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
@@ -20030,7 +20030,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GT": function() {
+    "GT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20048,11 +20048,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20060,11 +20060,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20078,7 +20078,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GTE": function() {
+    "GTE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20096,11 +20096,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20108,11 +20108,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20126,7 +20126,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LT": function() {
+    "LT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20144,11 +20144,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20156,11 +20156,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20174,7 +20174,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LTE": function() {
+    "LTE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20192,11 +20192,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20204,11 +20204,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20222,7 +20222,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ADD": function() {
+    "ADD": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20240,11 +20240,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20252,11 +20252,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20270,7 +20270,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MINUS": function() {
+    "MINUS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20288,11 +20288,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20300,11 +20300,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20318,7 +20318,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MULTIPLY": function() {
+    "MULTIPLY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20336,11 +20336,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20348,11 +20348,11 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
@@ -20366,7 +20366,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DIVIDE": function() {
+    "DIVIDE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20384,11 +20384,11 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
-            if(!isRealNum(value1)){
+            if (!isRealNum(value1)) {
                 return formula.error.v;
             }
 
@@ -20396,17 +20396,17 @@ const functionImplementation = {
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
-            if(!isRealNum(value2)){
+            if (!isRealNum(value2)) {
                 return formula.error.v;
             }
 
             value2 = parseFloat(value2);
 
-            if(value2 == 0){
+            if (value2 == 0) {
                 return formula.error.d;
             }
 
@@ -20418,7 +20418,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CONCAT": function() {
+    "CONCAT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20436,13 +20436,13 @@ const functionImplementation = {
         try {
             //value1
             var value1 = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(value1)){
+            if (valueIsError(value1)) {
                 return value1;
             }
 
             //value2
             var value2 = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(value2)){
+            if (valueIsError(value2)) {
                 return value2;
             }
 
@@ -20454,7 +20454,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "UNARY_PERCENT": function() {
+    "UNARY_PERCENT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20472,11 +20472,11 @@ const functionImplementation = {
         try {
             //要作为百分比解释的数值
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -20492,7 +20492,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CONCATENATE": function() {
+    "CONCATENATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20510,9 +20510,9 @@ const functionImplementation = {
         try {
             var result = "";
 
-            for(var i = 0; i < arguments.length; i++){
+            for (var i = 0; i < arguments.length; i++) {
                 var text = func_methods.getFirstValue(arguments[i], "text");
-                if(valueIsError(text)){
+                if (valueIsError(text)) {
                     return text;
                 }
 
@@ -20527,7 +20527,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CODE": function() {
+    "CODE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20545,11 +20545,11 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
-            if(text == ""){
+            if (text == "") {
                 return formula.error.v;
             }
 
@@ -20561,7 +20561,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CHAR": function() {
+    "CHAR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20579,17 +20579,17 @@ const functionImplementation = {
         try {
             //数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseInt(number);
 
-            if(number < 1 || number > 255){
+            if (number < 1 || number > 255) {
                 return formula.error.v;
             }
 
@@ -20601,7 +20601,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ARABIC": function() {
+    "ARABIC": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20619,7 +20619,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -20630,7 +20630,7 @@ const functionImplementation = {
             }
 
             var r = 0;
-            text.replace(/[MDLV]|C[MD]?|X[CL]?|I[XV]?/g, function(i) {
+            text.replace(/[MDLV]|C[MD]?|X[CL]?|I[XV]?/g, function (i) {
                 r += {
                     M: 1000,
                     CM: 900,
@@ -20656,7 +20656,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ROMAN": function() {
+    "ROMAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20674,30 +20674,30 @@ const functionImplementation = {
         try {
             //数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
             number = parseInt(number);
 
-            if(number == 0){
+            if (number == 0) {
                 return "";
             }
-            else if(number < 1 || number > 3999){
+            else if (number < 1 || number > 3999) {
                 return formula.error.v;
             }
 
             //计算
             function convert(num) {
-                var a=[
-                    ["","I","II","III","IV","V","VI","VII","VIII","IX"],
-                    ["","X","XX","XXX","XL","L","LX","LXX","LXXX","XC"],
-                    ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"],
-                    ["","M","MM","MMM"]
+                var a = [
+                    ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"],
+                    ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"],
+                    ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"],
+                    ["", "M", "MM", "MMM"]
                 ];
 
                 var i = a[3][Math.floor(num / 1000)];
@@ -20705,7 +20705,7 @@ const functionImplementation = {
                 var k = a[1][Math.floor(num % 100 / 10)];
                 var l = a[0][num % 10];
 
-                return  i + j + k + l;
+                return i + j + k + l;
             }
 
             return convert(number);
@@ -20716,7 +20716,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REGEXEXTRACT": function() {
+    "REGEXEXTRACT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20734,13 +20734,13 @@ const functionImplementation = {
         try {
             //输入文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
             //表达式
             var regular_expression = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(regular_expression)){
+            if (valueIsError(regular_expression)) {
                 return regular_expression;
             }
 
@@ -20753,7 +20753,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REGEXMATCH": function() {
+    "REGEXMATCH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20771,13 +20771,13 @@ const functionImplementation = {
         try {
             //输入文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
             //表达式
             var regular_expression = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(regular_expression)){
+            if (valueIsError(regular_expression)) {
                 return regular_expression;
             }
 
@@ -20790,7 +20790,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REGEXREPLACE": function() {
+    "REGEXREPLACE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20808,19 +20808,19 @@ const functionImplementation = {
         try {
             //输入文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
             //表达式
             var regular_expression = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(regular_expression)){
+            if (valueIsError(regular_expression)) {
                 return regular_expression;
             }
 
             //插入文本
             var replacement = func_methods.getFirstValue(arguments[2], "text");
-            if(valueIsError(replacement)){
+            if (valueIsError(replacement)) {
                 return replacement;
             }
 
@@ -20832,7 +20832,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "T": function() {
+    "T": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20850,7 +20850,7 @@ const functionImplementation = {
         try {
             //文本
             var value = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
@@ -20862,7 +20862,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FIXED": function() {
+    "FIXED": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20880,11 +20880,11 @@ const functionImplementation = {
         try {
             //要进行舍入并转换为文本的数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -20892,13 +20892,13 @@ const functionImplementation = {
 
             //小数位数
             var decimals = 2;
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 decimals = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(decimals)){
+                if (valueIsError(decimals)) {
                     return decimals;
                 }
 
-                if(!isRealNum(decimals)){
+                if (!isRealNum(decimals)) {
                     return formula.error.v;
                 }
 
@@ -20907,15 +20907,15 @@ const functionImplementation = {
 
             //逻辑值
             var no_commas = false;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 no_commas = func_methods.getCellBoolen(arguments[2]);
 
-                if(valueIsError(no_commas)){
+                if (valueIsError(no_commas)) {
                     return no_commas;
                 }
             }
 
-            if(decimals > 127){
+            if (decimals > 127) {
                 return formula.error.v;
             }
 
@@ -20937,7 +20937,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FIND": function() {
+    "FIND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -20955,7 +20955,7 @@ const functionImplementation = {
         try {
             //要查找的文本
             var find_text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(find_text)){
+            if (valueIsError(find_text)) {
                 return find_text;
             }
 
@@ -20963,7 +20963,7 @@ const functionImplementation = {
 
             //包含要查找文本的文本
             var within_text = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(within_text)){
+            if (valueIsError(within_text)) {
                 return within_text;
             }
 
@@ -20971,28 +20971,28 @@ const functionImplementation = {
 
             //指定开始进行查找的字符
             var start_num = 1;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 start_num = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(start_num)){
+                if (valueIsError(start_num)) {
                     return start_num;
                 }
 
-                if(!isRealNum(start_num)){
+                if (!isRealNum(start_num)) {
                     return formula.error.v;
                 }
 
                 start_num = parseFloat(start_num);
             }
 
-            if(start_num < 0 || start_num > within_text.length){
+            if (start_num < 0 || start_num > within_text.length) {
                 return formula.error.v;
             }
 
-            if(find_text == ""){
+            if (find_text == "") {
                 return start_num;
             }
 
-            if(within_text.indexOf(find_text) == -1){
+            if (within_text.indexOf(find_text) == -1) {
                 return formula.error.v;
             }
 
@@ -21006,7 +21006,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FINDB": function() {
+    "FINDB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21024,7 +21024,7 @@ const functionImplementation = {
         try {
             //要查找的文本
             var find_text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(find_text)){
+            if (valueIsError(find_text)) {
                 return find_text;
             }
 
@@ -21032,7 +21032,7 @@ const functionImplementation = {
 
             //包含要查找文本的文本
             var within_text = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(within_text)){
+            if (valueIsError(within_text)) {
                 return within_text;
             }
 
@@ -21040,28 +21040,28 @@ const functionImplementation = {
 
             //指定开始进行查找的字符
             var start_num = 1;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 start_num = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(start_num)){
+                if (valueIsError(start_num)) {
                     return start_num;
                 }
 
-                if(!isRealNum(start_num)){
+                if (!isRealNum(start_num)) {
                     return formula.error.v;
                 }
 
                 start_num = parseFloat(start_num);
             }
 
-            if(start_num < 0 || start_num > within_text.length){
+            if (start_num < 0 || start_num > within_text.length) {
                 return formula.error.v;
             }
 
-            if(find_text == ""){
+            if (find_text == "") {
                 return start_num;
             }
 
-            if(within_text.indexOf(find_text) == -1){
+            if (within_text.indexOf(find_text) == -1) {
                 return formula.error.v;
             }
 
@@ -21069,11 +21069,11 @@ const functionImplementation = {
             var index = within_text.indexOf(find_text, start_num - 1);
 
             var result = 0;
-            for(var i = 0; i < index; i++){
-                if(/[^\x00-\xff]/g.test(strArr[i])){
+            for (var i = 0; i < index; i++) {
+                if (/[^\x00-\xff]/g.test(strArr[i])) {
                     result += 2;
                 }
-                else{
+                else {
                     result += 1;
                 }
             }
@@ -21086,7 +21086,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "JOIN": function() {
+    "JOIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21104,27 +21104,27 @@ const functionImplementation = {
         try {
             //定界符
             var separator = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(separator)){
+            if (valueIsError(separator)) {
                 return separator;
             }
 
             //值或数组
             var dataArr = [];
 
-            for(var i = 1; i < arguments.length; i++){
+            for (var i = 1; i < arguments.length; i++) {
                 var data = arguments[i];
 
-                if(getObjType(data) == "array"){
-                    if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                if (getObjType(data) == "array") {
+                    if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                         return formula.error.v;
                     }
 
                     dataArr = dataArr.concat(func_methods.getDataArr(data, false));
                 }
-                else if(getObjType(data) == "object" && data.startCell != null){
+                else if (getObjType(data) == "object" && data.startCell != null) {
                     dataArr = dataArr.concat(func_methods.getCellDataArr(data, "text", false));
                 }
-                else{
+                else {
                     dataArr.push(data);
                 }
             }
@@ -21137,7 +21137,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LEFT": function() {
+    "LEFT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21155,7 +21155,7 @@ const functionImplementation = {
         try {
             //包含要提取���字符的文本字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21163,31 +21163,31 @@ const functionImplementation = {
 
             //提取的字符的数量
             var num_chars = 1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 num_chars = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(num_chars)){
+                if (valueIsError(num_chars)) {
                     return num_chars;
                 }
 
-                if(!isRealNum(num_chars)){
+                if (!isRealNum(num_chars)) {
                     return formula.error.v;
                 }
 
                 num_chars = parseInt(num_chars);
             }
 
-            if(num_chars < 0){
+            if (num_chars < 0) {
                 return formula.error.v;
             }
 
             //计算
-            if(num_chars >= text.length){
+            if (num_chars >= text.length) {
                 return text;
             }
-            else if(num_chars == 0){
+            else if (num_chars == 0) {
                 return "";
             }
-            else{
+            else {
                 return text.substr(0, num_chars);
             }
         }
@@ -21197,7 +21197,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RIGHT": function() {
+    "RIGHT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21215,7 +21215,7 @@ const functionImplementation = {
         try {
             //包含要提取的字符的文本字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21223,31 +21223,31 @@ const functionImplementation = {
 
             //提取的字符的数量
             var num_chars = 1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 num_chars = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(num_chars)){
+                if (valueIsError(num_chars)) {
                     return num_chars;
                 }
 
-                if(!isRealNum(num_chars)){
+                if (!isRealNum(num_chars)) {
                     return formula.error.v;
                 }
 
                 num_chars = parseInt(num_chars);
             }
 
-            if(num_chars < 0){
+            if (num_chars < 0) {
                 return formula.error.v;
             }
 
             //计算
-            if(num_chars >= text.length){
+            if (num_chars >= text.length) {
                 return text;
             }
-            else if(num_chars == 0){
+            else if (num_chars == 0) {
                 return "";
             }
-            else{
+            else {
                 return text.substr(-num_chars, num_chars);
             }
         }
@@ -21257,7 +21257,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MID": function() {
+    "MID": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21275,7 +21275,7 @@ const functionImplementation = {
         try {
             //包含要提取的字符的文本字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21283,11 +21283,11 @@ const functionImplementation = {
 
             //开始提取的位置
             var start_num = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(start_num)){
+            if (valueIsError(start_num)) {
                 return start_num;
             }
 
-            if(!isRealNum(start_num)){
+            if (!isRealNum(start_num)) {
                 return formula.error.v;
             }
 
@@ -21295,26 +21295,26 @@ const functionImplementation = {
 
             //提取的字符的数量
             var num_chars = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(num_chars)){
+            if (valueIsError(num_chars)) {
                 return num_chars;
             }
 
-            if(!isRealNum(num_chars)){
+            if (!isRealNum(num_chars)) {
                 return formula.error.v;
             }
 
             num_chars = parseInt(num_chars);
 
-            if(start_num < 1 || num_chars < 0){
+            if (start_num < 1 || num_chars < 0) {
                 return formula.error.v;
             }
 
             //计算
-            if(start_num > text.length){
+            if (start_num > text.length) {
                 return "";
             }
 
-            if(start_num + num_chars > text.length){
+            if (start_num + num_chars > text.length) {
                 return text.substr(start_num - 1, text.length - start_num + 1);
             }
 
@@ -21326,7 +21326,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LEN": function() {
+    "LEN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21344,7 +21344,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21358,7 +21358,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LENB": function() {
+    "LENB": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21376,7 +21376,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21390,7 +21390,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOWER": function() {
+    "LOWER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21408,7 +21408,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21422,7 +21422,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "UPPER": function() {
+    "UPPER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21440,7 +21440,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21454,7 +21454,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EXACT": function() {
+    "EXACT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21472,7 +21472,7 @@ const functionImplementation = {
         try {
             //字符串1
             var text1 = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text1)){
+            if (valueIsError(text1)) {
                 return text1;
             }
 
@@ -21480,7 +21480,7 @@ const functionImplementation = {
 
             //字符串2
             var text2 = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(text2)){
+            if (valueIsError(text2)) {
                 return text2;
             }
 
@@ -21494,7 +21494,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REPLACE": function() {
+    "REPLACE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21512,7 +21512,7 @@ const functionImplementation = {
         try {
             //字符串1
             var old_text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(old_text)){
+            if (valueIsError(old_text)) {
                 return old_text;
             }
 
@@ -21520,11 +21520,11 @@ const functionImplementation = {
 
             //进行替换操作的位置
             var start_num = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(start_num)){
+            if (valueIsError(start_num)) {
                 return start_num;
             }
 
-            if(!isRealNum(start_num)){
+            if (!isRealNum(start_num)) {
                 return formula.error.v;
             }
 
@@ -21532,11 +21532,11 @@ const functionImplementation = {
 
             //要在文本中替换的字符个数
             var num_chars = func_methods.getFirstValue(arguments[2]);
-            if(valueIsError(num_chars)){
+            if (valueIsError(num_chars)) {
                 return num_chars;
             }
 
-            if(!isRealNum(num_chars)){
+            if (!isRealNum(num_chars)) {
                 return formula.error.v;
             }
 
@@ -21544,7 +21544,7 @@ const functionImplementation = {
 
             //字符串2
             var new_text = func_methods.getFirstValue(arguments[3], "text");
-            if(valueIsError(new_text)){
+            if (valueIsError(new_text)) {
                 return new_text;
             }
 
@@ -21558,7 +21558,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REPT": function() {
+    "REPT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21576,7 +21576,7 @@ const functionImplementation = {
         try {
             //字符串1
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21584,21 +21584,21 @@ const functionImplementation = {
 
             //重复次数
             var number_times = func_methods.getFirstValue(arguments[1]);
-            if(valueIsError(number_times)){
+            if (valueIsError(number_times)) {
                 return number_times;
             }
 
-            if(!isRealNum(number_times)){
+            if (!isRealNum(number_times)) {
                 return formula.error.v;
             }
 
             number_times = parseInt(number_times);
 
-            if(number_times < 0){
+            if (number_times < 0) {
                 return formula.error.v;
             }
 
-            if(number_times > 100){
+            if (number_times > 100) {
                 number_times = 100;
             }
 
@@ -21610,7 +21610,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SEARCH": function() {
+    "SEARCH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21628,7 +21628,7 @@ const functionImplementation = {
         try {
             //字符串1
             var find_text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(find_text)){
+            if (valueIsError(find_text)) {
                 return find_text;
             }
 
@@ -21636,7 +21636,7 @@ const functionImplementation = {
 
             //字符串2
             var within_text = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(within_text)){
+            if (valueIsError(within_text)) {
                 return within_text;
             }
 
@@ -21644,20 +21644,20 @@ const functionImplementation = {
 
             //开始位置
             var start_num = 1;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 start_num = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(start_num)){
+                if (valueIsError(start_num)) {
                     return start_num;
                 }
 
-                if(!isRealNum(start_num)){
+                if (!isRealNum(start_num)) {
                     return formula.error.v;
                 }
 
                 start_num = parseInt(start_num);
             }
 
-            if(start_num <= 0 || start_num > within_text.length){
+            if (start_num <= 0 || start_num > within_text.length) {
                 return formula.error.v;
             }
 
@@ -21671,7 +21671,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUBSTITUTE": function() {
+    "SUBSTITUTE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21689,7 +21689,7 @@ const functionImplementation = {
         try {
             //需要替换其中字符的文本
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21697,7 +21697,7 @@ const functionImplementation = {
 
             //需要替换的文本
             var old_text = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(old_text)){
+            if (valueIsError(old_text)) {
                 return old_text;
             }
 
@@ -21705,7 +21705,7 @@ const functionImplementation = {
 
             //用于替换 old_text 的文本
             var new_text = func_methods.getFirstValue(arguments[2], "text");
-            if(valueIsError(new_text)){
+            if (valueIsError(new_text)) {
                 return new_text;
             }
 
@@ -21713,13 +21713,13 @@ const functionImplementation = {
 
             //instance_num
             var instance_num = null;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 instance_num = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(instance_num)){
+                if (valueIsError(instance_num)) {
                     return instance_num;
                 }
 
-                if(!isRealNum(instance_num)){
+                if (!isRealNum(instance_num)) {
                     return formula.error.v;
                 }
 
@@ -21731,24 +21731,24 @@ const functionImplementation = {
 
             var result;
 
-            if(instance_num == null){
+            if (instance_num == null) {
                 result = text.replace(reg, new_text);
             }
-            else{
-                if(instance_num <= 0){
+            else {
+                if (instance_num <= 0) {
                     return formula.error.v;
                 }
 
                 var match = text.match(reg);
 
-                if(match == null || instance_num > match.length){
+                if (match == null || instance_num > match.length) {
                     return text;
                 }
-                else{
+                else {
                     var len = old_text.length;
                     var index = 0;
 
-                    for(var i = 1; i <= instance_num; i++){
+                    for (var i = 1; i <= instance_num; i++) {
                         index = text.indexOf(old_text, index) + 1;
                     }
 
@@ -21764,7 +21764,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CLEAN": function() {
+    "CLEAN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21782,17 +21782,17 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
             text = text.toString();
 
             var textArr = [];
-            for(var i = 0; i < text.length; i++){
+            for (var i = 0; i < text.length; i++) {
                 var code = text.charCodeAt(i);
 
-                if(/[\u4e00-\u9fa5]/g.test(text.charAt(i)) || (code > 31 && code < 127)){
+                if (/[\u4e00-\u9fa5]/g.test(text.charAt(i)) || (code > 31 && code < 127)) {
                     textArr.push(text.charAt(i));
                 }
             }
@@ -21805,7 +21805,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TEXT": function() {
+    "TEXT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21823,11 +21823,11 @@ const functionImplementation = {
         try {
             //数字
             var value = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
-            if(!isRealNum(value)){
+            if (!isRealNum(value)) {
                 return formula.error.v;
             }
 
@@ -21835,7 +21835,7 @@ const functionImplementation = {
 
             //格式
             var format_text = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(format_text)){
+            if (valueIsError(format_text)) {
                 return format_text;
             }
 
@@ -21849,7 +21849,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRIM": function() {
+    "TRIM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21867,7 +21867,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21881,7 +21881,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "VALUE": function() {
+    "VALUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21899,7 +21899,7 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
@@ -21913,7 +21913,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PROPER": function() {
+    "PROPER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21931,13 +21931,13 @@ const functionImplementation = {
         try {
             //字符串
             var text = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(text)){
+            if (valueIsError(text)) {
                 return text;
             }
 
             text = text.toString().toLowerCase();
 
-            return text.replace(/[a-zA-Z]+/g, function(word){ return word.substring(0,1).toUpperCase() + word.substring(1); })
+            return text.replace(/[a-zA-Z]+/g, function (word) { return word.substring(0, 1).toUpperCase() + word.substring(1); })
         }
         catch (e) {
             var err = e;
@@ -21945,7 +21945,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CONVERT": function() {
+    "CONVERT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -21963,11 +21963,11 @@ const functionImplementation = {
         try {
             //数字
             var number = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(number)){
+            if (valueIsError(number)) {
                 return number;
             }
 
-            if(!isRealNum(number)){
+            if (!isRealNum(number)) {
                 return formula.error.v;
             }
 
@@ -21975,7 +21975,7 @@ const functionImplementation = {
 
             //数值的单位
             var from_unit = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(from_unit)){
+            if (valueIsError(from_unit)) {
                 return from_unit;
             }
 
@@ -21983,7 +21983,7 @@ const functionImplementation = {
 
             //结果的单位
             var to_unit = func_methods.getFirstValue(arguments[2], "text");
-            if(valueIsError(to_unit)){
+            if (valueIsError(to_unit)) {
                 return to_unit;
             }
 
@@ -22261,7 +22261,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMX2MY2": function() {
+    "SUMX2MY2": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22281,17 +22281,17 @@ const functionImplementation = {
             var data_array_x = arguments[0];
             var array_x = [];
 
-            if(getObjType(data_array_x) == "array"){
-                if(getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)){
+            if (getObjType(data_array_x) == "array") {
+                if (getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)) {
                     return formula.error.v;
                 }
 
                 array_x = array_x.concat(func_methods.getDataArr(data_array_x, false));
             }
-            else if(getObjType(data_array_x) == "object" && data_array_x.startCell != null){
+            else if (getObjType(data_array_x) == "object" && data_array_x.startCell != null) {
                 array_x = array_x.concat(func_methods.getCellDataArr(data_array_x, "text", false));
             }
-            else{
+            else {
                 array_x.push(data_array_x);
             }
 
@@ -22299,32 +22299,32 @@ const functionImplementation = {
             var data_array_y = arguments[1];
             var array_y = [];
 
-            if(getObjType(data_array_y) == "array"){
-                if(getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)){
+            if (getObjType(data_array_y) == "array") {
+                if (getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)) {
                     return formula.error.v;
                 }
 
                 array_y = array_y.concat(func_methods.getDataArr(data_array_y, false));
             }
-            else if(getObjType(data_array_y) == "object" && data_array_y.startCell != null){
+            else if (getObjType(data_array_y) == "object" && data_array_y.startCell != null) {
                 array_y = array_y.concat(func_methods.getCellDataArr(data_array_y, "text", false));
             }
-            else{
+            else {
                 array_y.push(data_array_y);
             }
 
-            if(array_x.length != array_y.length){
+            if (array_x.length != array_y.length) {
                 return formula.error.na;
             }
 
             //array_x 和 array_y 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < array_x.length; i++){
+            for (var i = 0; i < array_x.length; i++) {
                 var num_x = array_x[i];
                 var num_y = array_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
@@ -22345,7 +22345,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMX2PY2": function() {
+    "SUMX2PY2": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22365,17 +22365,17 @@ const functionImplementation = {
             var data_array_x = arguments[0];
             var array_x = [];
 
-            if(getObjType(data_array_x) == "array"){
-                if(getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)){
+            if (getObjType(data_array_x) == "array") {
+                if (getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)) {
                     return formula.error.v;
                 }
 
                 array_x = array_x.concat(func_methods.getDataArr(data_array_x, false));
             }
-            else if(getObjType(data_array_x) == "object" && data_array_x.startCell != null){
+            else if (getObjType(data_array_x) == "object" && data_array_x.startCell != null) {
                 array_x = array_x.concat(func_methods.getCellDataArr(data_array_x, "text", false));
             }
-            else{
+            else {
                 array_x.push(data_array_x);
             }
 
@@ -22383,32 +22383,32 @@ const functionImplementation = {
             var data_array_y = arguments[1];
             var array_y = [];
 
-            if(getObjType(data_array_y) == "array"){
-                if(getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)){
+            if (getObjType(data_array_y) == "array") {
+                if (getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)) {
                     return formula.error.v;
                 }
 
                 array_y = array_y.concat(func_methods.getDataArr(data_array_y, false));
             }
-            else if(getObjType(data_array_y) == "object" && data_array_y.startCell != null){
+            else if (getObjType(data_array_y) == "object" && data_array_y.startCell != null) {
                 array_y = array_y.concat(func_methods.getCellDataArr(data_array_y, "text", false));
             }
-            else{
+            else {
                 array_y.push(data_array_y);
             }
 
-            if(array_x.length != array_y.length){
+            if (array_x.length != array_y.length) {
                 return formula.error.na;
             }
 
             //array_x 和 array_y 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < array_x.length; i++){
+            for (var i = 0; i < array_x.length; i++) {
                 var num_x = array_x[i];
                 var num_y = array_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
@@ -22429,7 +22429,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMXMY2": function() {
+    "SUMXMY2": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22449,17 +22449,17 @@ const functionImplementation = {
             var data_array_x = arguments[0];
             var array_x = [];
 
-            if(getObjType(data_array_x) == "array"){
-                if(getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)){
+            if (getObjType(data_array_x) == "array") {
+                if (getObjType(data_array_x[0]) == "array" && !func_methods.isDyadicArr(data_array_x)) {
                     return formula.error.v;
                 }
 
                 array_x = array_x.concat(func_methods.getDataArr(data_array_x, false));
             }
-            else if(getObjType(data_array_x) == "object" && data_array_x.startCell != null){
+            else if (getObjType(data_array_x) == "object" && data_array_x.startCell != null) {
                 array_x = array_x.concat(func_methods.getCellDataArr(data_array_x, "text", false));
             }
-            else{
+            else {
                 array_x.push(data_array_x);
             }
 
@@ -22467,32 +22467,32 @@ const functionImplementation = {
             var data_array_y = arguments[1];
             var array_y = [];
 
-            if(getObjType(data_array_y) == "array"){
-                if(getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)){
+            if (getObjType(data_array_y) == "array") {
+                if (getObjType(data_array_y[0]) == "array" && !func_methods.isDyadicArr(data_array_y)) {
                     return formula.error.v;
                 }
 
                 array_y = array_y.concat(func_methods.getDataArr(data_array_y, false));
             }
-            else if(getObjType(data_array_y) == "object" && data_array_y.startCell != null){
+            else if (getObjType(data_array_y) == "object" && data_array_y.startCell != null) {
                 array_y = array_y.concat(func_methods.getCellDataArr(data_array_y, "text", false));
             }
-            else{
+            else {
                 array_y.push(data_array_y);
             }
 
-            if(array_x.length != array_y.length){
+            if (array_x.length != array_y.length) {
                 return formula.error.na;
             }
 
             //array_x 和 array_y 只取数值
             var data_x = [], data_y = [];
 
-            for(var i = 0; i < array_x.length; i++){
+            for (var i = 0; i < array_x.length; i++) {
                 var num_x = array_x[i];
                 var num_y = array_y[i];
 
-                if(isRealNum(num_x) && isRealNum(num_y)){
+                if (isRealNum(num_x) && isRealNum(num_y)) {
                     data_x.push(parseFloat(num_x));
                     data_y.push(parseFloat(num_y));
                 }
@@ -22513,7 +22513,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRANSPOSE": function() {
+    "TRANSPOSE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22533,19 +22533,19 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "number");
             }
 
-            array = array[0].map(function(col, a){
-                return array.map(function(row){
+            array = array[0].map(function (col, a) {
+                return array.map(function (row) {
                     return row[a];
                 });
             });
@@ -22558,7 +22558,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TREND": function() {
+    "TREND": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22578,18 +22578,18 @@ const functionImplementation = {
             var data_known_y = arguments[0];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = func_methods.getDataDyadicArr(data_known_y);
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = func_methods.getCellDataDyadicArr(data_known_y, "text");
             }
-            else{
-                if(!isRealNum(data_known_y)){
+            else {
+                if (!isRealNum(data_known_y)) {
                     return formula.error.v;
                 }
 
@@ -22603,9 +22603,9 @@ const functionImplementation = {
             var known_y_rowlen = known_y.length;
             var known_y_collen = known_y[0].length;
 
-            for(var i = 0; i < known_y_rowlen; i++){
-                for(var j = 0; j < known_y_collen; j++){
-                    if(!isRealNum(known_y[i][j])){
+            for (var i = 0; i < known_y_rowlen; i++) {
+                for (var j = 0; j < known_y_collen; j++) {
+                    if (!isRealNum(known_y[i][j])) {
                         return formula.error.v;
                     }
 
@@ -22615,29 +22615,29 @@ const functionImplementation = {
 
             //可选 x 值集合
             var known_x = [];
-            for(var i = 1; i <= known_y_rowlen; i++){
-                for(var j = 1; j <= known_y_collen; j++){
+            for (var i = 1; i <= known_y_rowlen; i++) {
+                for (var j = 1; j <= known_y_collen; j++) {
                     var number = (i - 1) * known_y_collen + j;
                     known_x.push(number);
                 }
             }
 
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 var data_known_x = arguments[1];
                 known_x = [];
 
-                if(getObjType(data_known_x) == "array"){
-                    if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+                if (getObjType(data_known_x) == "array") {
+                    if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                         return formula.error.v;
                     }
 
                     known_x = func_methods.getDataDyadicArr(data_known_x);
                 }
-                else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+                else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                     known_x = func_methods.getCellDataDyadicArr(data_known_x, "text");
                 }
-                else{
-                    if(!isRealNum(data_known_x)){
+                else {
+                    if (!isRealNum(data_known_x)) {
                         return formula.error.v;
                     }
 
@@ -22648,9 +22648,9 @@ const functionImplementation = {
                     known_x.push(rowArr);
                 }
 
-                for(var i = 0; i < known_x.length; i++){
-                    for(var j = 0; j < known_x[0].length; j++){
-                        if(!isRealNum(known_x[i][j])){
+                for (var i = 0; i < known_x.length; i++) {
+                    for (var j = 0; j < known_x[0].length; j++) {
+                        if (!isRealNum(known_x[i][j])) {
                             return formula.error.v;
                         }
 
@@ -22665,22 +22665,22 @@ const functionImplementation = {
             //新 x 值
             var new_x = known_x;
 
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 var data_new_x = arguments[2];
                 new_x = [];
 
-                if(getObjType(data_new_x) == "array"){
-                    if(getObjType(data_new_x[0]) == "array" && !func_methods.isDyadicArr(data_new_x)){
+                if (getObjType(data_new_x) == "array") {
+                    if (getObjType(data_new_x[0]) == "array" && !func_methods.isDyadicArr(data_new_x)) {
                         return formula.error.v;
                     }
 
                     new_x = func_methods.getDataDyadicArr(data_new_x);
                 }
-                else if(getObjType(data_new_x) == "object" && data_new_x.startCell != null){
+                else if (getObjType(data_new_x) == "object" && data_new_x.startCell != null) {
                     new_x = func_methods.getCellDataDyadicArr(data_new_x, "text");
                 }
-                else{
-                    if(!isRealNum(data_new_x)){
+                else {
+                    if (!isRealNum(data_new_x)) {
                         return formula.error.v;
                     }
 
@@ -22691,9 +22691,9 @@ const functionImplementation = {
                     new_x.push(rowArr);
                 }
 
-                for(var i = 0; i < new_x.length; i++){
-                    for(var j = 0; j < new_x[0].length; j++){
-                        if(!isRealNum(new_x[i][j])){
+                for (var i = 0; i < new_x.length; i++) {
+                    for (var j = 0; j < new_x[0].length; j++) {
+                        if (!isRealNum(new_x[i][j])) {
                             return formula.error.v;
                         }
 
@@ -22705,24 +22705,24 @@ const functionImplementation = {
             //逻辑值
             var const_b = true;
 
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 const_b = func_methods.getCellBoolen(arguments[3]);
 
-                if(valueIsError(const_b)){
+                if (valueIsError(const_b)) {
                     return const_b;
                 }
             }
 
-            if(known_y_rowlen != known_x_rowlen || known_y_collen != known_x_collen){
+            if (known_y_rowlen != known_x_rowlen || known_y_collen != known_x_collen) {
                 return formula.error.r;
             }
 
             //计算
-            function leastSquare(arr_x, arr_y){
+            function leastSquare(arr_x, arr_y) {
                 var xSum = 0, ySum = 0, xySum = 0, x2Sum = 0;
 
-                for(var i = 0; i < arr_x.length; i++){
-                    for(var j = 0; j < arr_x[i].length; j++){
+                for (var i = 0; i < arr_x.length; i++) {
+                    for (var j = 0; j < arr_x[i].length; j++) {
                         xSum += arr_x[i][j];
                         ySum += arr_y[i][j];
                         xySum += arr_x[i][j] * arr_y[i][j];
@@ -22746,17 +22746,17 @@ const functionImplementation = {
             var ls = leastSquare(known_x, known_y);
             var m = ls[0];
 
-            if(const_b){
+            if (const_b) {
                 var b = ls[1];
             }
-            else{
+            else {
                 var b = 0;
             }
 
             var result = [];
 
-            for(var i = 0; i < new_x.length; i++){
-                for(var j = 0; j < new_x[i].length; j++){
+            for (var i = 0; i < new_x.length; i++) {
+                for (var j = 0; j < new_x[i].length; j++) {
                     var x = new_x[i][j];
                     var y = m * x + b;
 
@@ -22772,7 +22772,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FREQUENCY": function() {
+    "FREQUENCY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22792,18 +22792,18 @@ const functionImplementation = {
             var data_data_array = arguments[0];
             var data_array = [];
 
-            if(getObjType(data_data_array) == "array"){
-                if(getObjType(data_data_array[0]) == "array" && !func_methods.isDyadicArr(data_data_array)){
+            if (getObjType(data_data_array) == "array") {
+                if (getObjType(data_data_array[0]) == "array" && !func_methods.isDyadicArr(data_data_array)) {
                     return formula.error.v;
                 }
 
                 data_array = data_array.concat(func_methods.getDataArr(data_data_array, true));
             }
-            else if(getObjType(data_data_array) == "object" && data_data_array.startCell != null){
+            else if (getObjType(data_data_array) == "object" && data_data_array.startCell != null) {
                 data_array = data_array.concat(func_methods.getCellDataArr(data_data_array, "number", true));
             }
-            else{
-                if(!isRealNum(data_data_array)){
+            else {
+                if (!isRealNum(data_data_array)) {
                     return formula.error.v;
                 }
 
@@ -22812,8 +22812,8 @@ const functionImplementation = {
 
             var data_array_n = [];
 
-            for(var i = 0; i < data_array.length; i++){
-                if(isRealNum(data_array[i])){
+            for (var i = 0; i < data_array.length; i++) {
+                if (isRealNum(data_array[i])) {
                     data_array_n.push(parseFloat(data_array[i]));
                 }
             }
@@ -22822,18 +22822,18 @@ const functionImplementation = {
             var data_bins_array = arguments[1];
             var bins_array = [];
 
-            if(getObjType(data_bins_array) == "array"){
-                if(getObjType(data_bins_array[0]) == "array" && !func_methods.isDyadicArr(data_bins_array)){
+            if (getObjType(data_bins_array) == "array") {
+                if (getObjType(data_bins_array[0]) == "array" && !func_methods.isDyadicArr(data_bins_array)) {
                     return formula.error.v;
                 }
 
                 bins_array = bins_array.concat(func_methods.getDataArr(data_bins_array, true));
             }
-            else if(getObjType(data_bins_array) == "object" && data_bins_array.startCell != null){
+            else if (getObjType(data_bins_array) == "object" && data_bins_array.startCell != null) {
                 bins_array = bins_array.concat(func_methods.getCellDataArr(data_bins_array, "number", true));
             }
-            else{
-                if(!isRealNum(data_bins_array)){
+            else {
+                if (!isRealNum(data_bins_array)) {
                     return formula.error.v;
                 }
 
@@ -22842,56 +22842,56 @@ const functionImplementation = {
 
             var bins_array_n = [];
 
-            for(var i = 0; i < bins_array.length; i++){
-                if(isRealNum(bins_array[i])){
+            for (var i = 0; i < bins_array.length; i++) {
+                if (isRealNum(bins_array[i])) {
                     bins_array_n.push(parseFloat(bins_array[i]));
                 }
             }
 
             //计算
-            if(data_array_n.length == 0 && bins_array_n.length == 0){
+            if (data_array_n.length == 0 && bins_array_n.length == 0) {
                 return [[0], [0]];
             }
-            else if(data_array_n.length == 0){
+            else if (data_array_n.length == 0) {
                 var result = [[0]];
 
-                for(var i = 0; i < bins_array_n.length; i++){
+                for (var i = 0; i < bins_array_n.length; i++) {
                     result.push([0]);
                 }
 
                 return result;
             }
-            else if(bins_array_n.length == 0){
+            else if (bins_array_n.length == 0) {
                 return [[0], [data_array_n.length]];
             }
-            else{
-                bins_array_n.sort(function(a, b){
+            else {
+                bins_array_n.sort(function (a, b) {
                     return a - b;
                 });
 
                 var result = [];
 
-                for(var i = 0; i < bins_array_n.length; i++){
-                    if(i == 0){
+                for (var i = 0; i < bins_array_n.length; i++) {
+                    if (i == 0) {
                         var count = 0;
 
-                        for(var j = 0; j < data_array_n.length; j++){
-                            if(data_array_n[j] <= bins_array_n[0]){
+                        for (var j = 0; j < data_array_n.length; j++) {
+                            if (data_array_n[j] <= bins_array_n[0]) {
                                 count++;
                             }
                         }
 
                         result.push([count]);
                     }
-                    else if(i == bins_array_n.length - 1){
+                    else if (i == bins_array_n.length - 1) {
                         var count1 = 0, count2 = 0;
 
-                        for(var j = 0; j < data_array_n.length; j++){
-                            if(data_array_n[j] <= bins_array_n[i] && data_array_n[j] > bins_array_n[i - 1]){
+                        for (var j = 0; j < data_array_n.length; j++) {
+                            if (data_array_n[j] <= bins_array_n[i] && data_array_n[j] > bins_array_n[i - 1]) {
                                 count1++;
                             }
 
-                            if(data_array_n[j] > bins_array_n[i]){
+                            if (data_array_n[j] > bins_array_n[i]) {
                                 count2++;
                             }
                         }
@@ -22899,11 +22899,11 @@ const functionImplementation = {
                         result.push([count1]);
                         result.push([count2]);
                     }
-                    else{
+                    else {
                         var count = 0;
 
-                        for(var j = 0; j < data_array_n.length; j++){
-                            if(data_array_n[j] <= bins_array_n[i] && data_array_n[j] > bins_array_n[i - 1]){
+                        for (var j = 0; j < data_array_n.length; j++) {
+                            if (data_array_n[j] <= bins_array_n[i] && data_array_n[j] > bins_array_n[i - 1]) {
                                 count++;
                             }
                         }
@@ -22921,7 +22921,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "GROWTH": function() {
+    "GROWTH": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -22941,18 +22941,18 @@ const functionImplementation = {
             var data_known_y = arguments[0];
             var known_y = [];
 
-            if(getObjType(data_known_y) == "array"){
-                if(getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)){
+            if (getObjType(data_known_y) == "array") {
+                if (getObjType(data_known_y[0]) == "array" && !func_methods.isDyadicArr(data_known_y)) {
                     return formula.error.v;
                 }
 
                 known_y = func_methods.getDataDyadicArr(data_known_y);
             }
-            else if(getObjType(data_known_y) == "object" && data_known_y.startCell != null){
+            else if (getObjType(data_known_y) == "object" && data_known_y.startCell != null) {
                 known_y = func_methods.getCellDataDyadicArr(data_known_y, "text");
             }
-            else{
-                if(!isRealNum(data_known_y)){
+            else {
+                if (!isRealNum(data_known_y)) {
                     return formula.error.v;
                 }
 
@@ -22966,9 +22966,9 @@ const functionImplementation = {
             var known_y_rowlen = known_y.length;
             var known_y_collen = known_y[0].length;
 
-            for(var i = 0; i < known_y_rowlen; i++){
-                for(var j = 0; j < known_y_collen; j++){
-                    if(!isRealNum(known_y[i][j])){
+            for (var i = 0; i < known_y_rowlen; i++) {
+                for (var j = 0; j < known_y_collen; j++) {
+                    if (!isRealNum(known_y[i][j])) {
                         return formula.error.v;
                     }
 
@@ -22978,29 +22978,29 @@ const functionImplementation = {
 
             //可选 x 值集合
             var known_x = [];
-            for(var i = 1; i <= known_y_rowlen; i++){
-                for(var j = 1; j <= known_y_collen; j++){
+            for (var i = 1; i <= known_y_rowlen; i++) {
+                for (var j = 1; j <= known_y_collen; j++) {
                     var number = (i - 1) * known_y_collen + j;
                     known_x.push(number);
                 }
             }
 
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 var data_known_x = arguments[1];
                 known_x = [];
 
-                if(getObjType(data_known_x) == "array"){
-                    if(getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)){
+                if (getObjType(data_known_x) == "array") {
+                    if (getObjType(data_known_x[0]) == "array" && !func_methods.isDyadicArr(data_known_x)) {
                         return formula.error.v;
                     }
 
                     known_x = func_methods.getDataDyadicArr(data_known_x);
                 }
-                else if(getObjType(data_known_x) == "object" && data_known_x.startCell != null){
+                else if (getObjType(data_known_x) == "object" && data_known_x.startCell != null) {
                     known_x = func_methods.getCellDataDyadicArr(data_known_x, "text");
                 }
-                else{
-                    if(!isRealNum(data_known_x)){
+                else {
+                    if (!isRealNum(data_known_x)) {
                         return formula.error.v;
                     }
 
@@ -23011,9 +23011,9 @@ const functionImplementation = {
                     known_x.push(rowArr);
                 }
 
-                for(var i = 0; i < known_x.length; i++){
-                    for(var j = 0; j < known_x[0].length; j++){
-                        if(!isRealNum(known_x[i][j])){
+                for (var i = 0; i < known_x.length; i++) {
+                    for (var j = 0; j < known_x[0].length; j++) {
+                        if (!isRealNum(known_x[i][j])) {
                             return formula.error.v;
                         }
 
@@ -23028,22 +23028,22 @@ const functionImplementation = {
             //新 x 值
             var new_x = known_x;
 
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 var data_new_x = arguments[2];
                 new_x = [];
 
-                if(getObjType(data_new_x) == "array"){
-                    if(getObjType(data_new_x[0]) == "array" && !func_methods.isDyadicArr(data_new_x)){
+                if (getObjType(data_new_x) == "array") {
+                    if (getObjType(data_new_x[0]) == "array" && !func_methods.isDyadicArr(data_new_x)) {
                         return formula.error.v;
                     }
 
                     new_x = func_methods.getDataDyadicArr(data_new_x);
                 }
-                else if(getObjType(data_new_x) == "object" && data_new_x.startCell != null){
+                else if (getObjType(data_new_x) == "object" && data_new_x.startCell != null) {
                     new_x = func_methods.getCellDataDyadicArr(data_new_x, "text");
                 }
-                else{
-                    if(!isRealNum(data_new_x)){
+                else {
+                    if (!isRealNum(data_new_x)) {
                         return formula.error.v;
                     }
 
@@ -23054,9 +23054,9 @@ const functionImplementation = {
                     new_x.push(rowArr);
                 }
 
-                for(var i = 0; i < new_x.length; i++){
-                    for(var j = 0; j < new_x[0].length; j++){
-                        if(!isRealNum(new_x[i][j])){
+                for (var i = 0; i < new_x.length; i++) {
+                    for (var j = 0; j < new_x[0].length; j++) {
+                        if (!isRealNum(new_x[i][j])) {
                             return formula.error.v;
                         }
 
@@ -23068,24 +23068,24 @@ const functionImplementation = {
             //逻辑值
             var const_b = true;
 
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 const_b = func_methods.getCellBoolen(arguments[3]);
 
-                if(valueIsError(const_b)){
+                if (valueIsError(const_b)) {
                     return const_b;
                 }
             }
 
-            if(known_y_rowlen != known_x_rowlen || known_y_collen != known_x_collen){
+            if (known_y_rowlen != known_x_rowlen || known_y_collen != known_x_collen) {
                 return formula.error.r;
             }
 
             //计算
-            function leastSquare(arr_x, arr_y){
+            function leastSquare(arr_x, arr_y) {
                 var xSum = 0, ySum = 0, xySum = 0, x2Sum = 0;
 
-                for(var i = 0; i < arr_x.length; i++){
-                    for(var j = 0; j < arr_x[i].length; j++){
+                for (var i = 0; i < arr_x.length; i++) {
+                    for (var j = 0; j < arr_x[i].length; j++) {
                         xSum += arr_x[i][j];
                         // ySum += arr_y[i][j];
                         ySum += Math.log(arr_y[i][j]);
@@ -23111,17 +23111,17 @@ const functionImplementation = {
             var ls = leastSquare(known_x, known_y);
             var m = ls[0];
 
-            if(const_b){
+            if (const_b) {
                 var b = ls[1];
             }
-            else{
+            else {
                 var b = 1;
             }
 
             var result = [];
 
-            for(var i = 0; i < new_x.length; i++){
-                for(var j = 0; j < new_x[i].length; j++){
+            for (var i = 0; i < new_x.length; i++) {
+                for (var j = 0; j < new_x[i].length; j++) {
                     var x = new_x[i][j];
                     var y = b * Math.pow(m, x);
                     // var y = Math.exp(b + m * x);
@@ -23138,7 +23138,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LINEST": function() {
+    "LINEST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23162,7 +23162,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LOGEST": function() {
+    "LOGEST": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23186,7 +23186,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MDETERM": function() {
+    "MDETERM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23206,25 +23206,25 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "text");
             }
-            else{
+            else {
                 var rowArr = [];
                 rowArr.push(data_array);
                 array.push(rowArr);
             }
 
-            for(var i = 0; i < array.length; i++){
-                for(var j = 0; j < array[i].length; j++){
-                    if(!isRealNum(array[i][j])){
+            for (var i = 0; i < array.length; i++) {
+                for (var j = 0; j < array[i].length; j++) {
+                    if (!isRealNum(array[i][j])) {
                         return formula.error.v;
                     }
 
@@ -23232,56 +23232,56 @@ const functionImplementation = {
                 }
             }
 
-            if(array.length != array[0].length){
+            if (array.length != array[0].length) {
                 return formula.error.v;
             }
 
             //计算
-            function Ma(a, n){
+            function Ma(a, n) {
                 var A;
                 var b = new Array();
 
-                if(n == 1){
+                if (n == 1) {
                     A = a[0][0];
 
                     return A;
                 }
-                else if(n == 2){
+                else if (n == 2) {
                     A = a[0][0] * a[1][1] - a[0][1] * a[1][0];
 
                     return A;
                 }
-                else if(n == 3){
-                    A = a[0][0]*a[1][1]*a[2][2] + a[1][0]*a[2][1]*a[0][2] + a[2][0]*a[0][1]*a[1][2] - a[2][0]*a[1][1]*a[0][2] - a[0]      [0]*a[2][1]*a[1][2] - a[1][0]*a[0][1]*a[2][2];
+                else if (n == 3) {
+                    A = a[0][0] * a[1][1] * a[2][2] + a[1][0] * a[2][1] * a[0][2] + a[2][0] * a[0][1] * a[1][2] - a[2][0] * a[1][1] * a[0][2] - a[0][0] * a[2][1] * a[1][2] - a[1][0] * a[0][1] * a[2][2];
 
                     return A;
                 }
-                else{
+                else {
                     A = 0;
                     var c = new Array();
                     var e = new Array();
 
-                    for(var i = 0; i < n; i++){
+                    for (var i = 0; i < n; i++) {
                         b[i] = a[i][0] * Math.pow(-1, i + 1 + 1);
                     }
 
-                    for(var i = 0; i < n; i++){
+                    for (var i = 0; i < n; i++) {
                         e[i] = new Array();
 
-                        for(var j = 0; j < n - 1; j++){
+                        for (var j = 0; j < n - 1; j++) {
                             e[i][j] = a[i][j + 1];
                         }
                     }
 
-                    for(var i = 0; i < n; i++){
-                        for(var j = 0; j < n; j++){
+                    for (var i = 0; i < n; i++) {
+                        for (var j = 0; j < n; j++) {
                             c[j] = new Array();
 
-                            for(var k = 0; k < n - 1; k++){
-                                if(i > j){
+                            for (var k = 0; k < n - 1; k++) {
+                                if (i > j) {
                                     c[j][k] = e[j][k];
                                 }
-                                else if(i < j){
+                                else if (i < j) {
                                     c[j - 1][k] = e[j][k];
                                 }
                             }
@@ -23302,7 +23302,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MINVERSE": function() {
+    "MINVERSE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23322,25 +23322,25 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "text");
             }
-            else{
+            else {
                 var rowArr = [];
                 rowArr.push(data_array);
                 array.push(rowArr);
             }
 
-            for(var i = 0; i < array.length; i++){
-                for(var j = 0; j < array[i].length; j++){
-                    if(!isRealNum(array[i][j])){
+            for (var i = 0; i < array.length; i++) {
+                for (var j = 0; j < array[i].length; j++) {
+                    if (!isRealNum(array[i][j])) {
                         return formula.error.v;
                     }
 
@@ -23348,7 +23348,7 @@ const functionImplementation = {
                 }
             }
 
-            if(array.length != array[0].length){
+            if (array.length != array[0].length) {
                 return formula.error.v;
             }
 
@@ -23361,7 +23361,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "MMULT": function() {
+    "MMULT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23381,25 +23381,25 @@ const functionImplementation = {
             var data_array1 = arguments[0];
             var array1 = [];
 
-            if(getObjType(data_array1) == "array"){
-                if(getObjType(data_array1[0]) == "array" && !func_methods.isDyadicArr(data_array1)){
+            if (getObjType(data_array1) == "array") {
+                if (getObjType(data_array1[0]) == "array" && !func_methods.isDyadicArr(data_array1)) {
                     return formula.error.v;
                 }
 
                 array1 = func_methods.getDataDyadicArr(data_array1);
             }
-            else if(getObjType(data_array1) == "object" && data_array1.startCell != null){
+            else if (getObjType(data_array1) == "object" && data_array1.startCell != null) {
                 array1 = func_methods.getCellDataDyadicArr(data_array1, "text");
             }
-            else{
+            else {
                 var rowArr = [];
                 rowArr.push(data_array1);
                 array1.push(rowArr);
             }
 
-            for(var i = 0; i < array1.length; i++){
-                for(var j = 0; j < array1[i].length; j++){
-                    if(!isRealNum(array1[i][j])){
+            for (var i = 0; i < array1.length; i++) {
+                for (var j = 0; j < array1[i].length; j++) {
+                    if (!isRealNum(array1[i][j])) {
                         return formula.error.v;
                     }
 
@@ -23411,25 +23411,25 @@ const functionImplementation = {
             var data_array2 = arguments[1];
             var array2 = [];
 
-            if(getObjType(data_array2) == "array"){
-                if(getObjType(data_array2[0]) == "array" && !func_methods.isDyadicArr(data_array2)){
+            if (getObjType(data_array2) == "array") {
+                if (getObjType(data_array2[0]) == "array" && !func_methods.isDyadicArr(data_array2)) {
                     return formula.error.v;
                 }
 
                 array2 = func_methods.getDataDyadicArr(data_array2);
             }
-            else if(getObjType(data_array2) == "object" && data_array2.startCell != null){
+            else if (getObjType(data_array2) == "object" && data_array2.startCell != null) {
                 array2 = func_methods.getCellDataDyadicArr(data_array2, "text");
             }
-            else{
+            else {
                 var rowArr = [];
                 rowArr.push(data_array2);
                 array2.push(rowArr);
             }
 
-            for(var i = 0; i < array2.length; i++){
-                for(var j = 0; j < array2[i].length; j++){
-                    if(!isRealNum(array2[i][j])){
+            for (var i = 0; i < array2.length; i++) {
+                for (var j = 0; j < array2[i].length; j++) {
+                    if (!isRealNum(array2[i][j])) {
                         return formula.error.v;
                     }
 
@@ -23438,7 +23438,7 @@ const functionImplementation = {
             }
 
             //计算
-            if(array1[0].length != array2.length){
+            if (array1[0].length != array2.length) {
                 return formula.error.v;
             }
 
@@ -23447,13 +23447,13 @@ const functionImplementation = {
 
             var result = [];
 
-            for(var m = 0; m < rowlen; m++){
+            for (var m = 0; m < rowlen; m++) {
                 var rowArr = [];
 
-                for(var n = 0; n < collen; n++){
+                for (var n = 0; n < collen; n++) {
                     var value = 0;
 
-                    for(var p = 0; p < array1[0].length; p++){
+                    for (var p = 0; p < array1[0].length; p++) {
                         value += array1[m][p] * array2[p][n];
                     }
 
@@ -23471,7 +23471,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SUMPRODUCT": function() {
+    "SUMPRODUCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23492,28 +23492,28 @@ const functionImplementation = {
             var data_array1 = arguments[0];
             var array1 = [];
 
-            if(getObjType(data_array1) == "array"){
-                if(getObjType(data_array1[0]) == "array" && !func_methods.isDyadicArr(data_array1)){
+            if (getObjType(data_array1) == "array") {
+                if (getObjType(data_array1[0]) == "array" && !func_methods.isDyadicArr(data_array1)) {
                     return formula.error.v;
                 }
 
                 array1 = func_methods.getDataDyadicArr(data_array1);
             }
-            else if(getObjType(data_array1) == "object" && data_array1.startCell != null){
+            else if (getObjType(data_array1) == "object" && data_array1.startCell != null) {
                 array1 = func_methods.getCellDataDyadicArr(data_array1, "text");
             }
-            else{
+            else {
                 var rowArr = [];
                 rowArr.push(data_array1);
                 array1.push(rowArr);
             }
 
-            for(var i = 0; i < array1.length; i++){
-                for(var j = 0; j < array1[i].length; j++){
-                    if(!isRealNum(array1[i][j])){
+            for (var i = 0; i < array1.length; i++) {
+                for (var j = 0; j < array1[i].length; j++) {
+                    if (!isRealNum(array1[i][j])) {
                         array1[i][j] = 0;
                     }
-                    else{
+                    else {
                         array1[i][j] = parseFloat(array1[i][j]);
                     }
                 }
@@ -23522,37 +23522,37 @@ const functionImplementation = {
             var rowlen = array1.length;
             var collen = array1[0].length;
 
-            if(arguments.length >= 2){
-                for(var i = 1; i < arguments.length; i++){
+            if (arguments.length >= 2) {
+                for (var i = 1; i < arguments.length; i++) {
                     var data = arguments[i];
                     var arr = [];
 
-                    if(getObjType(data) == "array"){
-                        if(getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)){
+                    if (getObjType(data) == "array") {
+                        if (getObjType(data[0]) == "array" && !func_methods.isDyadicArr(data)) {
                             return formula.error.v;
                         }
 
                         arr = func_methods.getDataDyadicArr(data);
                     }
-                    else if(getObjType(data) == "object" && data.startCell != null){
+                    else if (getObjType(data) == "object" && data.startCell != null) {
                         arr = func_methods.getCellDataDyadicArr(data, "text");
                     }
-                    else{
+                    else {
                         var rowArr = [];
                         rowArr.push(data);
                         arr.push(rowArr);
                     }
 
-                    if(arr.length != rowlen || arr[0].length != collen){
+                    if (arr.length != rowlen || arr[0].length != collen) {
                         return formula.error.v;
                     }
 
-                    for(var m = 0; m < rowlen; m++){
-                        for(var n = 0; n < collen; n++){
-                            if(!isRealNum(arr[m][n])){
+                    for (var m = 0; m < rowlen; m++) {
+                        for (var n = 0; n < collen; n++) {
+                            if (!isRealNum(arr[m][n])) {
                                 array1[m][n] = 0;
                             }
-                            else{
+                            else {
                                 array1[m][n] = array1[m][n] * parseFloat(arr[m][n]);
                             }
                         }
@@ -23562,8 +23562,8 @@ const functionImplementation = {
 
             var sum = 0;
 
-            for(var m = 0; m < rowlen; m++){
-                for(var n = 0; n < collen; n++){
+            for (var m = 0; m < rowlen; m++) {
+                for (var n = 0; n < collen; n++) {
                     sum += array1[m][n];
                 }
             }
@@ -23576,7 +23576,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISFORMULA": function() {
+    "ISFORMULA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23595,26 +23595,26 @@ const functionImplementation = {
             var data_cell = arguments[0];
             var cell;
 
-            if(getObjType(data_cell) == "object" && data_cell.startCell != null){
-                if(data_cell.data == null){
+            if (getObjType(data_cell) == "object" && data_cell.startCell != null) {
+                if (data_cell.data == null) {
                     return false;
                 }
 
-                if(getObjType(data_cell.data) == "array"){
+                if (getObjType(data_cell.data) == "array") {
                     cell = data_cell.data[0][0];
                 }
-                else{
+                else {
                     cell = data_cell.data;
                 }
 
-                if(cell != null && cell.f != null){
+                if (cell != null && cell.f != null) {
                     return true;
                 }
-                else{
+                else {
                     return false;
                 }
             }
-            else{
+            else {
                 return formula.error.v;
             }
         }
@@ -23624,7 +23624,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "CELL": function() {
+    "CELL": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23644,35 +23644,35 @@ const functionImplementation = {
             var data_info_type = arguments[0];
             var info_type;
 
-            if(getObjType(data_info_type) == "array"){
-                if(getObjType(data_info_type[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_info_type)){
+            if (getObjType(data_info_type) == "array") {
+                if (getObjType(data_info_type[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_info_type)) {
                         return formula.error.v;
                     }
 
                     info_type = data_info_type[0][0];
                 }
-                else{
+                else {
                     info_type = data_info_type[0];
                 }
             }
-            else if(getObjType(data_info_type) == "object" && data_info_type.startCell != null){
-                if(data_info_type.data == null){
+            else if (getObjType(data_info_type) == "object" && data_info_type.startCell != null) {
+                if (data_info_type.data == null) {
                     return formula.error.v;
                 }
-                else{
-                    if(getObjType(data_info_type.data) == "array"){
+                else {
+                    if (getObjType(data_info_type.data) == "array") {
                         return formula.error.v;
                     }
 
                     info_type = data_info_type.data.v;
 
-                    if(isRealNull(info_type)){
+                    if (isRealNull(info_type)) {
                         return formula.error.v;
                     }
                 }
             }
-            else{
+            else {
                 info_type = data_info_type;
             }
 
@@ -23680,14 +23680,14 @@ const functionImplementation = {
             var data_reference = arguments[1];
             var reference;
 
-            if(getObjType(data_reference) == "object" && data_reference.startCell != null){
+            if (getObjType(data_reference) == "object" && data_reference.startCell != null) {
                 reference = data_reference.startCell;
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
-            if(["address", "col", "color", "contents", "filename", "format", "parentheses", "prefix", "protect", "row", "type", "width"].indexOf(info_type) == -1){
+            if (["address", "col", "color", "contents", "filename", "format", "parentheses", "prefix", "protect", "row", "type", "width"].indexOf(info_type) == -1) {
                 return formula.error.v;
             }
 
@@ -23708,12 +23708,12 @@ const functionImplementation = {
             let sheetdata = luckysheetfile[index].data;
 
             let value;
-            if(formula.execFunctionGlobalData != null && formula.execFunctionGlobalData[row_index+"_"+col_index+"_"+Store.calculateSheetIndex]!=null){
-                value = formula.execFunctionGlobalData[row_index+"_"+col_index+"_"+Store.calculateSheetIndex].v;
+            if (formula.execFunctionGlobalData != null && formula.execFunctionGlobalData[row_index + "_" + col_index + "_" + Store.calculateSheetIndex] != null) {
+                value = formula.execFunctionGlobalData[row_index + "_" + col_index + "_" + Store.calculateSheetIndex].v;
             }
-            else if(sheetdata[row_index][col_index] != null && sheetdata[row_index][col_index].v != null && sheetdata[row_index][col_index].v !=""){
+            else if (sheetdata[row_index][col_index] != null && sheetdata[row_index][col_index].v != null && sheetdata[row_index][col_index].v != "") {
                 value = sheetdata[row_index][col_index];
-                if(value instanceof Object){
+                if (value instanceof Object) {
                     value = value.v;
                 }
             }
@@ -23721,7 +23721,7 @@ const functionImplementation = {
                 value = 0;
             }
 
-            switch(info_type){
+            switch (info_type) {
                 case "address":
                     return reference;
                     break;
@@ -23742,39 +23742,39 @@ const functionImplementation = {
                     return file.name;
                     break;
                 case "format":
-                    if (sheetdata[row_index][col_index] == null || sheetdata[row_index][col_index].ct == null){
+                    if (sheetdata[row_index][col_index] == null || sheetdata[row_index][col_index].ct == null) {
                         return "G";
                     }
 
                     return sheetdata[row_index][col_index].ct.fa;
                     break;
                 case "parentheses":
-                    if (sheetdata[row_index][col_index] == null || sheetdata[row_index][col_index].v == null || sheetdata[row_index][col_index].v ==""){
+                    if (sheetdata[row_index][col_index] == null || sheetdata[row_index][col_index].v == null || sheetdata[row_index][col_index].v == "") {
                         return 0;
                     }
 
-                    if (sheetdata[row_index][col_index].v > 0){
+                    if (sheetdata[row_index][col_index].v > 0) {
                         return 1;
                     }
-                    else{
+                    else {
                         return 0;
                     }
                     break;
                 case "prefix":
-                    if (value==0){
+                    if (value == 0) {
                         return "";
                     }
 
-                    if (sheetdata[row_index][col_index].ht == 0){//居中对齐
+                    if (sheetdata[row_index][col_index].ht == 0) {//居中对齐
                         return "^";
                     }
-                    else if (sheetdata[row_index][col_index].ht == 1){//左对齐
+                    else if (sheetdata[row_index][col_index].ht == 1) {//左对齐
                         return "'";
                     }
-                    else if (sheetdata[row_index][col_index].ht == 2){//右对齐
+                    else if (sheetdata[row_index][col_index].ht == 2) {//右对齐
                         return '"';
                     }
-                    else{
+                    else {
                         return "";
                     }
                     break;
@@ -23785,7 +23785,7 @@ const functionImplementation = {
                     return row_index + 1;
                     break;
                 case "type":
-                    if (value==0){
+                    if (value == 0) {
                         return "b";
                     }
 
@@ -23794,7 +23794,7 @@ const functionImplementation = {
                 case "width":
                     var cfg = file.config;
 
-                    if(cfg["columnlen"] != null && col_index in cfg["columnlen"]){
+                    if (cfg["columnlen"] != null && col_index in cfg["columnlen"]) {
                         return cfg["columnlen"][col_index];
                     }
 
@@ -23808,7 +23808,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "NA": function() {
+    "NA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23832,7 +23832,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ERROR_TYPE": function() {
+    "ERROR_TYPE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23852,41 +23852,41 @@ const functionImplementation = {
             var data_error_val = arguments[0];
             var error_val;
 
-            if(getObjType(data_error_val) == "array"){
-                if(getObjType(data_error_val[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_error_val)){
+            if (getObjType(data_error_val) == "array") {
+                if (getObjType(data_error_val[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_error_val)) {
                         return formula.error.v;
                     }
 
                     error_val = data_error_val[0][0];
                 }
-                else{
+                else {
                     error_val = data_error_val[0];
                 }
             }
-            else if(getObjType(data_error_val) == "object" && data_error_val.startCell != null){
-                if(data_error_val.data == null){
+            else if (getObjType(data_error_val) == "object" && data_error_val.startCell != null) {
+                if (data_error_val.data == null) {
                     return formula.error.na;
                 }
 
-                if(getObjType(data_error_val.data) == "array"){
+                if (getObjType(data_error_val.data) == "array") {
                     error_val = data_error_val.data[0][0];
 
-                    if(error_val == null || isRealNull(error_val.v)){
+                    if (error_val == null || isRealNull(error_val.v)) {
                         return formula.error.na;
                     }
 
                     error_val = error_val.v;
                 }
-                else{
-                    if(isRealNull(data_error_val.data.v)){
+                else {
+                    if (isRealNull(data_error_val.data.v)) {
                         return formula.error.na;
                     }
 
                     error_val = data_error_val.data.v;
                 }
             }
-            else{
+            else {
                 error_val = data_error_val;
             }
 
@@ -23901,10 +23901,10 @@ const functionImplementation = {
                 "#GETTING_DATA": 8
             }
 
-            if(error_val in error_obj){
+            if (error_val in error_obj) {
                 return error_obj[error_val];
             }
-            else{
+            else {
                 return formula.error.na;
             }
         }
@@ -23914,7 +23914,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISBLANK": function() {
+    "ISBLANK": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23934,15 +23934,15 @@ const functionImplementation = {
             var data_error_val = arguments[0];
             var error_val;
 
-            if(getObjType(data_error_val) == "object" && data_error_val.startCell != null){
-                if(data_error_val.data == null){
+            if (getObjType(data_error_val) == "object" && data_error_val.startCell != null) {
+                if (data_error_val.data == null) {
                     return true;
                 }
-                else{
+                else {
                     return false;
                 }
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -23952,7 +23952,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISERR": function() {
+    "ISERR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -23972,97 +23972,37 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return true;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
-                    return false;
-                }
-
-                value = data_value.data.v;
-            }
-            else{
-                value = data_value;
-            }
-
-            if(["#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-        catch (e) {
-            var err = e;
-            err = formula.errorInfo(err);
-            return [formula.error.v, err];
-        }
-    },
-    "ISERROR": function() {
-        //必要参数个数错误检测
-        if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
-            return formula.error.na;
-        }
-
-        //参数类型错误检测
-        for (var i = 0; i < arguments.length; i++) {
-            var p = formula.errorParamCheck(this.p, arguments[i], i);
-
-            if (!p[0]) {
-                return formula.error.v;
-            }
-        }
-
-        try {
-            //单元格
-            var data_value = arguments[0];
-            var value;
-
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
-                        return formula.error.v;
-                    }
-
-                    value = data_value[0][0];
-                }
-                else{
-                    value = data_value[0];
-                }
-            }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
-                    return true;
-                }
-
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return false;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
+            if (["#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24072,7 +24012,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISLOGICAL": function() {
+    "ISERROR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24092,37 +24032,97 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
+                    return true;
+                }
+
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
+                    return false;
+                }
+
+                value = data_value.data.v;
+            }
+            else {
+                value = data_value;
+            }
+
+            if (["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (e) {
+            var err = e;
+            err = formula.errorInfo(err);
+            return [formula.error.v, err];
+        }
+    },
+    "ISLOGICAL": function () {
+        //必要参数个数错误检测
+        if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
+            return formula.error.na;
+        }
+
+        //参数类型错误检测
+        for (var i = 0; i < arguments.length; i++) {
+            var p = formula.errorParamCheck(this.p, arguments[i], i);
+
+            if (!p[0]) {
+                return formula.error.v;
+            }
+        }
+
+        try {
+            //单元格
+            var data_value = arguments[0];
+            var value;
+
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
+                        return formula.error.v;
+                    }
+
+                    value = data_value[0][0];
+                }
+                else {
+                    value = data_value[0];
+                }
+            }
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return false
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return false;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false"){
+            if (value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false") {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24132,7 +24132,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISNA": function() {
+    "ISNA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24152,37 +24152,37 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return false;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return false;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(value.toString() == "#N/A"){
+            if (value.toString() == "#N/A") {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24192,7 +24192,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISNONTEXT": function() {
+    "ISNONTEXT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24212,43 +24212,43 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return true;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return true;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
+            if (["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
                 return true;
             }
-            else if(value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false"){
+            else if (value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false") {
                 return true;
             }
-            else if(isRealNum(value)){
+            else if (isRealNum(value)) {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24258,7 +24258,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISNUMBER": function() {
+    "ISNUMBER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24278,37 +24278,37 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return false;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return false;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(isRealNum(value)){
+            if (isRealNum(value)) {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24318,7 +24318,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISREF": function() {
+    "ISREF": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24334,10 +24334,10 @@ const functionImplementation = {
         }
 
         try {
-            if(getObjType(arguments[0]) == "object" && arguments[0].startCell != null){
+            if (getObjType(arguments[0]) == "object" && arguments[0].startCell != null) {
                 return true;
             }
-            else{
+            else {
                 return false;
             }
         }
@@ -24347,7 +24347,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "ISTEXT": function() {
+    "ISTEXT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24367,43 +24367,43 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return false;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return false;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
+            if (["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
                 return false;
             }
-            else if(value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false"){
+            else if (value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false") {
                 return false;
             }
-            else if(isRealNum(value)){
+            else if (isRealNum(value)) {
                 return false;
             }
-            else{
+            else {
                 return true;
             }
         }
@@ -24413,7 +24413,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TYPE": function() {
+    "TYPE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24433,34 +24433,34 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
+            if (getObjType(data_value) == "array") {
                 return 64;
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     return 16;
                 }
 
-                if(data_value.data == null || isRealNull(data_value.data.v)){
+                if (data_value.data == null || isRealNull(data_value.data.v)) {
                     return 1;
                 }
 
                 value = data_value.data.v;
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
+            if (["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
                 return 16;
             }
-            else if(value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false"){
+            else if (value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false") {
                 return 4;
             }
-            else if(isRealNum(value)){
+            else if (isRealNum(value)) {
                 return 1;
             }
-            else{
+            else {
                 return 2;
             }
         }
@@ -24470,7 +24470,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "N": function() {
+    "N": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24490,55 +24490,55 @@ const functionImplementation = {
             var data_value = arguments[0];
             var value;
 
-            if(getObjType(data_value) == "array"){
-                if(getObjType(data_value[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_value)){
+            if (getObjType(data_value) == "array") {
+                if (getObjType(data_value[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_value)) {
                         return formula.error.v;
                     }
 
                     value = data_value[0][0];
                 }
-                else{
+                else {
                     value = data_value[0];
                 }
             }
-            else if(getObjType(data_value) == "object" && data_value.startCell != null){
-                if(getObjType(data_value.data) == "array"){
+            else if (getObjType(data_value) == "object" && data_value.startCell != null) {
+                if (getObjType(data_value.data) == "array") {
                     value = data_value.data[0][0];
 
-                    if(value == null || isRealNull(value.v)){
+                    if (value == null || isRealNull(value.v)) {
                         return 0;
                     }
 
                     value = value.v;
                 }
-                else{
-                    if(data_value.data == null || isRealNull(data_value.data.v)){
+                else {
+                    if (data_value.data == null || isRealNull(data_value.data.v)) {
                         return 0;
                     }
 
                     value = data_value.data.v;
                 }
             }
-            else{
+            else {
                 value = data_value;
             }
 
-            if(["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1){
+            if (["#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"].indexOf(value) > -1) {
                 return value;
             }
-            else if(value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false"){
-                if(value.toString().toLowerCase() == "true"){
+            else if (value.toString().toLowerCase() == "true" || value.toString().toLowerCase() == "false") {
+                if (value.toString().toLowerCase() == "true") {
                     return 1;
                 }
-                else{
+                else {
                     return 0;
                 }
             }
-            else if(isRealNum(value)){
+            else if (isRealNum(value)) {
                 return parseFloat(value);
             }
-            else{
+            else {
                 return 0;
             }
         }
@@ -24548,7 +24548,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TO_DATE": function() {
+    "TO_DATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24566,11 +24566,11 @@ const functionImplementation = {
         try {
             //数字
             var value = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
-            if(!isRealNum(value)){
+            if (!isRealNum(value)) {
                 return formula.error.v;
             }
 
@@ -24584,7 +24584,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TO_PURE_NUMBER": function() {
+    "TO_PURE_NUMBER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24601,14 +24601,14 @@ const functionImplementation = {
 
         try {
             var value = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
-            if(dayjs(value).isValid()){
+            if (dayjs(value).isValid()) {
                 return genarate(value)[2];
             }
-            else{
+            else {
                 return numeral(value).value() == null ? value : numeral(value).value();
             }
         }
@@ -24618,7 +24618,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TO_TEXT": function() {
+    "TO_TEXT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24635,7 +24635,7 @@ const functionImplementation = {
 
         try {
             var value = func_methods.getFirstValue(arguments[0], "text");
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
@@ -24647,7 +24647,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TO_DOLLARS": function() {
+    "TO_DOLLARS": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24665,11 +24665,11 @@ const functionImplementation = {
         try {
             //数字
             var value = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
-            if(!isRealNum(value)){
+            if (!isRealNum(value)) {
                 return formula.error.v;
             }
 
@@ -24683,7 +24683,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TO_PERCENT": function() {
+    "TO_PERCENT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24701,11 +24701,11 @@ const functionImplementation = {
         try {
             //数字
             var value = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(value)){
+            if (valueIsError(value)) {
                 return value;
             }
 
-            if(!isRealNum(value)){
+            if (!isRealNum(value)) {
                 return formula.error.v;
             }
 
@@ -24719,7 +24719,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DGET": function() {
+    "DGET": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24739,24 +24739,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -24764,14 +24764,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -24806,7 +24806,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DMAX": function() {
+    "DMAX": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24826,24 +24826,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -24851,14 +24851,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -24893,7 +24893,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DMIN": function() {
+    "DMIN": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -24913,24 +24913,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -24938,14 +24938,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -24980,7 +24980,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DAVERAGE": function() {
+    "DAVERAGE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25000,24 +25000,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25025,14 +25025,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25065,7 +25065,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DCOUNT": function() {
+    "DCOUNT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25085,24 +25085,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25110,14 +25110,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25150,7 +25150,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DCOUNTA": function() {
+    "DCOUNTA": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25170,24 +25170,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25195,14 +25195,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25235,7 +25235,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DPRODUCT": function() {
+    "DPRODUCT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25255,24 +25255,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25280,14 +25280,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25328,7 +25328,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DSTDEV": function() {
+    "DSTDEV": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25348,24 +25348,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25373,14 +25373,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25415,7 +25415,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DSTDEVP": function() {
+    "DSTDEVP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25435,24 +25435,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25460,14 +25460,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25502,7 +25502,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DSUM": function() {
+    "DSUM": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25522,24 +25522,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25547,14 +25547,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25595,7 +25595,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DVAR": function() {
+    "DVAR": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25615,24 +25615,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25640,14 +25640,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25682,7 +25682,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DVARP": function() {
+    "DVARP": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25702,24 +25702,24 @@ const functionImplementation = {
             var data_database = arguments[0];
             var database = [];
 
-            if(getObjType(data_database) == "object" && data_database.startCell != null){
-                if(data_database.data == null){
+            if (getObjType(data_database) == "object" && data_database.startCell != null) {
+                if (data_database.data == null) {
                     return formula.error.v;
                 }
 
                 database = func_methods.getCellDataDyadicArr(data_database, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //列
             var field = func_methods.getFirstValue(arguments[1], "text");
-            if(valueIsError(field)){
+            if (valueIsError(field)) {
                 return field;
             }
 
-            if(isRealNull(field)){
+            if (isRealNull(field)) {
                 return formula.error.v;
             }
 
@@ -25727,14 +25727,14 @@ const functionImplementation = {
             var data_criteria = arguments[2];
             var criteria = [];
 
-            if(getObjType(data_criteria) == "object" && data_criteria.startCell != null){
-                if(data_criteria.data == null){
+            if (getObjType(data_criteria) == "object" && data_criteria.startCell != null) {
+                if (data_criteria.data == null) {
                     return formula.error.v;
                 }
 
                 criteria = func_methods.getCellDataDyadicArr(data_criteria, "text");
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
@@ -25769,7 +25769,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "LINESPLINES": function() {
+    "LINESPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25814,20 +25814,20 @@ const functionImplementation = {
             //开始进行sparklines的详细设置，宽和高为单元格的宽高。
             var sparksetting = {};
 
-            if(lineWidth==null){
+            if (lineWidth == null) {
                 lineWidth = 1;
             }
             sparksetting["lineWidth"] = lineWidth;
             //设置sparklines图表的宽高，线图的高会随着粗细而超出单元格高度，所以减去一个量，设置offsetY或者offsetX为渲染偏移量，传给luckysheetDrawMain使用。默认为0。=LINESPLINES(D9:E24,3,5)
-            sparksetting["offsetY"] = lineWidth+1;
-            sparksetting.height = height-(lineWidth+1);
+            sparksetting["offsetY"] = lineWidth + 1;
+            sparksetting.height = height - (lineWidth + 1);
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -25836,7 +25836,7 @@ const functionImplementation = {
                 }
             }
 
-            if(lineColor==null){
+            if (lineColor == null) {
                 lineColor = "#2ec7c9";
             }
             sparkColorSetting("lineColor", lineColor);
@@ -25847,36 +25847,36 @@ const functionImplementation = {
 
 
             //设置辅助线，可以支持min、max、avg、median等几个字符变量，或者具体的数值。
-            if(!!normalValue){
-                if(typeof(normalValue)=="string"){
+            if (!!normalValue) {
+                if (typeof (normalValue) == "string") {
                     normalValue = normalValue.toLowerCase();
                     var nv = null;
-                    if(normalValue=="min"){
-                        nv = window.luckysheet_function.MIN.f({"data":dataformat});
+                    if (normalValue == "min") {
+                        nv = window.luckysheet_function.MIN.f({ "data": dataformat });
                     }
-                    else if(normalValue=="max"){
-                        nv = window.luckysheet_function.MAX.f({"data":dataformat});
+                    else if (normalValue == "max") {
+                        nv = window.luckysheet_function.MAX.f({ "data": dataformat });
                     }
-                    else if(normalValue=="avg" || normalValue=="mean"){
-                        nv = window.luckysheet_function.AVERAGE.f({"data":dataformat});
+                    else if (normalValue == "avg" || normalValue == "mean") {
+                        nv = window.luckysheet_function.AVERAGE.f({ "data": dataformat });
                     }
-                    else if(normalValue=="median"){
-                        nv = window.luckysheet_function.MEDIAN.f({"data":dataformat});
+                    else if (normalValue == "median") {
+                        nv = window.luckysheet_function.MEDIAN.f({ "data": dataformat });
                     }
 
-                    if(!!nv){
+                    if (!!nv) {
                         sparksetting["normalRangeMin"] = nv;
                         sparksetting["normalRangeMax"] = nv;
                     }
                 }
-                else{
+                else {
                     sparksetting["normalRangeMin"] = normalValue;
                     sparksetting["normalRangeMax"] = normalValue;
                 }
 
             }
 
-            if(normalColor==null){
+            if (normalColor == null) {
                 normalColor = "#000";
             }
             sparkColorSetting("normalRangeColor", normalColor);
@@ -25884,7 +25884,7 @@ const functionImplementation = {
             sparkColorSetting("maxSpotColor", maxSpot);
             sparkColorSetting("minSpotColor", minSpot);
 
-            if(spotRadius==null){
+            if (spotRadius == null) {
                 spotRadius = "1.5";
             }
             sparksetting["spotRadius"] = spotRadius;
@@ -25909,7 +25909,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "AREASPLINES": function() {
+    "AREASPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -25955,20 +25955,20 @@ const functionImplementation = {
             //开始进行sparklines的详细设置，宽和高为单元格的宽高。
             var sparksetting = {};
 
-            if(lineWidth==null){
+            if (lineWidth == null) {
                 lineWidth = 1;
             }
             sparksetting["lineWidth"] = lineWidth;
             //设置sparklines图表的宽高，线图的高会随着粗细而超出单元格高度，所以减去一个量，设置offsetY或者offsetX为渲染偏移量，传给luckysheetDrawMain使用。默认为0。=LINESPLINES(D9:E24,3,5)
-            sparksetting["offsetY"] = lineWidth+1;
-            sparksetting.height = height-(lineWidth+1);
+            sparksetting["offsetY"] = lineWidth + 1;
+            sparksetting.height = height - (lineWidth + 1);
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -25977,49 +25977,49 @@ const functionImplementation = {
                 }
             }
 
-            if(lineColor==null){
+            if (lineColor == null) {
                 lineColor = "#2ec7c9";
             }
             sparkColorSetting("lineColor", lineColor);
             sparkColorSetting("fillColor", fillColor);
             // sparksetting["fillColor"] = 0;
 
-            if(lineWidth==null){
+            if (lineWidth == null) {
                 lineWidth = "1";
             }
             sparksetting["lineWidth"] = lineWidth;
 
             //设置辅助线，可以支持min、max、avg、median等几个字符变量，或者具体的数值。
-            if(!!normalValue){
-                if(typeof(normalValue)=="string"){
+            if (!!normalValue) {
+                if (typeof (normalValue) == "string") {
                     normalValue = normalValue.toLowerCase();
                     var nv = null;
-                    if(normalValue=="min"){
-                        nv = window.luckysheet_function.MIN.f({"data":dataformat});
+                    if (normalValue == "min") {
+                        nv = window.luckysheet_function.MIN.f({ "data": dataformat });
                     }
-                    else if(normalValue=="max"){
-                        nv = window.luckysheet_function.MAX.f({"data":dataformat});
+                    else if (normalValue == "max") {
+                        nv = window.luckysheet_function.MAX.f({ "data": dataformat });
                     }
-                    else if(normalValue=="avg" || normalValue=="mean"){
-                        nv = window.luckysheet_function.AVERAGE.f({"data":dataformat});
+                    else if (normalValue == "avg" || normalValue == "mean") {
+                        nv = window.luckysheet_function.AVERAGE.f({ "data": dataformat });
                     }
-                    else if(normalValue=="median"){
-                        nv = window.luckysheet_function.MEDIAN.f({"data":dataformat});
+                    else if (normalValue == "median") {
+                        nv = window.luckysheet_function.MEDIAN.f({ "data": dataformat });
                     }
 
-                    if(!!nv){
+                    if (!!nv) {
                         sparksetting["normalRangeMin"] = nv;
                         sparksetting["normalRangeMax"] = nv;
                     }
                 }
-                else{
+                else {
                     sparksetting["normalRangeMin"] = normalValue;
                     sparksetting["normalRangeMax"] = normalValue;
                 }
 
             }
 
-            if(normalColor==null){
+            if (normalColor == null) {
                 normalColor = "#000";
             }
             sparkColorSetting("normalRangeColor", normalColor);
@@ -26052,7 +26052,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "COLUMNSPLINES": function() {
+    "COLUMNSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26095,10 +26095,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26114,30 +26114,30 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "column";
-            if(barSpacing==null){
+            if (barSpacing == null) {
                 barSpacing = "1";
             }
             sparksetting["barSpacing"] = barSpacing;
 
-            if(barColor==null){
+            if (barColor == null) {
                 barColor = "#fc5c5c";
             }
             sparkColorSetting("barColor", barColor);
 
-            if(negBarColor==null){
+            if (negBarColor == null) {
                 negBarColor = "#97b552";
             }
             sparkColorSetting("negBarColor", negBarColor);
 
-            if(chartRangeMax==null || chartRangeMax===false || typeof chartRangeMax !="number" ){
+            if (chartRangeMax == null || chartRangeMax === false || typeof chartRangeMax != "number") {
                 sparksetting["chartRangeMax"] = undefined;
             }
-            else{
+            else {
                 sparksetting["chartRangeMax"] = chartRangeMax;
             }
 
             var colorLists = formula.sparklinesColorMap(arguments);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26153,7 +26153,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STACKCOLUMNSPLINES": function() {
+    "STACKCOLUMNSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26182,20 +26182,20 @@ const functionImplementation = {
             var dataformat = [];
 
             var data = [];
-            if(rangeValue!=null && rangeValue.data!=null){
+            if (rangeValue != null && rangeValue.data != null) {
                 data = rangeValue.data;
             }
 
-            if(getObjType(data) == "array"){
+            if (getObjType(data) == "array") {
                 data = formula.getPureValueByData(data);
             }
-            else if(getObjType(data) == "object"){
+            else if (getObjType(data) == "object") {
                 data = data.v;
 
                 return [data];
             }
-            else{
-                if(/\{.*?\}/.test(data)){
+            else {
+                if (/\{.*?\}/.test(data)) {
                     data = data.replace(/\{/g, "[").replace(/\}/g, "]");
                 }
                 data = new Function("return " + data)();
@@ -26203,23 +26203,23 @@ const functionImplementation = {
 
             var stackconfig = arguments[1];
             var offsetY = data.length;
-            if(stackconfig==null || !!stackconfig){
-                for(var c=0;c<data[0].length;c++){
+            if (stackconfig == null || !!stackconfig) {
+                for (var c = 0; c < data[0].length; c++) {
                     var colstr = "";
-                    for(var r=0;r<data.length;r++){
+                    for (var r = 0; r < data.length; r++) {
                         colstr += data[r][c] + ":";
                     }
-                    colstr = colstr.substr(0, colstr.length-1);
+                    colstr = colstr.substr(0, colstr.length - 1);
                     dataformat.push(colstr);
                 }
             }
-            else{
-                for(var r=0;r<data.length;r++){
+            else {
+                for (var r = 0; r < data.length; r++) {
                     var rowstr = "";
-                    for(var c=0;c<data[0].length;c++){
+                    for (var c = 0; c < data[0].length; c++) {
                         rowstr += data[r][c] + ":";
                     }
-                    rowstr = rowstr.substr(0, rowstr.length-1);
+                    rowstr = rowstr.substr(0, rowstr.length - 1);
                     dataformat.push(rowstr);
                 }
                 var offsetY = data[0].length;
@@ -26242,10 +26242,10 @@ const functionImplementation = {
             //sparksetting.offsetY = offsetY;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26259,20 +26259,20 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "column";
-            if(barSpacing==null){
+            if (barSpacing == null) {
                 barSpacing = "1";
             }
             sparksetting["barSpacing"] = barSpacing;
 
-            if(chartRangeMax==null || chartRangeMax===false || typeof chartRangeMax !="number" ){
+            if (chartRangeMax == null || chartRangeMax === false || typeof chartRangeMax != "number") {
                 sparksetting["chartRangeMax"] = undefined;
             }
-            else{
+            else {
                 sparksetting["chartRangeMax"] = chartRangeMax;
             }
 
             var colorLists = formula.sparklinesColorMap(arguments, 4);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26289,7 +26289,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BARSPLINES": function() {
+    "BARSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26332,10 +26332,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26351,30 +26351,30 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "bar";
-            if(barSpacing==null){
+            if (barSpacing == null) {
                 barSpacing = "1";
             }
             sparksetting["barSpacing"] = barSpacing;
 
-            if(barColor==null){
+            if (barColor == null) {
                 barColor = "#fc5c5c";
             }
             sparkColorSetting("barColor", barColor);
 
-            if(negBarColor==null){
+            if (negBarColor == null) {
                 negBarColor = "#97b552";
             }
             sparkColorSetting("negBarColor", negBarColor);
 
-            if(chartRangeMax==null || chartRangeMax===false || typeof chartRangeMax !="number" ){
+            if (chartRangeMax == null || chartRangeMax === false || typeof chartRangeMax != "number") {
                 sparksetting["chartRangeMax"] = undefined;
             }
-            else{
+            else {
                 sparksetting["chartRangeMax"] = chartRangeMax;
             }
 
             var colorLists = formula.sparklinesColorMap(arguments);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26390,7 +26390,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "STACKBARSPLINES": function() {
+    "STACKBARSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26419,19 +26419,19 @@ const functionImplementation = {
             var dataformat = [];
 
             var data = [];
-            if(rangeValue!=null && rangeValue.data!=null){
+            if (rangeValue != null && rangeValue.data != null) {
                 data = rangeValue.data;
             }
 
-            if(getObjType(data) == "array"){
+            if (getObjType(data) == "array") {
                 data = formula.getPureValueByData(data);
             }
-            else if(getObjType(data) == "object"){
+            else if (getObjType(data) == "object") {
                 data = data.v;
                 return [data];
             }
-            else{
-                if(/\{.*?\}/.test(data)){
+            else {
+                if (/\{.*?\}/.test(data)) {
                     data = data.replace(/\{/g, "[").replace(/\}/g, "]");
                 }
                 data = new Function("return " + data)();
@@ -26439,23 +26439,23 @@ const functionImplementation = {
 
             var stackconfig = arguments[1];
             var offsetY = data.length;
-            if(stackconfig==null || !!stackconfig){
-                for(var c=0;c<data[0].length;c++){
+            if (stackconfig == null || !!stackconfig) {
+                for (var c = 0; c < data[0].length; c++) {
                     var colstr = "";
-                    for(var r=0;r<data.length;r++){
+                    for (var r = 0; r < data.length; r++) {
                         colstr += data[r][c] + ":";
                     }
-                    colstr = colstr.substr(0, colstr.length-1);
+                    colstr = colstr.substr(0, colstr.length - 1);
                     dataformat.push(colstr);
                 }
             }
-            else{
-                for(var r=0;r<data.length;r++){
+            else {
+                for (var r = 0; r < data.length; r++) {
                     var rowstr = "";
-                    for(var c=0;c<data[0].length;c++){
+                    for (var c = 0; c < data[0].length; c++) {
                         rowstr += data[r][c] + ":";
                     }
-                    rowstr = rowstr.substr(0, rowstr.length-1);
+                    rowstr = rowstr.substr(0, rowstr.length - 1);
                     dataformat.push(rowstr);
                 }
                 var offsetY = data[0].length;
@@ -26478,10 +26478,10 @@ const functionImplementation = {
             //sparksetting.offsetY = offsetY;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26495,20 +26495,20 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "bar";
-            if(barSpacing==null){
+            if (barSpacing == null) {
                 barSpacing = "1";
             }
             sparksetting["barSpacing"] = barSpacing;
 
-            if(chartRangeMax==null || chartRangeMax===false || typeof chartRangeMax !="number" ){
+            if (chartRangeMax == null || chartRangeMax === false || typeof chartRangeMax != "number") {
                 sparksetting["chartRangeMax"] = undefined;
             }
-            else{
+            else {
                 sparksetting["chartRangeMax"] = chartRangeMax;
             }
 
             var colorLists = formula.sparklinesColorMap(arguments, 4);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26525,7 +26525,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "DISCRETESPLINES": function() {
+    "DISCRETESPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26568,10 +26568,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26587,17 +26587,17 @@ const functionImplementation = {
             ////具体实现
             sparksetting["type"] = "discrete";
 
-            if(thresholdValue==null){
+            if (thresholdValue == null) {
                 thresholdValue = 0;
             }
             sparksetting["thresholdValue"] = thresholdValue;
 
-            if(barColor==null){
+            if (barColor == null) {
                 barColor = "#2ec7c9";
             }
             sparkColorSetting("lineColor", barColor);
 
-            if(negBarColor==null){
+            if (negBarColor == null) {
                 negBarColor = "#fc5c5c";
             }
             sparkColorSetting("thresholdColor", negBarColor);
@@ -26614,7 +26614,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "TRISTATESPLINES": function() {
+    "TRISTATESPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26657,10 +26657,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26676,28 +26676,28 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "tristate";
-            if(barSpacing==null){
+            if (barSpacing == null) {
                 barSpacing = "1";
             }
             sparksetting["barSpacing"] = barSpacing;
 
-            if(barColor==null){
+            if (barColor == null) {
                 barColor = "#fc5c5c";
             }
             sparkColorSetting("barColor", barColor);
 
-            if(negBarColor==null){
+            if (negBarColor == null) {
                 negBarColor = "#97b552";
             }
             sparkColorSetting("negBarColor", negBarColor);
 
-            if(zeroBarColor==null){
+            if (zeroBarColor == null) {
                 zeroBarColor = "#999";
             }
             sparkColorSetting("zeroBarColor", zeroBarColor);
 
             var colorLists = formula.sparklinesColorMap(arguments);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26713,7 +26713,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "PIESPLINES": function() {
+    "PIESPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26756,10 +26756,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26774,23 +26774,23 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "pie";
-            if(offset==null){
+            if (offset == null) {
                 offset = 0;
             }
             sparksetting["offset"] = offset;
 
-            if(borderWidth==null){
+            if (borderWidth == null) {
                 borderWidth = 0;
             }
             sparkColorSetting("borderWidth", borderWidth);
 
-            if(borderColor==null){
+            if (borderColor == null) {
                 borderColor = "#97b552";
             }
             sparkColorSetting("borderColor", borderColor);
 
             var colorLists = formula.sparklinesColorMap(arguments, 4);
-            if(!!colorLists){
+            if (!!colorLists) {
                 sparksetting["colorMap"] = colorLists;
             }
             ////具体实现
@@ -26806,7 +26806,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BOXSPLINES": function() {
+    "BOXSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26849,10 +26849,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26867,19 +26867,19 @@ const functionImplementation = {
 
             ////具体实现
             sparksetting["type"] = "box";
-            if(outlierIQR==null){
+            if (outlierIQR == null) {
                 outlierIQR = 1.5;
             }
             sparksetting["outlierIQR"] = outlierIQR;
 
-            if(target==null){
+            if (target == null) {
                 target = 0;
             }
-            else{
+            else {
                 sparkColorSetting("target", target);
             }
 
-            if(spotRadius==null){
+            if (spotRadius == null) {
                 spotRadius = 1.5;
             }
             sparkColorSetting("spotRadius", spotRadius);
@@ -26896,7 +26896,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "BULLETSPLINES": function() {
+    "BULLETSPLINES": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -26939,10 +26939,10 @@ const functionImplementation = {
             sparksetting.width = width;
 
             //定义sparklines的通用色彩设置函数，可以设置 色表【colorList】索引数值 或者 具体颜色值
-            var sparkColorSetting = function(attr, value){
-                if(!!value){
-                    if(typeof(value)=="number"){
-                        if(value>19){
+            var sparkColorSetting = function (attr, value) {
+                if (!!value) {
+                    if (typeof (value) == "number") {
+                        if (value > 19) {
                             value = value % 20;
                         }
                         value = colorList[value];
@@ -26961,7 +26961,7 @@ const functionImplementation = {
             dataformat.push(data1);
             dataformat.push(data2);
 
-            for(var i=2;i<arguments.length;i++){
+            for (var i = 2; i < arguments.length; i++) {
                 dataformat.push(formula.getValueByFuncData(arguments[i]));
             }
 
@@ -26980,7 +26980,7 @@ const functionImplementation = {
         }
     },
     //动态数组公式
-    "SORT": function() {
+    "SORT": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27000,16 +27000,16 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [], rowlen = 1, collen = 1;
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_array)) {
                         return formula.error.v;
                     }
 
-                    for(var i = 0; i < data_array.length; i++){
+                    for (var i = 0; i < data_array.length; i++) {
                         var rowArr = [];
 
-                        for(var j = 0; j < data_array[i].length; j++){
+                        for (var j = 0; j < data_array[i].length; j++) {
                             var number = data_array[i][j];
 
                             rowArr.push(number);
@@ -27021,8 +27021,8 @@ const functionImplementation = {
                     rowlen = array.length;
                     collen = array[0].length;
                 }
-                else{
-                    for(var i = 0; i < data_array.length; i++){
+                else {
+                    for (var i = 0; i < data_array.length; i++) {
                         var number = data_array[i];
 
                         array.push(number);
@@ -27031,23 +27031,23 @@ const functionImplementation = {
                     rowlen = array.length;
                 }
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
-                if(data_array.data != null){
-                    if(getObjType(data_array.data) == "array"){
-                        for(var i = 0; i < data_array.data.length; i++){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
+                if (data_array.data != null) {
+                    if (getObjType(data_array.data) == "array") {
+                        for (var i = 0; i < data_array.data.length; i++) {
                             var rowArr = [];
 
-                            for(var j = 0; j < data_array.data[i].length; j++){
-                                if(data_array.data[i][j] != null){
+                            for (var j = 0; j < data_array.data[i].length; j++) {
+                                if (data_array.data[i][j] != null) {
                                     var number = data_array.data[i][j].v;
 
-                                    if(isRealNull(number)){
+                                    if (isRealNull(number)) {
                                         number = 0;
                                     }
 
                                     rowArr.push(number);
                                 }
-                                else{
+                                else {
                                     rowArr.push(0);
                                 }
                             }
@@ -27058,21 +27058,21 @@ const functionImplementation = {
                         rowlen = array.length;
                         collen = array[0].length;
                     }
-                    else{
+                    else {
                         var number = data_array.data.v;
 
-                        if(isRealNull(number)){
+                        if (isRealNull(number)) {
                             number = 0;
                         }
 
                         array.push(number);
                     }
                 }
-                else{
+                else {
                     array.push(0);
                 }
             }
-            else{
+            else {
                 var number = data_array;
 
                 array.push(number);
@@ -27080,13 +27080,13 @@ const functionImplementation = {
 
             //表示要排序的行或列的数字（默认row1/col1）
             var sort_index = 1;
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 sort_index = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(sort_index)){
+                if (valueIsError(sort_index)) {
                     return sort_index;
                 }
 
-                if(!isRealNum(sort_index)){
+                if (!isRealNum(sort_index)) {
                     return formula.error.v;
                 }
 
@@ -27095,13 +27095,13 @@ const functionImplementation = {
 
             //表示所需排序顺序的数字；1表示升序（默认），-1表示降序。
             var sort_order = 1;
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 sort_order = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(sort_order)){
+                if (valueIsError(sort_order)) {
                     return sort_order;
                 }
 
-                if(!isRealNum(sort_order)){
+                if (!isRealNum(sort_order)) {
                     return formula.error.v;
                 }
 
@@ -27110,113 +27110,113 @@ const functionImplementation = {
 
             //表示所需排序方向的逻辑值；按行排序为FALSE（默认），按列排序为TRUE。
             var by_col = false;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 by_col = func_methods.getCellBoolen(arguments[3]);
 
-                if(valueIsError(by_col)){
+                if (valueIsError(by_col)) {
                     return by_col;
                 }
             }
 
-            if(by_col){
-                if(sort_index < 1 || sort_index > rowlen){
+            if (by_col) {
+                if (sort_index < 1 || sort_index > rowlen) {
                     return formula.error.v;
                 }
             }
-            else{
-                if(sort_index < 1 || sort_index > collen){
+            else {
+                if (sort_index < 1 || sort_index > collen) {
                     return formula.error.v;
                 }
             }
 
-            if(sort_order != 1 && sort_order != -1){
+            if (sort_order != 1 && sort_order != -1) {
                 return formula.error.v;
             }
 
             //计算
-            var asc = function(x, y){
-                if(getObjType(x) == "array"){
+            var asc = function (x, y) {
+                if (getObjType(x) == "array") {
                     x = x[sort_index - 1];
                 }
 
-                if(getObjType(y) == "array"){
+                if (getObjType(y) == "array") {
                     y = y[sort_index - 1];
                 }
 
-                if(!isNaN(x) && !isNaN(y)){
+                if (!isNaN(x) && !isNaN(y)) {
                     return x - y;
                 }
-                else if(!isNaN(x)){
+                else if (!isNaN(x)) {
                     return -1;
                 }
-                else if(!isNaN(y)){
+                else if (!isNaN(y)) {
                     return 1;
                 }
-                else{
-                    if(x > y){
+                else {
+                    if (x > y) {
                         return 1;
                     }
-                    else if(x < y){
+                    else if (x < y) {
                         return -1;
                     }
                 }
             }
 
-            var desc = function(x, y){
-                if(getObjType(x) == "array"){
+            var desc = function (x, y) {
+                if (getObjType(x) == "array") {
                     x = x[sort_index - 1];
                 }
 
-                if(getObjType(y) == "array"){
+                if (getObjType(y) == "array") {
                     y = y[sort_index - 1];
                 }
 
-                if(!isNaN(x) && !isNaN(y)){
+                if (!isNaN(x) && !isNaN(y)) {
                     return y - x;
                 }
-                else if(!isNaN(x)){
+                else if (!isNaN(x)) {
                     return 1;
                 }
-                else if(!isNaN(y)){
+                else if (!isNaN(y)) {
                     return -1;
                 }
-                else{
-                    if(x > y){
+                else {
+                    if (x > y) {
                         return -1;
                     }
-                    else if(x < y){
+                    else if (x < y) {
                         return 1;
                     }
                 }
             }
 
-            if(by_col){
-                array = array[0].map(function(col, a){
-                    return array.map(function(row){
+            if (by_col) {
+                array = array[0].map(function (col, a) {
+                    return array.map(function (row) {
                         return row[a];
                     });
                 });
 
-                if(sort_order == 1){
+                if (sort_order == 1) {
                     array.sort(asc);
                 }
 
-                if(sort_order == -1){
+                if (sort_order == -1) {
                     array.sort(desc);
                 }
 
-                array = array[0].map(function(col, b){
-                    return array.map(function(row){
+                array = array[0].map(function (col, b) {
+                    return array.map(function (row) {
                         return row[b];
                     });
                 });
             }
-            else{
-                if(sort_order == 1){
+            else {
+                if (sort_order == 1) {
                     array.sort(asc);
                 }
 
-                if(sort_order == -1){
+                if (sort_order == -1) {
                     array.sort(desc);
                 }
             }
@@ -27229,7 +27229,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "FILTER": function() {
+    "FILTER": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27249,17 +27249,17 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "number");
             }
-            else{
+            else {
                 var rowArr = [];
 
                 rowArr.push(parseFloat(data_array));
@@ -27275,43 +27275,43 @@ const functionImplementation = {
             var include = [];
             var type = "row"; //筛选方式 row - 行，col - 列
 
-            if(getObjType(data_include) == "array"){
-                if(getObjType(data_include[0]) == "array"){
-                    if(!func_methods.isDyadicArr(data_include)){
+            if (getObjType(data_include) == "array") {
+                if (getObjType(data_include[0]) == "array") {
+                    if (!func_methods.isDyadicArr(data_include)) {
                         return formula.error.v;
                     }
 
-                    if(data_include.length > 1 && data_include[0].length > 1){
+                    if (data_include.length > 1 && data_include[0].length > 1) {
                         return formula.error.v;
                     }
 
-                    if(data_include.length > 1){
-                        if(data_include.length != array.length){
+                    if (data_include.length > 1) {
+                        if (data_include.length != array.length) {
                             return formula.error.v;
                         }
 
                         type = "row";
 
-                        for(var i = 0; i < data_include.length; i++){
+                        for (var i = 0; i < data_include.length; i++) {
                             var txt = data_include[i][0];
 
-                            if(getObjType(txt) == "boolean"){
+                            if (getObjType(txt) == "boolean") {
 
                             }
-                            else if(getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")){
-                                if(txt.toLowerCase() == "true"){
+                            else if (getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")) {
+                                if (txt.toLowerCase() == "true") {
                                     txt = true;
                                 }
-                                else if(txt.toLowerCase() == "false"){
+                                else if (txt.toLowerCase() == "false") {
                                     txt = false;
                                 }
                             }
-                            else if(isRealNum(txt)){
+                            else if (isRealNum(txt)) {
                                 txt = parseFloat(txt);
 
                                 txt = txt == 0 ? false : true;
                             }
-                            else{
+                            else {
                                 return formula.error.v;
                             }
 
@@ -27319,33 +27319,33 @@ const functionImplementation = {
                         }
                     }
 
-                    if(data_include[0].length > 1){
-                        if(data_include[0].length != array[0].length){
+                    if (data_include[0].length > 1) {
+                        if (data_include[0].length != array[0].length) {
                             return formula.error.v;
                         }
 
                         type = "col";
 
-                        for(var i = 0; i < data_include[0].length; i++){
+                        for (var i = 0; i < data_include[0].length; i++) {
                             var txt = data_include[0][i];
 
-                            if(getObjType(txt) == "boolean"){
+                            if (getObjType(txt) == "boolean") {
 
                             }
-                            else if(getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")){
-                                if(txt.toLowerCase() == "true"){
+                            else if (getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")) {
+                                if (txt.toLowerCase() == "true") {
                                     txt = true;
                                 }
-                                else if(txt.toLowerCase() == "false"){
+                                else if (txt.toLowerCase() == "false") {
                                     txt = false;
                                 }
                             }
-                            else if(isRealNum(txt)){
+                            else if (isRealNum(txt)) {
                                 txt = parseFloat(txt);
 
                                 txt = txt == 0 ? false : true;
                             }
-                            else{
+                            else {
                                 return formula.error.v;
                             }
 
@@ -27353,33 +27353,33 @@ const functionImplementation = {
                         }
                     }
                 }
-                else{
-                    if(data_include.length != array[0].length){
+                else {
+                    if (data_include.length != array[0].length) {
                         return formula.error.v;
                     }
 
                     type = "col";
 
-                    for(var i = 0; i < data_include.length; i++){
+                    for (var i = 0; i < data_include.length; i++) {
                         var txt = data_include[i];
 
-                        if(getObjType(txt) == "boolean"){
+                        if (getObjType(txt) == "boolean") {
 
                         }
-                        else if(getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")){
-                            if(txt.toLowerCase() == "true"){
+                        else if (getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")) {
+                            if (txt.toLowerCase() == "true") {
                                 txt = true;
                             }
-                            else if(txt.toLowerCase() == "false"){
+                            else if (txt.toLowerCase() == "false") {
                                 txt = false;
                             }
                         }
-                        else if(isRealNum(txt)){
+                        else if (isRealNum(txt)) {
                             txt = parseFloat(txt);
 
                             txt = txt == 0 ? false : true;
                         }
-                        else{
+                        else {
                             return formula.error.v;
                         }
 
@@ -27387,42 +27387,42 @@ const functionImplementation = {
                     }
                 }
             }
-            else if(getObjType(data_include) == "object" && data_include.data != null && getObjType(data_include.data) == "array"){
-                if(data_include.data.length > 1 && data_include.data[0].length > 1){
+            else if (getObjType(data_include) == "object" && data_include.data != null && getObjType(data_include.data) == "array") {
+                if (data_include.data.length > 1 && data_include.data[0].length > 1) {
                     return formula.error.v;
                 }
 
-                if(data_include.data.length > 1){
-                    if(data_include.data.length != array.length){
+                if (data_include.data.length > 1) {
+                    if (data_include.data.length != array.length) {
                         return formula.error.v;
                     }
 
                     type = "row";
 
-                    for(var i = 0; i < data_include.data.length; i++){
+                    for (var i = 0; i < data_include.data.length; i++) {
                         var txt = data_include.data[i][0].v;
 
-                        if(isRealNull(txt)){
+                        if (isRealNull(txt)) {
                             txt = 0;
                         }
 
-                        if(getObjType(txt) == "boolean"){
+                        if (getObjType(txt) == "boolean") {
 
                         }
-                        else if(getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")){
-                            if(txt.toLowerCase() == "true"){
+                        else if (getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")) {
+                            if (txt.toLowerCase() == "true") {
                                 txt = true;
                             }
-                            else if(txt.toLowerCase() == "false"){
+                            else if (txt.toLowerCase() == "false") {
                                 txt = false;
                             }
                         }
-                        else if(isRealNum(txt)){
+                        else if (isRealNum(txt)) {
                             txt = parseFloat(txt);
 
                             txt = txt == 0 ? false : true;
                         }
-                        else{
+                        else {
                             return formula.error.v;
                         }
 
@@ -27430,37 +27430,37 @@ const functionImplementation = {
                     }
                 }
 
-                if(data_include.data[0].length > 1){
-                    if(data_include.data[0].length != array[0].length){
+                if (data_include.data[0].length > 1) {
+                    if (data_include.data[0].length != array[0].length) {
                         return formula.error.v;
                     }
 
                     type = "col";
 
-                    for(var i = 0; i < data_include.data[0].length; i++){
+                    for (var i = 0; i < data_include.data[0].length; i++) {
                         var txt = data_include.data[0][i].v;
 
-                        if(isRealNull(txt)){
+                        if (isRealNull(txt)) {
                             txt = 0;
                         }
 
-                        if(getObjType(txt) == "boolean"){
+                        if (getObjType(txt) == "boolean") {
 
                         }
-                        else if(getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")){
-                            if(txt.toLowerCase() == "true"){
+                        else if (getObjType(txt) == "string" && (txt.toLowerCase() == "true" || txt.toLowerCase() == "false")) {
+                            if (txt.toLowerCase() == "true") {
                                 txt = true;
                             }
-                            else if(txt.toLowerCase() == "false"){
+                            else if (txt.toLowerCase() == "false") {
                                 txt = false;
                             }
                         }
-                        else if(isRealNum(txt)){
+                        else if (isRealNum(txt)) {
                             txt = parseFloat(txt);
 
                             txt = txt == 0 ? false : true;
                         }
-                        else{
+                        else {
                             return formula.error.v;
                         }
 
@@ -27468,45 +27468,45 @@ const functionImplementation = {
                     }
                 }
             }
-            else{
+            else {
                 return formula.error.v;
             }
 
             //如果包含数组中的所有值都为空(filter不返回任何值)，则返回的值
             var if_empty = "";
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 if_empty = func_methods.getFirstValue(arguments[2], "text");
-                if(valueIsError(if_empty)){
+                if (valueIsError(if_empty)) {
                     return if_empty;
                 }
             }
 
             //计算
             var result = [];
-            if(type == "row"){
-                for(var i = 0; i < array.length; i++){
-                    if(include[i]){
+            if (type == "row") {
+                for (var i = 0; i < array.length; i++) {
+                    if (include[i]) {
                         result.push(array[i]);
                     }
                 }
             }
-            else{
-                for(var i = 0; i < array.length; i++){
+            else {
+                for (var i = 0; i < array.length; i++) {
                     var rowArr = [];
 
-                    for(var j = 0; j < array[0].length; j++){
-                        if(include[j]){
+                    for (var j = 0; j < array[0].length; j++) {
+                        if (include[j]) {
                             rowArr.push(array[i][j]);
                         }
                     }
 
-                    if(rowArr.length > 0){
+                    if (rowArr.length > 0) {
                         result.push(rowArr);
                     }
                 }
             }
 
-            if(result.length == 0){
+            if (result.length == 0) {
                 return if_empty;
             }
 
@@ -27518,7 +27518,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "UNIQUE": function() {
+    "UNIQUE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27538,17 +27538,17 @@ const functionImplementation = {
             var data_array = arguments[0];
             var array = [];
 
-            if(getObjType(data_array) == "array"){
-                if(getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)){
+            if (getObjType(data_array) == "array") {
+                if (getObjType(data_array[0]) == "array" && !func_methods.isDyadicArr(data_array)) {
                     return formula.error.v;
                 }
 
                 array = func_methods.getDataDyadicArr(data_array);
             }
-            else if(getObjType(data_array) == "object" && data_array.startCell != null){
+            else if (getObjType(data_array) == "object" && data_array.startCell != null) {
                 array = func_methods.getCellDataDyadicArr(data_array, "number");
             }
-            else{
+            else {
                 var rowArr = [];
 
                 rowArr.push(parseFloat(data_array));
@@ -27558,28 +27558,28 @@ const functionImplementation = {
 
             //逻辑值，指示如何比较；按行 = FALSE 或省略；按列 = TRUE
             var by_col = false;
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 by_col = func_methods.getCellBoolen(arguments[1]);
 
-                if(valueIsError(by_col)){
+                if (valueIsError(by_col)) {
                     return by_col;
                 }
             }
 
             //逻辑值，仅返回唯一值中出现一次 = TRUE；包括所有唯一值 = FALSE 或省略
             var occurs_once = false;
-            if(arguments.length == 3){
+            if (arguments.length == 3) {
                 occurs_once = func_methods.getCellBoolen(arguments[2]);
 
-                if(valueIsError(occurs_once)){
+                if (valueIsError(occurs_once)) {
                     return occurs_once;
                 }
             }
 
             //计算
-            if(by_col){
-                array = array[0].map(function(col, a){
-                    return array.map(function(row){
+            if (by_col) {
+                array = array[0].map(function (col, a) {
+                    return array.map(function (row) {
                         return row[a];
                     });
                 });
@@ -27587,42 +27587,42 @@ const functionImplementation = {
                 var strObj = {}, strArr = [];
                 var allUnique = [];
 
-                for(var i = 0; i < array.length; i++){
+                for (var i = 0; i < array.length; i++) {
                     var str = '';
 
-                    for(var j = 0; j < array[i].length; j++){
+                    for (var j = 0; j < array[i].length; j++) {
                         str += array[i][j].toString() + "|||";
                     }
 
                     strArr.push(str);
 
-                    if(!(str in strObj)){
+                    if (!(str in strObj)) {
                         strObj[str] = 0;
 
                         allUnique.push(array[i]);
                     }
                 }
 
-                if(occurs_once){
+                if (occurs_once) {
                     var oneUnique = [];
 
-                    for(var i = 0; i < strArr.length; i++){
-                        if(strArr.indexOf(strArr[i]) == strArr.lastIndexOf(strArr[i])){
+                    for (var i = 0; i < strArr.length; i++) {
+                        if (strArr.indexOf(strArr[i]) == strArr.lastIndexOf(strArr[i])) {
                             oneUnique.push(array[i]);
                         }
                     }
 
-                    oneUnique = oneUnique[0].map(function(col, a){
-                        return oneUnique.map(function(row){
+                    oneUnique = oneUnique[0].map(function (col, a) {
+                        return oneUnique.map(function (row) {
                             return row[a];
                         });
                     });
 
                     return oneUnique;
                 }
-                else{
-                    allUnique = allUnique[0].map(function(col, a){
-                        return allUnique.map(function(row){
+                else {
+                    allUnique = allUnique[0].map(function (col, a) {
+                        return allUnique.map(function (row) {
                             return row[a];
                         });
                     });
@@ -27630,38 +27630,38 @@ const functionImplementation = {
                     return allUnique;
                 }
             }
-            else{
+            else {
                 var strObj = {}, strArr = [];
                 var allUnique = [];
 
-                for(var i = 0; i < array.length; i++){
+                for (var i = 0; i < array.length; i++) {
                     var str = '';
 
-                    for(var j = 0; j < array[i].length; j++){
+                    for (var j = 0; j < array[i].length; j++) {
                         str += array[i][j].toString() + "|||";
                     }
 
                     strArr.push(str);
 
-                    if(!(str in strObj)){
+                    if (!(str in strObj)) {
                         strObj[str] = 0;
 
                         allUnique.push(array[i]);
                     }
                 }
 
-                if(occurs_once){
+                if (occurs_once) {
                     var oneUnique = [];
 
-                    for(var i = 0; i < strArr.length; i++){
-                        if(strArr.indexOf(strArr[i]) == strArr.lastIndexOf(strArr[i])){
+                    for (var i = 0; i < strArr.length; i++) {
+                        if (strArr.indexOf(strArr[i]) == strArr.lastIndexOf(strArr[i])) {
                             oneUnique.push(array[i]);
                         }
                     }
 
                     return oneUnique;
                 }
-                else{
+                else {
                     return allUnique;
                 }
             }
@@ -27672,7 +27672,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "RANDARRAY": function() {
+    "RANDARRAY": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27690,13 +27690,13 @@ const functionImplementation = {
         try {
             //要返回的行数
             var rows = 1;
-            if(arguments.length >= 1){
+            if (arguments.length >= 1) {
                 rows = func_methods.getFirstValue(arguments[0]);
-                if(valueIsError(rows)){
+                if (valueIsError(rows)) {
                     return rows;
                 }
 
-                if(!isRealNum(rows)){
+                if (!isRealNum(rows)) {
                     return formula.error.v;
                 }
 
@@ -27705,30 +27705,30 @@ const functionImplementation = {
 
             //要返回的列数
             var cols = 1;
-            if(arguments.length == 2){
+            if (arguments.length == 2) {
                 cols = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(cols)){
+                if (valueIsError(cols)) {
                     return cols;
                 }
 
-                if(!isRealNum(cols)){
+                if (!isRealNum(cols)) {
                     return formula.error.v;
                 }
 
                 cols = parseInt(cols);
             }
 
-            if(rows <= 0 || cols <= 0){
+            if (rows <= 0 || cols <= 0) {
                 return formula.error.v;
             }
 
             //计算
             var result = [];
 
-            for(var i = 0; i < rows; i++){
+            for (var i = 0; i < rows; i++) {
                 var result_row = [];
 
-                for(var j = 0; j < cols; j++){
+                for (var j = 0; j < cols; j++) {
                     result_row.push(Math.random().toFixed(9));
                 }
 
@@ -27743,7 +27743,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "SEQUENCE": function() {
+    "SEQUENCE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27761,11 +27761,11 @@ const functionImplementation = {
         try {
             //要返回的行数
             var rows = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(rows)){
+            if (valueIsError(rows)) {
                 return rows;
             }
 
-            if(!isRealNum(rows)){
+            if (!isRealNum(rows)) {
                 return formula.error.v;
             }
 
@@ -27773,13 +27773,13 @@ const functionImplementation = {
 
             //要返回的列数
             var cols = 1;
-            if(arguments.length >= 2){
+            if (arguments.length >= 2) {
                 cols = func_methods.getFirstValue(arguments[1]);
-                if(valueIsError(cols)){
+                if (valueIsError(cols)) {
                     return cols;
                 }
 
-                if(!isRealNum(cols)){
+                if (!isRealNum(cols)) {
                     return formula.error.v;
                 }
 
@@ -27788,13 +27788,13 @@ const functionImplementation = {
 
             //序列中的第一个数字
             var start = 1;
-            if(arguments.length >= 3){
+            if (arguments.length >= 3) {
                 start = func_methods.getFirstValue(arguments[2]);
-                if(valueIsError(start)){
+                if (valueIsError(start)) {
                     return start;
                 }
 
-                if(!isRealNum(start)){
+                if (!isRealNum(start)) {
                     return formula.error.v;
                 }
 
@@ -27803,30 +27803,30 @@ const functionImplementation = {
 
             //序列中每个序列值的增量
             var step = 1;
-            if(arguments.length == 4){
+            if (arguments.length == 4) {
                 step = func_methods.getFirstValue(arguments[3]);
-                if(valueIsError(step)){
+                if (valueIsError(step)) {
                     return step;
                 }
 
-                if(!isRealNum(step)){
+                if (!isRealNum(step)) {
                     return formula.error.v;
                 }
 
                 step = parseFloat(step);
             }
 
-            if(rows <= 0 || cols <= 0){
+            if (rows <= 0 || cols <= 0) {
                 return formula.error.v;
             }
 
             //计算
             var result = [];
 
-            for(var i = 0; i < rows; i++){
+            for (var i = 0; i < rows; i++) {
                 var result_row = [];
 
-                for(var j = 0; j < cols; j++){
+                for (var j = 0; j < cols; j++) {
                     var number = start + step * (j + cols * i);
                     result_row.push(number);
                 }
@@ -27842,7 +27842,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "EVALUATE": function() {
+    "EVALUATE": function () {
         //必要参数个数错误检测
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
@@ -27863,16 +27863,15 @@ const functionImplementation = {
             var sheetindex_now = window.luckysheetCurrentIndex;
             //公式文本
             var strtext = func_methods.getFirstValue(arguments[0]).toString();
-            if(valueIsError(strtext)){
+            if (valueIsError(strtext)) {
                 return strtext;
             }
             //在文本公式前面添加=
-            if(strtext.trim().indexOf('=')!=0)
-            {
-                strtext ='='+strtext;
+            if (strtext.trim().indexOf('=') != 0) {
+                strtext = '=' + strtext;
             }
             //console.log(strtext);
-            var result_this = formula.execstringformula(strtext,cell_r,cell_c,sheetindex_now);
+            var result_this = formula.execstringformula(strtext, cell_r, cell_c, sheetindex_now);
             return result_this[1];
         }
         catch (e) {
@@ -27882,7 +27881,7 @@ const functionImplementation = {
             return [formula.error.v, err];
         }
     },
-    "REMOTE": function() {
+    "REMOTE": function () {
         if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
             return formula.error.na;
         }
@@ -27893,7 +27892,7 @@ const functionImplementation = {
             const cellFunction = window.luckysheetCurrentFunction;
 
             const remoteFunction = func_methods.getFirstValue(arguments[0]);
-            if(valueIsError(remoteFunction)){
+            if (valueIsError(remoteFunction)) {
                 return remoteFunction;
             }
 
@@ -27904,13 +27903,150 @@ const functionImplementation = {
                     "v": data,
                     "f": cellFunction
                 };
-                jfrefreshgrid(flowData, [{"row": [cellRow, cellRow], "column": [cellColumn, cellColumn]}]);
+                jfrefreshgrid(flowData, [{ "row": [cellRow, cellRow], "column": [cellColumn, cellColumn] }]);
             });
 
             return "Loading...";
         }
         catch (e) {
             console.log(e);
+            var err = e;
+            err = formula.errorInfo(err);
+            return [formula.error.v, err];
+        }
+    },
+    "ROUND_EX": function () {
+        //必要参数个数错误检测
+        if (arguments.length < this.m[0] || arguments.length > this.m[1]) {
+            return formula.error.na;
+        }
+
+        //参数类型错误检测
+        for (var i = 0; i < arguments.length; i++) {
+            var p = formula.errorParamCheck(this.p, arguments[i], i);
+
+            if (!p[0]) {
+                return formula.error.v;
+            }
+        }
+
+        try {
+            // 四舍五入的数字
+            var number = func_methods.getFirstValue(arguments[0]);
+            if (valueIsError(number)) {
+                return number;
+            }
+
+            if (!isRealNum(number)) {
+                return formula.error.v;
+            }
+
+            number = parseFloat(number);
+
+            // 位数
+            var digits = func_methods.getFirstValue(arguments[1]);
+            if (valueIsError(digits)) {
+                return digits;
+            }
+
+            if (!isRealNum(digits)) {
+                return formula.error.v;
+            }
+
+            digits = parseInt(digits);
+
+            // 舍入模式（检查是否为1, 2, 3, 4中的一个）
+            var mode = func_methods.getFirstValue(arguments[2]);
+            if (mode === null || mode === undefined || mode === "") {
+                mode = 1; // 默认模式：四舍五入
+            } else {
+                mode = parseInt(mode);
+                if (![1, 2, 3, 4].includes(mode)) {
+                    return formula.error.v; // 如果不是1, 2, 3, 4中的一个，返回错误
+                }
+            }
+
+            // 小数位数类型（检查是否为1或2中的一个）
+            var digitType = func_methods.getFirstValue(arguments[3]);
+            if (digitType === null || digitType === undefined || digitType === "") {
+                digitType = 1; // 默认：小数点后位数
+            } else {
+                digitType = parseInt(digitType);
+                if (![1, 2].includes(digitType)) {
+                    return formula.error.v; // 如果不是1或2中的一个，返回错误
+                }
+            }
+
+            function roundToSignificantDigits(number, digits, mode) {
+                if (number === 0) return 0;
+
+                const factor = Math.pow(10, digits - Math.ceil(Math.log10(Math.abs(number))));
+                let scaledNumber = number * factor;
+
+                // 四舍五入
+                if (mode === 1) {
+                    return Math.round(scaledNumber) / factor;
+                }
+
+                // 五舍六入
+                if (mode === 2) {
+                    // 通过判断是否大于等于0.6来决定舍弃或进一
+                    const decimalPart = scaledNumber - Math.floor(scaledNumber);
+                    if (decimalPart >= 0.6) {
+                        return Math.ceil(scaledNumber) / factor; // 大于等于0.6，进一
+                    } else {
+                        return Math.floor(scaledNumber) / factor; // 等于0.5，舍去
+                    }
+                }
+
+
+                // 直接舍弃
+                if (mode === 3) {
+                    return Math.floor(scaledNumber) / factor;
+                }
+
+                // 直接进位
+                if (mode === 4) {
+                    return Math.ceil(scaledNumber) / factor;
+                }
+
+                throw new Error("Invalid mode. Use 1 for round and 2 for five-half up.");
+            }
+
+            switch (digitType) {
+                case 1: {
+                    // 计算
+                    var sign = (number > 0) ? 1 : -1;
+                    number = Math.abs(number) * Math.pow(10, digits);
+
+                    // 根据舍入模式进行计算
+                    switch (mode) {
+                        case 1: // 四舍五入
+                            number = Math.round(number);
+                            break;
+                        case 2: // 五舍六入
+                            number = (number % 1 >= 0.6) ? Math.ceil(number) : Math.floor(number);
+                            break;
+                        case 3: // 直接舍弃
+                            number = Math.floor(number);
+                            break;
+                        case 4: // 直接进位
+                            number = Math.ceil(number);
+                            break;
+                        default:
+                            return formula.error.v;
+                    }
+
+                    return sign * number / Math.pow(10, digits);
+                }
+                case 2: {
+                    return roundToSignificantDigits(number, digits, mode);
+                }
+                default:
+                    return formula.error.v;
+            }
+        }
+        catch (e) {
             var err = e;
             err = formula.errorInfo(err);
             return [formula.error.v, err];

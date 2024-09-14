@@ -9114,4 +9114,38 @@ export default [
             }
         ]
     },
+    {
+        "n": "ROUND_EX",
+        "t": 0,
+        "m": [
+            2,
+            4
+        ],
+        "p": [
+            {
+                "example": "A1",
+                "require": "m",
+                "repeat": "n",
+                "type": "rangenumber"
+            },
+            {
+                "example": "2",
+                "require": "m",
+                "repeat": "n",
+                "type": "number"
+            },
+            {
+                "example": "1",
+                "require": "o",
+                "repeat": "n",
+                "type": "number"
+            },
+            {
+                "example": "1",
+                "require": "o",
+                "repeat": "n",
+                "type": "number"
+            }
+        ]
+    },
 ]
