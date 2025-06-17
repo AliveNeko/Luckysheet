@@ -27988,7 +27988,7 @@ const functionImplementation = {
                     return Math.round(scaledNumber) / factor;
                 }
 
-                // 五舍六入
+                // 四舍六入五成双
                 if (mode === 2) {
                     // 通过判断是否大于等于0.6来决定舍弃或进一
                     const decimalPart = scaledNumber - Math.floor(scaledNumber);
@@ -28013,19 +28013,62 @@ const functionImplementation = {
                 throw new Error("Invalid mode. Use 1 for round and 2 for five-half up.");
             }
 
+            // 银行家舍入法
+            function bankersRound(num, digits = 0, options = { strict: false }) {
+                // 参数校验
+                if (typeof num !== 'number' || !isFinite(num)) {
+                    if (options.strict) {
+                        throw new TypeError('Invalid number input for bankersRound');
+                    }
+                    return null;
+                }
+
+                if (!Number.isInteger(digits) || digits < 0) {
+                    if (options.strict) {
+                        throw new TypeError('digits must be a non-negative integer');
+                    }
+                    return null;
+                }
+
+                const factor = Math.pow(10, digits);
+                // const scaledNum = num * factor;
+                const scaledNum = luckysheet_calcADPMM(num, "*", factor);
+                const floor = Math.floor(scaledNum);
+                // const diff = scaledNum - floor;
+                const diff = luckysheet_calcADPMM(scaledNum, "-", floor);
+
+                let rounded;
+                if (diff < 0.5) {
+                    rounded = floor;
+                } else if (diff > 0.5) {
+                    rounded = floor + 1;
+                } else {
+                    // diff === 0.5
+                    rounded = (floor % 2 === 0) ? floor : floor + 1;
+                }
+
+                // return rounded / factor;
+                return luckysheet_calcADPMM(rounded, "/", factor);
+            }
+
             switch (digitType) {
+                // 小数点后位数
                 case 1: {
                     // 计算
                     var sign = (number > 0) ? 1 : -1;
-                    number = Math.abs(number) * Math.pow(10, digits);
+                    // number = Math.abs(number) * Math.pow(10, digits);
+                    var originalNumber = number;
+                    var rightResult = false;
+                    number = luckysheet_calcADPMM(Math.abs(number), "*", Math.pow(10, digits));
 
                     // 根据舍入模式进行计算
                     switch (mode) {
                         case 1: // 四舍五入
                             number = Math.round(number);
                             break;
-                        case 2: // 五舍六入
-                            number = (number % 1 >= 0.6) ? Math.ceil(number) : Math.floor(number);
+                        case 2: // 四舍六入五成双
+                            number = bankersRound(originalNumber, digits);
+                            rightResult = true;
                             break;
                         case 3: // 直接舍弃
                             number = Math.floor(number);
@@ -28037,7 +28080,12 @@ const functionImplementation = {
                             return formula.error.v;
                     }
 
-                    return sign * number / Math.pow(10, digits);
+                    if (rightResult) {
+                        return number;
+                    } else {
+                        // return sign * number / Math.pow(10, digits);
+                        return sign * luckysheet_calcADPMM(number, "/", Math.pow(10, digits));
+                    }
                 }
                 case 2: {
                     return roundToSignificantDigits(number, digits, mode);
