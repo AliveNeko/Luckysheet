@@ -27985,29 +27985,47 @@ const functionImplementation = {
 
                 // 四舍五入
                 if (mode === 1) {
-                    return Math.round(scaledNumber) / factor;
+                    // return Math.round(scaledNumber) / factor;
+                    return luckysheet_calcADPMM(Math.round(scaledNumber), '/', factor);
                 }
 
-                // 四舍六入五成双
+                // 银行家舍入法（四舍六入五成双）
                 if (mode === 2) {
-                    // 通过判断是否大于等于0.6来决定舍弃或进一
-                    const decimalPart = scaledNumber - Math.floor(scaledNumber);
-                    if (decimalPart >= 0.6) {
-                        return Math.ceil(scaledNumber) / factor; // 大于等于0.6，进一
+                    const isNegative = scaledNumber < 0;
+                    const absScaled = Math.abs(scaledNumber);
+                    const floor = Math.floor(absScaled);
+                    const decimalPart = luckysheet_calcADPMM(absScaled, '-', floor);
+            
+                    let rounded;
+                    if (decimalPart > 0.5) {
+                        rounded = floor + 1;
+                    } else if (decimalPart < 0.5) {
+                        rounded = floor;
                     } else {
-                        return Math.floor(scaledNumber) / factor; // 等于0.5，舍去
+                        // decimalPart === 0.5
+                        if (floor % 2 === 0) {
+                            rounded = floor;
+                        } else {
+                            rounded = floor + 1;
+                        }
                     }
+            
+                    if (isNegative) rounded = -rounded;
+            
+                    return luckysheet_calcADPMM(rounded, '/', factor);
                 }
 
 
                 // 直接舍弃
                 if (mode === 3) {
-                    return Math.floor(scaledNumber) / factor;
+                    // return Math.floor(scaledNumber) / factor;
+                    return luckysheet_calcADPMM(Math.floor(scaledNumber), '/', factor);
                 }
 
                 // 直接进位
                 if (mode === 4) {
-                    return Math.ceil(scaledNumber) / factor;
+                    // return Math.ceil(scaledNumber) / factor;
+                    return luckysheet_calcADPMM(Math.ceil(scaledNumber), '/', factor);
                 }
 
                 throw new Error("Invalid mode. Use 1 for round and 2 for five-half up.");
